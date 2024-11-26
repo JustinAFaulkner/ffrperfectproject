@@ -5,6 +5,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { Song } from '../../models/song.interface';
 import { SongService } from '../../services/song.service';
+import { FilterService } from '../../services/filter.service';
 
 @Component({
   selector: 'app-song-list',
@@ -38,27 +39,54 @@ import { SongService } from '../../services/song.service';
             <option *ngFor="let genre of genres" [value]="genre">{{genre}}</option>
           </select>
         </div>
+        
+        <div class="filter-group">
+          <div class="video-filter">
+            <div class="video-toggle-group">
+              <button
+                [class.active]="videoFilter === 'all'"
+                (click)="setVideoFilter('all')"
+                class="video-toggle-btn">
+                All
+              </button>
+              <button
+                [class.active]="videoFilter === 'with'"
+                (click)="setVideoFilter('with')"
+                class="video-toggle-btn">
+                Completed
+              </button>
+              <button
+                [class.active]="videoFilter === 'without'"
+                (click)="setVideoFilter('without')"
+                class="video-toggle-btn">
+                Missing
+              </button>
+            </div>
+          </div>
 
-        <div class="video-filter">
-          <div class="video-toggle-group">
-            <button
-              [class.active]="videoFilter === 'all'"
-              (click)="setVideoFilter('all')"
-              class="video-toggle-btn">
-              All
-            </button>
-            <button
-              [class.active]="videoFilter === 'with'"
-              (click)="setVideoFilter('with')"
-              class="video-toggle-btn">
-              Completed
-            </button>
-            <button
-              [class.active]="videoFilter === 'without'"
-              (click)="setVideoFilter('without')"
-              class="video-toggle-btn">
-              Missing
-            </button>
+          <div class="difficulty-range">
+            <label>
+              Difficulty Min:
+              <input
+                type="number"
+                [(ngModel)]="minDifficulty"
+                (input)="filterSongs()"
+                min="0"
+                [max]="maxDifficulty"
+                class="difficulty-input"
+              />
+            </label>
+            <label>
+              Max:
+              <input
+                type="number"
+                [(ngModel)]="maxDifficulty"
+                (input)="filterSongs()"
+                [min]="minDifficulty"
+                max="150"
+                class="difficulty-input"
+              />
+            </label>
           </div>
         </div>
       </div>
@@ -133,6 +161,26 @@ import { SongService } from '../../services/song.service';
 
     .search-input {
       flex: 1;
+    }
+
+    .filter-group {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .difficulty-range {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .difficulty-input {
+      width: 60px;
+      padding: 5px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
     }
 
     .video-filter {
@@ -294,6 +342,12 @@ import { SongService } from '../../services/song.service';
         flex-direction: column;
       }
 
+      .difficulty-range {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+
       .video-filter {
         flex-direction: column;
         align-items: stretch;
@@ -314,9 +368,12 @@ export class SongListComponent {
   genres: string[] = [];
   expandedSong: number | null = null;
   videoFilter: 'all' | 'with' | 'without' = 'all';
+  minDifficulty: number = 0;
+  maxDifficulty: number = 150;
 
   constructor(
     private songService: SongService,
+    private filterService: FilterService,
     private sanitizer: DomSanitizer
   ) {
     this.songs = this.songService.getSongs();
@@ -330,20 +387,12 @@ export class SongListComponent {
   }
 
   filterSongs() {
-    this.filteredSongs = this.songs.filter((song) => {
-      const matchesSearch =
-        song.title.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        song.artist.toLowerCase().includes(this.searchTerm.toLowerCase());
-
-      const matchesGenre =
-        !this.selectedGenre || song.genre === this.selectedGenre;
-
-      const matchesVideo =
-        this.videoFilter === 'all' ||
-        (this.videoFilter === 'with' && song.youtubeUrl) ||
-        (this.videoFilter === 'without' && !song.youtubeUrl);
-
-      return matchesSearch && matchesGenre && matchesVideo;
+    this.filteredSongs = this.filterService.filterSongs(this.songs, {
+      searchTerm: this.searchTerm,
+      selectedGenre: this.selectedGenre,
+      videoFilter: this.videoFilter,
+      minDifficulty: this.minDifficulty,
+      maxDifficulty: this.maxDifficulty,
     });
   }
 

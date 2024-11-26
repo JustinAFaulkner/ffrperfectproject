@@ -27,6 +27,15 @@ import { SongService } from '../../services/song.service';
           <div class="stat-item">
             <span class="stat-value">{{uniqueGenres}} Genres</span>
           </div>
+          <div class="stat-item">
+            <span class="stat-value">{{totalSongs}} Submissions</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value">{{uniqueArtists}} Missing</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value">{{uniqueGenres}} Arrows</span>
+          </div>
         </div>
       </div>
     </header>
@@ -60,6 +69,7 @@ import { SongService } from '../../services/song.service';
       display: flex;
       flex-direction: column;
       justify-content: center;
+      margin: auto;
     }
 
     .stats-section h2 {
@@ -70,6 +80,7 @@ import { SongService } from '../../services/song.service';
 
     .stats-grid {
       display: grid;
+      grid-template-columns: 50% 50%;
       gap: 0.5rem;
     }
 
