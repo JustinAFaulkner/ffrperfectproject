@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Song } from '../../models/song.interface';
 import { SongService } from '../../services/song.service';
 import { FilterService } from '../../services/filter.service';
+import { CountService } from '../../services/count.service';
 import { SongItemComponent } from './song-item.component';
 
 @Component({
@@ -35,19 +36,22 @@ import { SongItemComponent } from './song-item.component';
                 [class.active]="videoFilter === 'all'"
                 (click)="setVideoFilter('all')"
                 class="video-toggle-btn">
-                All ({{songs.length}})
+                All
+                <span class="count-badge">{{songs.length}}</span>
               </button>
               <button
                 [class.active]="videoFilter === 'with'"
                 (click)="setVideoFilter('with')"
                 class="video-toggle-btn">
                 Completed
+                <span class="count-badge">{{videoCounts.withVideo}}</span>
               </button>
               <button
                 [class.active]="videoFilter === 'without'"
                 (click)="setVideoFilter('without')"
                 class="video-toggle-btn">
                 Missing
+                <span class="count-badge">{{videoCounts.withoutVideo}}</span>
               </button>
             </div>
           </div>
@@ -182,6 +186,15 @@ import { SongItemComponent } from './song-item.component';
       background: rgba(255,255,255,0.5);
     }
 
+    .count-badge {
+      background: rgba(0,0,0,0.1);
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-size: 12px;
+      min-width: 20px;
+      text-align: center;
+    }
+
     .song-list {
       display: flex;
       flex-direction: column;
@@ -225,14 +238,17 @@ export class SongListComponent {
   videoFilter: 'all' | 'with' | 'without' = 'all';
   minDifficulty: number = 0;
   maxDifficulty: number = 150;
+  videoCounts = { withVideo: 0, withoutVideo: 0 };
 
   constructor(
     private songService: SongService,
     private filterService: FilterService,
+    private countService: CountService
   ) {
     this.songs = this.songService.getSongs();
     this.filteredSongs = [...this.songs];
     this.genres = [...new Set(this.songs.map((song) => song.genre))];
+    this.videoCounts = this.countService.getVideoCounts(this.songs);
   }
 
   setVideoFilter(filter: 'all' | 'with' | 'without') {

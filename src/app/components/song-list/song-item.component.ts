@@ -31,7 +31,7 @@ import { Song } from '../../models/song.interface';
         <div class="song-info">
           <span class="song-title">{{song.title}}</span>
           <span class="song-subtitle">
-            {{ isExpanded ? (currentSource === 1 ? song.contributor : song.contributor2) || '' : song.artist }}
+            <span>{{ isExpanded ? (currentSource === 1 ? song.contributor : song.contributor2) || '' : song.artist }}</span>
             <span *ngIf="!isExpanded">
                 Stepped by: {{song.stepartist}}
                 <span *ngIf="(song.stepartist2 != null && song.stepartist2 !== '')"> & {{song.stepartist2}}</span>
@@ -40,8 +40,11 @@ import { Song } from '../../models/song.interface';
           </span>
         </div>
         <div *ngIf="!isExpanded" class="song-details">
-          <span class="song-duration">{{song.duration}}</span>
-          <span class="song-genre">{{song.genre}}</span>
+          <span class="song-details-text">{{song.duration}}</span>
+          <span class="song-details-text">{{song.genre}}</span>
+          <span class="song-details-text">
+            {{song.arrows}}
+          </span>
         </div>
       </div>
       
@@ -140,6 +143,8 @@ import { Song } from '../../models/song.interface';
     .song-subtitle {
       color: #666;
       font-size: 0.9em;
+      display: flex;
+      flex-direction: column;
     }
 
     .song-details {
@@ -148,7 +153,7 @@ import { Song } from '../../models/song.interface';
       align-items: flex-end;
     }
 
-    .song-duration, .song-genre {
+    .song-details-text {
       color: #666;
       font-size: 0.9em;
     }
