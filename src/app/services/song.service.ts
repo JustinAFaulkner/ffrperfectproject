@@ -29,6 +29,8 @@ export class SongService {
       arrows: 1945,
       youtubeUrl: 'https://www.youtube.com/embed/0iIXCnPjcbg',
       contributor: 'TC_Halogen',
+      youtubeUrl2: 'https://www.youtube.com/embed/IbLMVSU0vMQ',
+      contributor2: 'Ziergdsx18',
       stepartist: 'TC_Halogen'
     },
     {
