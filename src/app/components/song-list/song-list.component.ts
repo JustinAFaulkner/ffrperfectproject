@@ -47,7 +47,7 @@ import { FilterService } from '../../services/filter.service';
                 [class.active]="videoFilter === 'all'"
                 (click)="setVideoFilter('all')"
                 class="video-toggle-btn">
-                All
+                All ({{songs.length}})
               </button>
               <button
                 [class.active]="videoFilter === 'with'"
@@ -103,10 +103,16 @@ import { FilterService } from '../../services/filter.service';
             <div class="song-info">
               <span class="song-title">{{song.title}}</span>
               <span class="song-artist">{{song.artist}}</span>
+              <span class="song-stepartist">
+                Stepped by: {{song.stepartist}}
+                <span *ngIf="(song.stepartist2 != null && song.stepartist2 !== '')"> & {{song.stepartist2}}</span>
+                <span *ngIf="(song.stepartist3 != null && song.stepartist3 !== '')"> & {{song.stepartist3}}</span>
+              </span>
             </div>
             <div class="song-details">
               <span class="song-duration">{{song.duration}}</span>
               <span class="song-genre">{{song.genre}}</span>
+              <span class="song-arrows">{{song.arrows}}</span>
             </div>
           </div>
           
@@ -217,6 +223,7 @@ import { FilterService } from '../../services/filter.service';
     .video-toggle-btn.active {
       background: white;
       color: #333;
+      font-weight: bold;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
 
@@ -287,7 +294,7 @@ import { FilterService } from '../../services/filter.service';
       color: #333;
     }
 
-    .song-artist {
+    .song-artist, .song-stepartist {
       color: #666;
       font-size: 0.9em;
     }

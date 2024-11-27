@@ -28,13 +28,13 @@ import { SongService } from '../../services/song.service';
             <span class="stat-value">{{uniqueGenres}} Genres</span>
           </div>
           <div class="stat-item">
-            <span class="stat-value">{{totalSongs}} Submissions</span>
+            <span class="stat-value">{{totalSongs - 1}} Submissions</span>
           </div>
           <div class="stat-item">
             <span class="stat-value">{{uniqueArtists}} Missing</span>
           </div>
           <div class="stat-item">
-            <span class="stat-value">{{uniqueGenres}} Arrows</span>
+            <span class="stat-value">{{totalArrows}} Arrows</span>
           </div>
         </div>
       </div>
@@ -117,12 +117,16 @@ import { SongService } from '../../services/song.service';
 })
 export class HeaderComponent {
   totalSongs: number = 0;
+  totalArrows: number = 0;
   uniqueArtists: number = 0;
   uniqueGenres: number = 0;
 
   constructor(private songService: SongService) {
     const songs = this.songService.getSongs();
     this.totalSongs = songs.length;
+    this.totalArrows = songs.reduce((accumulator, currentValue) => {
+      return accumulator + currentValue.arrows;
+    }, 0);
     this.uniqueArtists = new Set(songs.map((song) => song.artist)).size;
     this.uniqueGenres = new Set(songs.map((song) => song.genre)).size;
   }
