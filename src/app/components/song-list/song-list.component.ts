@@ -244,11 +244,15 @@ export class SongListComponent {
     private songService: SongService,
     private filterService: FilterService,
     private countService: CountService
-  ) {
-    this.songs = this.songService.getSongs();
-    this.filteredSongs = [...this.songs];
-    this.genres = [...new Set(this.songs.map((song) => song.genre))];
-    this.videoCounts = this.countService.getVideoCounts(this.songs);
+  ) {}
+
+  ngOnInit() {
+    this.songService.getSongs().subscribe(songs => {
+      this.songs = songs;
+      this.filteredSongs = [...songs];
+      this.genres = [...new Set(songs.map(song => song.genre))];
+      this.videoCounts = this.countService.getVideoCounts(songs);
+    });
   }
 
   setVideoFilter(filter: 'all' | 'with' | 'without') {

@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SongService } from '../../services/song.service';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-header',
@@ -19,22 +20,22 @@ import { SongService } from '../../services/song.service';
         <h2>FFR Perfect Project</h2>
         <div class="stats-grid">
           <div class="stat-item">
-            <span class="stat-value">{{totalSongs}} Total Songs</span>
+            <span class="stat-value">{{totalSongs$ | async}} Total Songs</span>
           </div>
           <div class="stat-item">
-            <span class="stat-value">{{uniqueArtists}} Artists</span>
+            <span class="stat-value">{{uniqueArtists$ | async}} Artists</span>
           </div>
           <div class="stat-item">
-            <span class="stat-value">{{uniqueGenres}} Genres</span>
+            <span class="stat-value">{{uniqueGenres$ | async}} Genres</span>
           </div>
           <div class="stat-item">
-            <span class="stat-value">{{totalSongs - 1}} Submissions</span>
+            <span class="stat-value">{{totalSongs$ | async}} Submissions</span>
           </div>
           <div class="stat-item">
-            <span class="stat-value">{{uniqueArtists}} Missing</span>
+            <span class="stat-value">{{uniqueArtists$ | async}} Missing</span>
           </div>
           <div class="stat-item">
-            <span class="stat-value">{{totalArrows}} Arrows</span>
+            <span class="stat-value">{{totalArrows$ | async}} Arrows</span>
           </div>
         </div>
       </div>
@@ -116,18 +117,27 @@ import { SongService } from '../../services/song.service';
   ],
 })
 export class HeaderComponent {
-  totalSongs: number = 0;
-  totalArrows: number = 0;
-  uniqueArtists: number = 0;
-  uniqueGenres: number = 0;
+  songlist = this.songService.getSongs();
+  
+  totalSongs$ = this.songlist.pipe(
+    map(songs => songs.length)
+  );
+  
+  uniqueArtists$ = this.songlist.pipe(
+    map(songs => new Set(songs.map(song => song.artist)).size)
+  );
+  
+  uniqueGenres$ = this.songlist.pipe(
+    map(songs => new Set(songs.map(song => song.genre)).size)
+  );
 
-  constructor(private songService: SongService) {
-    const songs = this.songService.getSongs();
-    this.totalSongs = songs.length;
-    this.totalArrows = songs.reduce((accumulator, currentValue) => {
+  totalArrows$ = this.songlist.pipe(
+    map(songs => songs.reduce((accumulator, currentValue) => {
       return accumulator + currentValue.arrows;
-    }, 0);
-    this.uniqueArtists = new Set(songs.map((song) => song.artist)).size;
-    this.uniqueGenres = new Set(songs.map((song) => song.genre)).size;
-  }
+    }, 0))
+  );
+
+  constructor(private songService: SongService) {}
+
+  ngOnInit() {}
 }

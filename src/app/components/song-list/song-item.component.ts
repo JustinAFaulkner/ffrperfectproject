@@ -40,7 +40,7 @@ import { Song } from '../../models/song.interface';
           </span>
         </div>
         <div *ngIf="!isExpanded" class="song-details">
-          <span class="song-details-text">{{song.duration}}</span>
+          <span class="song-details-text">{{ song.seconds * 1000 | date:'mm:ss' }}</span>
           <span class="song-details-text">{{song.genre}}</span>
           <span class="song-details-text">
             {{song.arrows}}
