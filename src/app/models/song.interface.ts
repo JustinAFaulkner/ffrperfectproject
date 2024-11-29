@@ -5,8 +5,6 @@ export interface Song {
   genre: string;
   difficulty: number;
   arrows: number;
+  stepartist: string;
   style?: string;
-  stepartist?: string;
-  stepartist2?: string;
-  stepartist3?: string;
 }

@@ -22,14 +22,16 @@ export class FilterService {
     }
   ): SongWithSubmissions[] {
     return songs.filter((song) => {
+      const searchLower = searchTerm.toLowerCase();
+
       const matchesSearch =
-        song.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        song.artist.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        //song.contributor?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        //song.contributor2?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        song.stepartist?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        song.stepartist2?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        song.stepartist3?.toLowerCase().includes(searchTerm.toLowerCase());
+        song.title.toLowerCase().includes(searchLower) ||
+        song.artist.toLowerCase().includes(searchLower) ||
+        song.stepartist?.toLowerCase().includes(searchLower) ||
+        song.style?.toLowerCase().includes(searchLower) ||
+        song.submissions.some((submission) =>
+          submission.contributor.toLowerCase().includes(searchLower)
+        );
 
       const matchesGenre = !selectedGenre || song.genre === selectedGenre;
 

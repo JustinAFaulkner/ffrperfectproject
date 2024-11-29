@@ -37,8 +37,6 @@ import { Submission } from '../../models/submission.interface';
             <span>{{ song.artist }}</span>
             <span *ngIf="!isExpanded">
                 Stepped by: {{song.stepartist}}
-                <span *ngIf="(song.stepartist2 != null && song.stepartist2 !== '')"> & {{song.stepartist2}}</span>
-                <span *ngIf="(song.stepartist3 != null && song.stepartist3 !== '')"> & {{song.stepartist3}}</span>
             </span>
           </span>
         </div>

@@ -37,10 +37,8 @@ export class SongService {
         genre: doc.data()['genre'] as string,
         difficulty: doc.data()['difficulty'] as number,
         arrows: doc.data()['arrows'] as number,
+        stepartist: doc.data()['stepArtist'] as string,
         style: doc.data()['style'] as string | undefined,
-        stepartist: doc.data()['stepArtist1'] as string | undefined,
-        stepartist2: doc.data()['stepArtist2'] as string | undefined,
-        stepartist3: doc.data()['stepArtist3'] as string | undefined,
       }))),
       switchMap((songs: (Song & { id: string })[]) => 
         this.submissionService.getAllSubmissions().pipe(
