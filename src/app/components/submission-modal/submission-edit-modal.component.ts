@@ -1,17 +1,19 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Submission } from '../../models/submission.interface';
+import { SongWithSubmissions } from '../../models/song-with-submissions.interface';
 
 @Component({
-  selector: 'app-submission-modal',
+  selector: 'app-submission-edit-modal',
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
     <div class="modal-backdrop" (click)="onCancel()">
       <div class="modal-content" (click)="$event.stopPropagation()">
-        <h2>Add New Submission</h2>
-        
+        <h2>Edit Submission</h2>
+        <h3>{{ song.title }}</h3>
+        <hr class="edit-hr"/>
         <div class="form-group">
           <label for="youtubeUrl">YouTube URL</label>
           <input
@@ -19,7 +21,7 @@ import { Submission } from '../../models/submission.interface';
             id="youtubeUrl"
             [(ngModel)]="submission.youtubeUrl"
             class="form-control"
-            placeholder="https://www.youtube.com/watch?v=..."
+            value="{{ song.submissions[submissionIndex].youtubeUrl }}"
           />
         </div>
 
@@ -30,7 +32,7 @@ import { Submission } from '../../models/submission.interface';
             id="contributor"
             [(ngModel)]="submission.contributor"
             class="form-control"
-            placeholder="FFR username"
+            placeholder="FFR Username"
           />
         </div>
 
@@ -161,9 +163,16 @@ import { Submission } from '../../models/submission.interface';
     .btn-submit:hover:not(:disabled) {
       background: #2391b2;
     }
+
+    .edit-hr {
+      margin-bottom: 8px;
+    }
   `]
 })
-export class SubmissionModalComponent {
+export class SubmissionEditModalComponent {
+  @Input() song!: SongWithSubmissions;
+  @Input() submissionIndex!: number;
+  
   @Output() cancel = new EventEmitter<void>();
   @Output() submit = new EventEmitter<Omit<Submission, 'songId'>>();
 
@@ -173,6 +182,20 @@ export class SubmissionModalComponent {
     songWikiUpdated: false,
     userWikiUpdated: false
   };
+
+  ngOnInit(): void {
+    if (this.song && this.submissionIndex != null) {
+      const currentSubmission = this.song.submissions[this.submissionIndex];
+      if (currentSubmission) {
+        this.submission = {
+          youtubeUrl: currentSubmission.youtubeUrl,
+          contributor: currentSubmission.contributor,
+          songWikiUpdated: currentSubmission.songWikiUpdated,
+          userWikiUpdated: currentSubmission.userWikiUpdated
+        };
+      }
+    }
+  }
 
   get isValid(): boolean {
     return (

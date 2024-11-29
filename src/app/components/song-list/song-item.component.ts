@@ -6,11 +6,12 @@ import { SongWithSubmissions } from '../../models/song-with-submissions.interfac
 import { SubmissionService } from '../../services/submission.service';
 import { SubmissionModalComponent } from '../submission-modal/submission-modal.component';
 import { Submission } from '../../models/submission.interface';
+import { SubmissionEditModalComponent } from '../submission-modal/submission-edit-modal.component';
 
 @Component({
   selector: 'app-song-item',
   standalone: true,
-  imports: [CommonModule, SubmissionModalComponent],
+  imports: [CommonModule, SubmissionModalComponent, SubmissionEditModalComponent],
   animations: [
     trigger('expandCollapse', [
       transition(':enter', [
@@ -61,25 +62,27 @@ import { Submission } from '../../models/submission.interface';
               title="Add New Submission">
               <i class="fas fa-plus edit-btn"></i>
             </button>
-            <button 
+            <div 
               *ngFor="let submission of song.submissions; let i = index"
-              [class.active]="currentSubmissionIndex === i"
+              class="submission-btn-group">
+            <button
               (click)="setSubmission(i)"
+              [class.active]="currentSubmissionIndex === i"
               class="source-toggle-btn">
               {{ submission.contributor }}
             </button>
+            <button 
+              class="edit-submission-btn"
+              (click)="showSubmissionEditModal($event, i)"
+              title="Edit Submission">
+              <i class="fas fa-pencil-alt edit-btn"></i>
+            </button></div>
           </div>
           <div class="video-controls-right">
             <button 
-              class="edit-submission-btn"
-              (click)="showSubmissionModal($event)"
-              title="Edit Submission">
-              <i class="fas fa-pencil-alt edit-btn"></i>
-            </button>
-            <button 
               class="ffr-song-btn"
               (click)="openUrl(song.id)"
-              title="FFR Song Page">
+              title="View FFR song page">
               <img 
                 src="assets/icons/FFR_Guy_Small.png"
                 class="ffr-btn"
@@ -111,6 +114,14 @@ import { Submission } from '../../models/submission.interface';
       (cancel)="hideSubmissionModal()"
       (submit)="handleSubmissionAdd($event)">
     </app-submission-modal>
+
+    <app-submission-edit-modal
+      *ngIf="showEditModal"
+      [song]="selectedSong"
+      [submissionIndex]="selectedIndex"
+      (cancel)="hideSubmissionEditModal()"
+      (submit)="handleSubmissionEdit($event)">
+    </app-submission-edit-modal>
   `,
   styles: [`
     .song-item {
@@ -228,7 +239,7 @@ import { Submission } from '../../models/submission.interface';
       border: none;
       background: #4CAF50;
       color: white;
-      border-radius: 50%;
+      border-radius: 4px;
       cursor: pointer;
       font-size: 18px;
       line-height: 1;
@@ -242,11 +253,17 @@ import { Submission } from '../../models/submission.interface';
       background: #45a049;
     }
 
+    .submission-btn-group {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
     .source-toggle-btn {
       padding: 6px 12px;
       border: 1px solid #ddd;
       background: white;
-      border-radius: 4px;
+      border-radius: 4px 0 0 4px;
       cursor: pointer;
       font-size: 14px;
       color: #666;
@@ -256,29 +273,24 @@ import { Submission } from '../../models/submission.interface';
     .source-toggle-btn.active {
       background: #28aad1;
       color: white;
-      border-color: #28aad1;
     }
 
     .source-toggle-btn:hover:not(.active) {
       background: #f0f0f0;
     }
 
-    .video-controls-right {
-      align-items: center;
-      display: flex;
-      gap: 8px;
-    }
-
     .edit-submission-btn {
       width: 24px;
-      height: 24px;
-      padding: 0;
-      border: none;
-      background: #28aad1;
+      height: 29.5px;
+      border-top: 1px solid #ddd;
+      border-right: 1px solid #ddd;
+      border-bottom: 1px solid #ddd;
+      border-left: none;
+      background: #b77bfa;
       color: white;
-      border-radius: 50%;
+      border-radius: 0 4px 4px 0;
       cursor: pointer;
-      font-size: 18px;
+      font-size: 14px;
       line-height: 1;
       transition: background-color 0.2s;
       display: inline-flex;
@@ -287,21 +299,27 @@ import { Submission } from '../../models/submission.interface';
     }
 
     .edit-submission-btn:hover {
-      background: #28aad1;
+      background: #d6b4fc;
     }
 
     .edit-btn {
       font-size: 14px;
     }
 
+    .video-controls-right {
+      align-items: center;
+      display: flex;
+      gap: 8px;
+    }
+
     .ffr-song-btn {
-      width: 24px;
+      width: 28px;
       height: 24px;
       padding: 0;
       border: none;
       background: #28aad1;
       color: white;
-      border-radius: 50%;
+      border-radius: 20%;
       cursor: pointer;
       font-size: 18px;
       line-height: 1;
@@ -353,6 +371,10 @@ export class SongItemComponent {
 
   currentSubmissionIndex: number = 0;
   showModal: boolean = false;
+  showEditModal: boolean = false;
+  editSubmissionIndex: number = 0;
+  selectedSong!: SongWithSubmissions;
+  selectedIndex: number = 0;
 
   constructor(
     private sanitizer: DomSanitizer,
@@ -384,9 +406,21 @@ export class SongItemComponent {
     this.showModal = true;
   }
 
+  showSubmissionEditModal(event: Event, submissionIndex: number) {
+    event.stopPropagation();
+    this.selectedSong = this.song;
+    this.selectedIndex = submissionIndex;
+    this.showEditModal = true;
+  }
+
   hideSubmissionModal() {
     this.showModal = false;
   }
+
+  hideSubmissionEditModal() {
+    this.showEditModal = false;
+  }
+
 
   handleSubmissionAdd(submissionData: Omit<Submission, 'songId'>) {
     const newSubmission: Submission = {
@@ -398,6 +432,11 @@ export class SongItemComponent {
     this.song.submissions = [...this.song.submissions, newSubmission];
     this.currentSubmissionIndex = this.song.submissions.length - 1;
     this.hideSubmissionModal();
+  }
+
+  handleSubmissionEdit(submissionData: Omit<Submission, 'songId'>) {
+    //Need to implement -- should update the entry in memory + Firestore?
+    this.hideSubmissionEditModal();
   }
 
   openUrl(songId: string): void {
