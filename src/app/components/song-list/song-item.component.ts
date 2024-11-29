@@ -54,19 +54,38 @@ import { Submission } from '../../models/submission.interface';
       
       <div class="song-content" *ngIf="isExpanded" [@expandCollapse]>
         <div class="video-controls">
-          <button 
-            class="add-submission-btn"
-            (click)="showSubmissionModal($event)"
-            title="Add new submission">
-            +
-          </button>
-          <button 
-            *ngFor="let submission of song.submissions; let i = index"
-            [class.active]="currentSubmissionIndex === i"
-            (click)="setSubmission(i)"
-            class="source-toggle-btn">
-            {{ submission.contributor }}
-          </button>
+          <div class="video-controls-left">
+            <button 
+              class="add-submission-btn"
+              (click)="showSubmissionModal($event)"
+              title="Add New Submission">
+              <i class="fas fa-plus edit-btn"></i>
+            </button>
+            <button 
+              *ngFor="let submission of song.submissions; let i = index"
+              [class.active]="currentSubmissionIndex === i"
+              (click)="setSubmission(i)"
+              class="source-toggle-btn">
+              {{ submission.contributor }}
+            </button>
+          </div>
+          <div class="video-controls-right">
+            <button 
+              class="edit-submission-btn"
+              (click)="showSubmissionModal($event)"
+              title="Edit Submission">
+              <i class="fas fa-pencil-alt edit-btn"></i>
+            </button>
+            <button 
+              class="ffr-song-btn"
+              (click)="openUrl(song.id)"
+              title="FFR Song Page">
+              <img 
+                src="assets/icons/FFR_Guy_Small.png"
+                class="ffr-btn"
+              />
+            </button>
+          </div>    
         </div>
         <div class="video-container" *ngIf="currentSubmission?.youtubeUrl; else noVideo">
           <iframe
@@ -190,8 +209,15 @@ import { Submission } from '../../models/submission.interface';
       display: flex;
       gap: 8px;
       padding: 8px;
-      justify-content: flex-start;
+      justify-content: space-between;
       background: #f5f5f5;
+      align-items: center;
+    }
+
+    .video-controls-left {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-start;
       align-items: center;
     }
 
@@ -235,6 +261,63 @@ import { Submission } from '../../models/submission.interface';
 
     .source-toggle-btn:hover:not(.active) {
       background: #f0f0f0;
+    }
+
+    .video-controls-right {
+      align-items: center;
+      display: flex;
+      gap: 8px;
+    }
+
+    .edit-submission-btn {
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      border: none;
+      background: #28aad1;
+      color: white;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
+      transition: background-color 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .edit-submission-btn:hover {
+      background: #28aad1;
+    }
+
+    .edit-btn {
+      font-size: 14px;
+    }
+
+    .ffr-song-btn {
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      border: none;
+      background: #28aad1;
+      color: white;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s;
+    }
+
+    .ffr-song-btn:hover {
+      background: #28aad1;
+    }
+
+    .ffr-btn {
+      width: 20px;
+      height: 17px;
     }
 
     .video-container {
@@ -315,5 +398,9 @@ export class SongItemComponent {
     this.song.submissions = [...this.song.submissions, newSubmission];
     this.currentSubmissionIndex = this.song.submissions.length - 1;
     this.hideSubmissionModal();
+  }
+
+  openUrl(songId: string): void {
+    window.open('https://www.flashflashrevolution.com/levelstats.php?level=' + songId, '_blank');
   }
 }
