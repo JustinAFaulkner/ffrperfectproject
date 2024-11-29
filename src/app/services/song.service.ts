@@ -1,12 +1,16 @@
 import { Injectable } from '@angular/core';
 import { Song } from '../models/song.interface';
-import { Observable } from 'rxjs';
+import { SongWithSubmissions } from '../models/song-with-submissions.interface';
+import { SubmissionService } from './submission.service';
+import { Observable, from } from 'rxjs';
+import { map, switchMap, take } from 'rxjs/operators';
 import { 
   Firestore, 
   collection, 
-  collectionData,
+  getDocs,
   query,
-  orderBy 
+  orderBy,
+  DocumentData 
 } from '@angular/fire/firestore';
 
 @Injectable({
@@ -15,11 +19,40 @@ import {
 export class SongService {
   private readonly songsCollection = 'songs';
 
-  constructor(private firestore: Firestore) {}
+  constructor(
+    private firestore: Firestore,
+    private submissionService: SubmissionService
+  ) {}
 
-  getSongs(): Observable<Song[]> {
+  getSongs(): Observable<SongWithSubmissions[]> {
     const songsRef = collection(this.firestore, this.songsCollection);
     const songsQuery = query(songsRef, orderBy('title'));
-    return collectionData(songsQuery) as Observable<Song[]>;
+    
+    return from(getDocs(songsQuery)).pipe(
+      map(snapshot => snapshot.docs.map(doc => ({
+        id: doc.id,
+        title: doc.data()['title'] as string,
+        artist: doc.data()['artist'] as string,
+        seconds: doc.data()['seconds'] as number,
+        genre: doc.data()['genre'] as string,
+        difficulty: doc.data()['difficulty'] as number,
+        arrows: doc.data()['arrows'] as number,
+        style: doc.data()['style'] as string | undefined,
+        stepartist: doc.data()['stepArtist1'] as string | undefined,
+        stepartist2: doc.data()['stepArtist2'] as string | undefined,
+        stepartist3: doc.data()['stepArtist3'] as string | undefined,
+      }))),
+      switchMap((songs: (Song & { id: string })[]) => 
+        this.submissionService.getAllSubmissions().pipe(
+          map(submissionMap => 
+            songs.map(song => ({
+              ...song,
+              submissions: submissionMap[song.id] || []
+            }))
+          )
+        )
+      ),
+      take(1)
+    );
   }
 }

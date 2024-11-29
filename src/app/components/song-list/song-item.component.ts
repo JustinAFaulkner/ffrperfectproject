@@ -2,12 +2,15 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { animate, style, transition, trigger } from '@angular/animations';
-import { Song } from '../../models/song.interface';
+import { SongWithSubmissions } from '../../models/song-with-submissions.interface';
+import { SubmissionService } from '../../services/submission.service';
+import { SubmissionModalComponent } from '../submission-modal/submission-modal.component';
+import { Submission } from '../../models/submission.interface';
 
 @Component({
   selector: 'app-song-item',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, SubmissionModalComponent],
   animations: [
     trigger('expandCollapse', [
       transition(':enter', [
@@ -22,8 +25,8 @@ import { Song } from '../../models/song.interface';
   template: `
     <div 
       class="song-item"
-      [class.has-video]="song.youtubeUrl || song.youtubeUrl2"
-      [class.no-video]="!song.youtubeUrl && !song.youtubeUrl2">
+      [class.has-video]="hasSubmissions"
+      [class.no-video]="!hasSubmissions">
       <div class="song-header" (click)="toggleExpand()">
         <div class="song-diff">
           {{song.difficulty}}
@@ -31,7 +34,7 @@ import { Song } from '../../models/song.interface';
         <div class="song-info">
           <span class="song-title">{{song.title}}</span>
           <span class="song-subtitle">
-            <span>{{ isExpanded ? (currentSource === 1 ? song.contributor : song.contributor2) || '' : song.artist }}</span>
+            <span>{{ song.artist }}</span>
             <span *ngIf="!isExpanded">
                 Stepped by: {{song.stepartist}}
                 <span *ngIf="(song.stepartist2 != null && song.stepartist2 !== '')"> & {{song.stepartist2}}</span>
@@ -40,32 +43,36 @@ import { Song } from '../../models/song.interface';
           </span>
         </div>
         <div *ngIf="!isExpanded" class="song-details">
-          <span class="song-details-text">{{ song.seconds * 1000 | date:'mm:ss' }}</span>
-          <span class="song-details-text">{{song.genre}}</span>
           <span class="song-details-text">
+            {{ song.seconds * 1000 | date:'mm:ss' }}
+          </span>
+          <span class="song-details-text">{{song.genre}}</span>
+          <span class="song-details-text arrows-count">
             {{song.arrows}}
+            <img src="assets/icons/4u.png" alt="Arrows" class="arrow-icon" />
           </span>
         </div>
       </div>
       
       <div class="song-content" *ngIf="isExpanded" [@expandCollapse]>
-        <div class="video-controls" *ngIf="song.youtubeUrl2">
+        <div class="video-controls">
           <button 
-            [class.active]="currentSource === 1"
-            (click)="setVideoSource(1)"
-            class="source-toggle-btn">
-            Submission 1
+            class="add-submission-btn"
+            (click)="showSubmissionModal($event)"
+            title="Add new submission">
+            +
           </button>
           <button 
-            [class.active]="currentSource === 2"
-            (click)="setVideoSource(2)"
+            *ngFor="let submission of song.submissions; let i = index"
+            [class.active]="currentSubmissionIndex === i"
+            (click)="setSubmission(i)"
             class="source-toggle-btn">
-            Submission 2
+            {{ submission.contributor }}
           </button>
         </div>
-        <div class="video-container" *ngIf="getCurrentVideoUrl(); else noVideo">
+        <div class="video-container" *ngIf="currentSubmission?.youtubeUrl; else noVideo">
           <iframe
-            [src]="getSafeUrl(getCurrentVideoUrl()!)"
+            [src]="getSafeUrl(currentSubmission.youtubeUrl)"
             frameborder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowfullscreen>
@@ -81,6 +88,12 @@ import { Song } from '../../models/song.interface';
         </ng-template>
       </div>
     </div>
+
+    <app-submission-modal
+      *ngIf="showModal"
+      (cancel)="hideSubmissionModal()"
+      (submit)="handleSubmissionAdd($event)">
+    </app-submission-modal>
   `,
   styles: [`
     .song-item {
@@ -158,6 +171,18 @@ import { Song } from '../../models/song.interface';
       font-size: 0.9em;
     }
 
+    .arrows-count {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .arrow-icon {
+      width: 16px;
+      height: 16px;
+      vertical-align: middle;
+    }
+
     .song-content {
       border-top: 1px solid #eee;
       overflow: hidden;
@@ -167,8 +192,30 @@ import { Song } from '../../models/song.interface';
       display: flex;
       gap: 8px;
       padding: 8px;
-      justify-content: center;
+      justify-content: flex-start;
       background: #f5f5f5;
+      align-items: center;
+    }
+
+    .add-submission-btn {
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      border: none;
+      background: #4CAF50;
+      color: white;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s;
+    }
+
+    .add-submission-btn:hover {
+      background: #45a049;
     }
 
     .source-toggle-btn {
@@ -219,27 +266,56 @@ import { Song } from '../../models/song.interface';
   `]
 })
 export class SongItemComponent {
-  @Input() song!: Song;
+  @Input() song!: SongWithSubmissions;
   @Input() isExpanded: boolean = false;
   @Output() expandToggle = new EventEmitter<void>();
 
-  currentSource: 1 | 2 = 1;
+  currentSubmissionIndex: number = 0;
+  showModal: boolean = false;
 
-  constructor(private sanitizer: DomSanitizer) {}
+  constructor(
+    private sanitizer: DomSanitizer,
+    private submissionService: SubmissionService
+  ) {}
+
+  get hasSubmissions(): boolean {
+    return this.song.submissions.length > 0;
+  }
+
+  get currentSubmission() {
+    return this.song.submissions[this.currentSubmissionIndex];
+  }
 
   toggleExpand() {
     this.expandToggle.emit();
   }
 
-  setVideoSource(source: 1 | 2) {
-    this.currentSource = source;
-  }
-
-  getCurrentVideoUrl(): string | undefined {
-    return this.currentSource === 1 ? this.song.youtubeUrl : this.song.youtubeUrl2;
+  setSubmission(index: number) {
+    this.currentSubmissionIndex = index;
   }
 
   getSafeUrl(url: string): SafeResourceUrl {
     return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  }
+
+  showSubmissionModal(event: Event) {
+    event.stopPropagation();
+    this.showModal = true;
+  }
+
+  hideSubmissionModal() {
+    this.showModal = false;
+  }
+
+  handleSubmissionAdd(submissionData: Omit<Submission, 'songId'>) {
+    const newSubmission: Submission = {
+      songId: Number(this.song.id),
+      ...submissionData
+    };
+    
+    this.submissionService.addSubmission(this.song.id, newSubmission);
+    this.song.submissions = [...this.song.submissions, newSubmission];
+    this.currentSubmissionIndex = this.song.submissions.length - 1;
+    this.hideSubmissionModal();
   }
 }

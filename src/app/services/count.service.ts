@@ -1,14 +1,14 @@
 import { Injectable } from '@angular/core';
-import { Song } from '../models/song.interface';
+import { SongWithSubmissions } from '../models/song-with-submissions.interface';
 
 @Injectable({
   providedIn: 'root',
 })
 export class CountService {
-  getVideoCounts(songs: Song[]) {
+  getVideoCounts(songs: SongWithSubmissions[]) {
     return {
-      withVideo: songs.filter(song => song.youtubeUrl || song.youtubeUrl2).length,
-      withoutVideo: songs.filter(song => !song.youtubeUrl && !song.youtubeUrl2).length
+      withVideo: songs.filter(song => song.submissions.length > 0).length,
+      withoutVideo: songs.filter(song => song.submissions.length === 0).length
     };
   }
 }

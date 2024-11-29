@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
-import { Song } from '../models/song.interface';
+import { SongWithSubmissions } from '../models/song-with-submissions.interface';
 
 @Injectable({
   providedIn: 'root',
 })
 export class FilterService {
   filterSongs(
-    songs: Song[],
+    songs: SongWithSubmissions[],
     {
       searchTerm = '',
       selectedGenre = '',
@@ -20,13 +20,13 @@ export class FilterService {
       minDifficulty?: number;
       maxDifficulty?: number;
     }
-  ): Song[] {
+  ): SongWithSubmissions[] {
     return songs.filter((song) => {
       const matchesSearch =
         song.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         song.artist.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        song.contributor?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        song.contributor2?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        //song.contributor?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        //song.contributor2?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         song.stepartist?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         song.stepartist2?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         song.stepartist3?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -35,8 +35,8 @@ export class FilterService {
 
       const matchesVideo =
         videoFilter === 'all' ||
-        (videoFilter === 'with' && checkHasContribution(song)) ||
-        (videoFilter === 'without' && !checkHasContribution(song));
+        (videoFilter === 'with' && song.submissions.length > 0) ||
+        (videoFilter === 'without' && song.submissions.length === 0);
 
       const matchesDifficulty =
         song.difficulty >= minDifficulty && song.difficulty <= maxDifficulty;
@@ -48,9 +48,4 @@ export class FilterService {
 
 function isEmpty(value: string | null | undefined): boolean {
   return value === null || value === undefined || value === '';
-}
-
-function checkHasContribution(obj: Song): boolean {
-  return (!isEmpty(obj.youtubeUrl) || !isEmpty(obj.youtubeUrl2) ||
-          !isEmpty(obj.contributor) || !isEmpty(obj.contributor2));
 }

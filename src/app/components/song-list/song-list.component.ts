@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Song } from '../../models/song.interface';
+import { SongWithSubmissions } from '../../models/song-with-submissions.interface';
 import { SongService } from '../../services/song.service';
 import { FilterService } from '../../services/filter.service';
 import { CountService } from '../../services/count.service';
@@ -229,12 +229,12 @@ import { SongItemComponent } from './song-item.component';
   ],
 })
 export class SongListComponent {
-  songs: Song[] = [];
-  filteredSongs: Song[] = [];
+  songs: SongWithSubmissions[] = [];
+  filteredSongs: SongWithSubmissions[] = [];
   searchTerm: string = '';
   selectedGenre: string = '';
   genres: string[] = [];
-  expandedSong: number | null = null;
+  expandedSong: string | null = null;
   videoFilter: 'all' | 'with' | 'without' = 'all';
   minDifficulty: number = 0;
   maxDifficulty: number = 150;
@@ -270,7 +270,7 @@ export class SongListComponent {
     });
   }
 
-  toggleSong(song: Song) {
+  toggleSong(song: SongWithSubmissions) {
     this.expandedSong = this.expandedSong === song.id ? null : song.id;
   }
 }
