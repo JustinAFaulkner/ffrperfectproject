@@ -7,6 +7,7 @@ import { SubmissionService } from '../../services/submission.service';
 import { SubmissionModalComponent } from '../submission-modal/submission-modal.component';
 import { Submission } from '../../models/submission.interface';
 import { SubmissionEditModalComponent } from '../submission-modal/submission-edit-modal.component';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-song-item',
@@ -57,10 +58,11 @@ import { SubmissionEditModalComponent } from '../submission-modal/submission-edi
         <div class="video-controls">
           <div class="video-controls-left">
             <button 
+              *ngIf="isLoggedIn$ | async"
               class="add-submission-btn"
               (click)="showSubmissionModal($event)"
               title="Add New Submission">
-              <i class="fas fa-plus edit-btn"></i>
+              <i class="fas fa-plus"></i>
             </button>
             <div 
               *ngFor="let submission of song.submissions; let i = index"
@@ -72,6 +74,7 @@ import { SubmissionEditModalComponent } from '../submission-modal/submission-edi
               {{ submission.contributor }}
             </button>
             <button 
+              *ngIf="isLoggedIn$ | async"
               class="edit-submission-btn"
               (click)="showSubmissionEditModal($event, i)"
               title="Edit Submission">
@@ -376,10 +379,12 @@ export class SongItemComponent {
   editSubmissionIndex: number = 0;
   selectedSong!: SongWithSubmissions;
   selectedIndex: number = 0;
+  isLoggedIn$ = this.authService.isLoggedIn();
 
   constructor(
     private sanitizer: DomSanitizer,
-    private submissionService: SubmissionService
+    private submissionService: SubmissionService,
+    private authService: AuthService
   ) {}
 
   get hasSubmissions(): boolean {

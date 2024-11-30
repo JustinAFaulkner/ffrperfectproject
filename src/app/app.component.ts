@@ -1,14 +1,16 @@
 import { Component } from '@angular/core';
 import { SongListComponent } from './components/song-list/song-list.component';
-import { HeaderComponent } from './components/header/header.component';
+import { NavComponent } from './components/nav/nav.component';
+import { StatsPanelComponent } from './components/stats/stats-panel.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [SongListComponent, HeaderComponent],
+  imports: [SongListComponent, NavComponent, StatsPanelComponent],
   template: `
+    <app-nav></app-nav>
     <div class="app-container">
-      <app-header></app-header>
+      <app-stats-panel></app-stats-panel>
       <app-song-list></app-song-list>
     </div>
   `,
@@ -17,15 +19,9 @@ import { HeaderComponent } from './components/header/header.component';
     .app-container {
       padding: 20px;
       background-color: #f5f5f5;
-      min-height: 100vh;
+      min-height: calc(100vh - 57px);
       max-width: 1200px;
       margin: 0 auto;
-    }
-
-    h1 {
-      text-align: center;
-      color: #333;
-      margin-bottom: 30px;
     }
   `,
   ],
