@@ -38,6 +38,7 @@ export class SubmissionService {
         submissionMap[songId] = [];
       }
       submissionMap[songId].push({
+        id: doc.id,
         songId: data['songId'] as number,
         youtubeUrl: this.urlTransformer.transformYoutubeUrl(data['url'] as string),
         contributor: data['contributor'] as string,

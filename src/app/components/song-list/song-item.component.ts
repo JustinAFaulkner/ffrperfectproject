@@ -119,6 +119,7 @@ import { SubmissionEditModalComponent } from '../submission-modal/submission-edi
       *ngIf="showEditModal"
       [song]="selectedSong"
       [submissionIndex]="selectedIndex"
+      (delete)="handleSubmissionDelete()"
       (cancel)="hideSubmissionEditModal()"
       (submit)="handleSubmissionEdit($event)">
     </app-submission-edit-modal>
@@ -421,7 +422,6 @@ export class SongItemComponent {
     this.showEditModal = false;
   }
 
-
   handleSubmissionAdd(submissionData: Omit<Submission, 'songId'>) {
     const newSubmission: Submission = {
       songId: Number(this.song.id),
@@ -434,8 +434,15 @@ export class SongItemComponent {
     this.hideSubmissionModal();
   }
 
-  handleSubmissionEdit(submissionData: Omit<Submission, 'songId'>) {
+  handleSubmissionEdit(submissionData: Submission) {
     //Need to implement -- should update the entry in memory + Firestore?
+    this.song.submissions[this.selectedIndex] = submissionData
+    this.hideSubmissionEditModal();
+  }
+
+  handleSubmissionDelete() {
+    //Need to implement -- should update the entry in memory + Firestore?
+    this.song.submissions.splice(this.selectedIndex, 1);
     this.hideSubmissionEditModal();
   }
 

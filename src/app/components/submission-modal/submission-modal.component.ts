@@ -165,9 +165,11 @@ import { Submission } from '../../models/submission.interface';
 })
 export class SubmissionModalComponent {
   @Output() cancel = new EventEmitter<void>();
-  @Output() submit = new EventEmitter<Omit<Submission, 'songId'>>();
+  @Output() submit = new EventEmitter<Submission>();
 
-  submission: Omit<Submission, 'songId'> = {
+  submission: Submission = {
+    id: 'A',
+    songId: 0,
     youtubeUrl: '',
     contributor: '',
     songWikiUpdated: false,

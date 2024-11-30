@@ -55,14 +55,20 @@ import { SongWithSubmissions } from '../../models/song-with-submissions.interfac
         </div>
 
         <div class="button-group">
-          <button class="btn-cancel" (click)="onCancel()">Cancel</button>
-          <button 
-            class="btn-submit" 
-            (click)="onSubmit()"
-            [disabled]="!isValid"
-          >
-            Submit
+          <button class="btn-delete" (click)="onDelete()">
+            <i class="fa fa-trash trash-icon"></i>
+            Delete
           </button>
+          <div class="button-group-right">
+            <button class="btn-cancel" (click)="onCancel()">Cancel</button>
+            <button 
+              class="btn-submit" 
+              (click)="onSubmit()"
+              [disabled]="!isValid"
+            >
+              Submit
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -127,9 +133,14 @@ import { SongWithSubmissions } from '../../models/song-with-submissions.interfac
 
     .button-group {
       display: flex;
+      justify-content: space-between;
+      margin-top: 1.5rem;
+    }
+
+    .button-group-right {
+      display: flex;
       justify-content: flex-end;
       gap: 1rem;
-      margin-top: 1.5rem;
     }
 
     button {
@@ -167,6 +178,26 @@ import { SongWithSubmissions } from '../../models/song-with-submissions.interfac
     .edit-hr {
       margin-bottom: 8px;
     }
+
+    .btn-delete {
+      display:flex;
+      gap: 6px;
+      background: #fff184;
+      align-items: center;
+      justify-content: space-between;
+      color: #866611;
+      border: 1px solid #cc9b1a;
+    }
+
+    .btn-delete:hover {
+      background: #ffc5ce;
+      color: #8a0015;
+      border: 1px solid #8a0015;
+    }
+
+    .trash-icon {
+      font-size: 14px;
+    }
   `]
 })
 export class SubmissionEditModalComponent {
@@ -174,9 +205,12 @@ export class SubmissionEditModalComponent {
   @Input() submissionIndex!: number;
   
   @Output() cancel = new EventEmitter<void>();
-  @Output() submit = new EventEmitter<Omit<Submission, 'songId'>>();
+  @Output() delete = new EventEmitter<void>();
+  @Output() submit = new EventEmitter<Submission>();
 
-  submission: Omit<Submission, 'songId'> = {
+  submission: Submission = {
+    id: '',
+    songId: 0,
     youtubeUrl: '',
     contributor: '',
     songWikiUpdated: false,
@@ -188,6 +222,8 @@ export class SubmissionEditModalComponent {
       const currentSubmission = this.song.submissions[this.submissionIndex];
       if (currentSubmission) {
         this.submission = {
+          id: currentSubmission.id,
+          songId: currentSubmission.songId,
           youtubeUrl: currentSubmission.youtubeUrl,
           contributor: currentSubmission.contributor,
           songWikiUpdated: currentSubmission.songWikiUpdated,
@@ -207,6 +243,10 @@ export class SubmissionEditModalComponent {
 
   onCancel(): void {
     this.cancel.emit();
+  }
+
+  onDelete(): void {
+    this.delete.emit();
   }
 
   onSubmit(): void {
