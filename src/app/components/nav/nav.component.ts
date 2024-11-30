@@ -2,11 +2,12 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LoginModalComponent } from '../login/login-modal.component';
 import { AuthService } from '../../services/auth.service';
+import { AdminMenuComponent } from '../admin/admin-menu.component';
 
 @Component({
   selector: 'app-nav',
   standalone: true,
-  imports: [CommonModule, LoginModalComponent],
+  imports: [CommonModule, LoginModalComponent, AdminMenuComponent],
   template: `
     <nav class="navbar">
       <div class="nav-brand">
@@ -19,9 +20,9 @@ import { AuthService } from '../../services/auth.service';
       <div class="nav-links">
         <button class="nav-link active">Songs</button>
         <button class="nav-link">Leaderboard</button>
-        <!-- Additional nav items can be added here -->
       </div>
       <div class="nav-auth">
+        <app-admin-menu></app-admin-menu>
         <ng-container *ngIf="isLoggedIn$ | async; else loginButton">
           <button class="nav-btn logout-btn" (click)="logout()">
             Logout
@@ -91,6 +92,7 @@ import { AuthService } from '../../services/auth.service';
     .nav-auth {
       display: flex;
       align-items: center;
+      gap: 1rem;
     }
 
     .nav-btn {
