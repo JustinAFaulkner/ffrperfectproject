@@ -223,7 +223,7 @@ export class SubmissionEditModalComponent {
       if (currentSubmission) {
         this.submission = {
           id: currentSubmission.id,
-          songId: currentSubmission.songId,
+          songId: Number(this.song.id),
           youtubeUrl: currentSubmission.youtubeUrl,
           contributor: currentSubmission.contributor,
           songWikiUpdated: currentSubmission.songWikiUpdated,

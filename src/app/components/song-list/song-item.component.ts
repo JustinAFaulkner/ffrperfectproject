@@ -427,28 +427,41 @@ export class SongItemComponent {
     this.showEditModal = false;
   }
 
-  handleSubmissionAdd(submissionData: Omit<Submission, 'songId'>) {
-    const newSubmission: Submission = {
-      songId: Number(this.song.id),
-      ...submissionData
-    };
-    
-    this.submissionService.addSubmission(this.song.id, newSubmission);
-    this.song.submissions = [...this.song.submissions, newSubmission];
-    this.currentSubmissionIndex = this.song.submissions.length - 1;
-    this.hideSubmissionModal();
+  async handleSubmissionAdd(submissionData: Omit<Submission, 'songId'>) {
+    try {
+      const newSubmission: Submission = {
+        songId: Number(this.song.id),
+        ...submissionData
+      };
+      
+      await this.submissionService.addSubmission(this.song.id, newSubmission);
+      this.song.submissions = [...this.song.submissions, newSubmission];
+      this.currentSubmissionIndex = this.song.submissions.length - 1;
+      this.hideSubmissionModal();
+    } catch (error) {
+      console.error('Error adding submission:', error);
+    }
   }
 
-  handleSubmissionEdit(submissionData: Submission) {
-    //Need to implement -- should update the entry in memory + Firestore?
-    this.song.submissions[this.selectedIndex] = submissionData
-    this.hideSubmissionEditModal();
+  async handleSubmissionEdit(submissionData: Submission) {
+    try {
+      await this.submissionService.updateSubmission(submissionData);
+      this.song.submissions[this.selectedIndex] = submissionData;
+      this.hideSubmissionEditModal();
+    } catch (error) {
+      console.error('Error updating submission:', error);
+    }
   }
 
-  handleSubmissionDelete() {
-    //Need to implement -- should update the entry in memory + Firestore?
-    this.song.submissions.splice(this.selectedIndex, 1);
-    this.hideSubmissionEditModal();
+  async handleSubmissionDelete() {
+    try {
+      const submission = this.song.submissions[this.selectedIndex];
+      await this.submissionService.deleteSubmission(submission);
+      this.song.submissions.splice(this.selectedIndex, 1);
+      this.hideSubmissionEditModal();
+    } catch (error) {
+      console.error('Error deleting submission:', error);
+    }
   }
 
   openUrl(songId: string): void {
