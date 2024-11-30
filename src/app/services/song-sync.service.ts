@@ -39,8 +39,19 @@ export class SongSyncService {
   private convertGenre(genreId: number): string {
     switch(genreId) {
       case 1: return 'Dance';
-      case 2: return 'Arcade';
-      default: return 'Misc';
+      case 2: return 'Dance 2';
+      case 3: return 'Funk';
+      case 4: return 'Arcade';
+      case 5: return 'Rock';
+      case 6: return 'Classical';
+      case 7: return 'Misc';
+      case 8: return 'Secret';
+      case 9: return 'Purchased';
+      case 10: return 'Token';
+      case 11: return 'Hip-Hop';
+      case 12: return 'Skill Token';
+      case 13: return 'Legacy';
+      default: return 'Unknown';
     }
   }
 
@@ -67,13 +78,13 @@ export class SongSyncService {
       let existing = 0;
 
       // Process each song
-      for (const [id, song] of Object.entries(response)) {
-        if (added > 2) {
+      for (const [id, song] of Object.entries(response)) {        
+        if (added > 10) {
             break;
         }
 
         if (!existingSongs.has(song.id.toString())) {
-          const songDoc = doc(this.firestore, this.songsCollection, id);
+          const songDoc = doc(this.firestore, this.songsCollection, song.id.toString());
           await setDoc(songDoc, {
             title: song.name,
             artist: song.author,
@@ -84,7 +95,7 @@ export class SongSyncService {
             arrows: song.note_count,
             min_nps: song.min_nps,
             max_nps: song.max_nps,
-            release: song.timestamp
+            release: new Date(song.timestamp * 1000) //Multiple by 1000 as this timestamp is in seconds compared to milliseconds
           });
           added++;
         } else {

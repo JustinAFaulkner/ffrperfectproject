@@ -79,9 +79,17 @@ import { AuthService } from '../../services/auth.service';
               (click)="showSubmissionEditModal($event, i)"
               title="Edit Submission">
               <i class="fas fa-pencil-alt edit-btn"></i>
-            </button></div>
+            </button>
+            </div>
           </div>
           <div class="video-controls-right">
+            <button 
+              *ngIf="isLoggedIn$ | async"
+              class="resync-song-btn"
+              (click)="resyncSongDetails($event)"
+              title="Re-Sync Song Info">
+              <i class="fas fa-redo resync-btn"></i>
+            </button>
             <button 
               class="ffr-song-btn"
               (click)="openUrl(song.id)"
@@ -140,7 +148,7 @@ import { AuthService } from '../../services/auth.service';
       background: linear-gradient(135deg, 
         white 0%, 
         white 60%, 
-        rgba(144, 238, 144, 0.2) 100%
+        rgba(144, 238, 144, 0.3) 100%
       );
     }
 
@@ -338,8 +346,33 @@ import { AuthService } from '../../services/auth.service';
     }
 
     .ffr-btn {
-      width: 20px;
+      width: auto;
       height: 17px;
+    }
+
+    .resync-song-btn {
+      width: 28px;
+      height: 24px;
+      padding: 0;
+      border: none;
+      background: #b77bfa;
+      color: white;
+      border-radius: 20%;
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s;
+    }
+
+    .resync-song-btn:hover {
+      background: #d6b4fc;
+    }
+
+    .resync-btn {
+      font-size: 16px;
     }
 
     .video-container {
@@ -417,6 +450,12 @@ export class SongItemComponent {
     this.selectedSong = this.song;
     this.selectedIndex = submissionIndex;
     this.showEditModal = true;
+  }
+
+  resyncSongDetails(event: Event) {
+    event.stopPropagation();
+
+    //Trigger a resync API call on this.song.id
   }
 
   hideSubmissionModal() {

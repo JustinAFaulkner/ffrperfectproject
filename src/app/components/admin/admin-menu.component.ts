@@ -9,11 +9,11 @@ import { AuthService } from '../../services/auth.service';
   imports: [CommonModule],
   template: `
     <div class="admin-dropdown" *ngIf="isLoggedIn$ | async">
-      <button class="admin-btn" (click)="toggleDropdown()">
+      <button class="admin-btn">
         Admin
         <i class="fas fa-chevron-down"></i>
       </button>
-      <div class="dropdown-menu" *ngIf="isOpen">
+      <div class="dropdown-menu">
         <button class="dropdown-item" (click)="onUserWikiList()">
           User Wiki Update List
         </button>
@@ -35,6 +35,10 @@ import { AuthService } from '../../services/auth.service';
       display: inline-block;
     }
 
+    .admin-dropdown:hover .dropdown-menu {
+      display: block;
+    }
+
     .admin-btn {
       padding: 0.5rem 1rem;
       background: #28aad1;
@@ -53,6 +57,7 @@ import { AuthService } from '../../services/auth.service';
     }
 
     .dropdown-menu {
+      display: none;
       position: absolute;
       top: 100%;
       right: 0;
@@ -61,7 +66,7 @@ import { AuthService } from '../../services/auth.service';
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
       min-width: 200px;
       z-index: 1000;
-      margin-top: 0.5rem;
+      margin-top: 0;
     }
 
     .dropdown-item {
@@ -100,18 +105,12 @@ export class AdminMenuComponent {
     private authService: AuthService
   ) {}
 
-  toggleDropdown() {
-    this.isOpen = !this.isOpen;
-  }
-
   onUserWikiList() {
     // To be implemented
-    this.isOpen = false;
   }
 
   onSongWikiList() {
     // To be implemented
-    this.isOpen = false;
   }
 
   async onSyncSongs() {
@@ -124,7 +123,6 @@ export class AdminMenuComponent {
       alert('Error syncing songs. Please try again.');
     } finally {
       this.isSyncing = false;
-      this.isOpen = false;
     }
   }
 }

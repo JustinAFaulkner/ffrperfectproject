@@ -1,17 +1,17 @@
 import { Component } from '@angular/core';
-import { SongListComponent } from './components/song-list/song-list.component';
+import { RouterOutlet } from '@angular/router';
 import { NavComponent } from './components/nav/nav.component';
 import { StatsPanelComponent } from './components/stats/stats-panel.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [SongListComponent, NavComponent, StatsPanelComponent],
+  imports: [RouterOutlet, NavComponent, StatsPanelComponent],
   template: `
     <app-nav></app-nav>
     <div class="app-container">
       <app-stats-panel></app-stats-panel>
-      <app-song-list></app-song-list>
+      <router-outlet></router-outlet>
     </div>
   `,
   styles: [

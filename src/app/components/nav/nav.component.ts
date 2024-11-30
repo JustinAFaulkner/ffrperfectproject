@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { LoginModalComponent } from '../login/login-modal.component';
 import { AuthService } from '../../services/auth.service';
 import { AdminMenuComponent } from '../admin/admin-menu.component';
@@ -7,7 +8,7 @@ import { AdminMenuComponent } from '../admin/admin-menu.component';
 @Component({
   selector: 'app-nav',
   standalone: true,
-  imports: [CommonModule, LoginModalComponent, AdminMenuComponent],
+  imports: [CommonModule, RouterModule, LoginModalComponent, AdminMenuComponent],
   template: `
     <nav class="navbar">
       <div class="nav-brand">
@@ -18,8 +19,19 @@ import { AdminMenuComponent } from '../admin/admin-menu.component';
         />
       </div>
       <div class="nav-links">
-        <button class="nav-link active">Songs</button>
-        <button class="nav-link">Leaderboard</button>
+        <a 
+          routerLink="/" 
+          routerLinkActive="active" 
+          [routerLinkActiveOptions]="{exact: true}"
+          class="nav-link">
+          Songs
+        </a>
+        <a 
+          routerLink="/leaderboard" 
+          routerLinkActive="active"
+          class="nav-link">
+          Leaderboard
+        </a>
       </div>
       <div class="nav-auth">
         <app-admin-menu></app-admin-menu>
@@ -78,6 +90,7 @@ import { AdminMenuComponent } from '../admin/admin-menu.component';
       font-size: 0.9rem;
       border-radius: 4px;
       transition: all 0.2s;
+      text-decoration: none;
     }
 
     .nav-link:hover {
