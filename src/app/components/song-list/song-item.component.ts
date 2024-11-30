@@ -70,7 +70,8 @@ import { AuthService } from '../../services/auth.service';
             <button
               (click)="setSubmission(i)"
               [class.active]="currentSubmissionIndex === i"
-              class="source-toggle-btn">
+              [class.source-toggle-loggedin]="isLoggedIn$ | async"
+              [class.source-toggle-btn]="!(isLoggedIn$ | async)">
               {{ submission.contributor }}
             </button>
             <button 
@@ -245,7 +246,7 @@ import { AuthService } from '../../services/auth.service';
     }
 
     .add-submission-btn {
-      width: 24px;
+      width: 28px;
       height: 24px;
       padding: 0;
       border: none;
@@ -253,8 +254,7 @@ import { AuthService } from '../../services/auth.service';
       color: white;
       border-radius: 4px;
       cursor: pointer;
-      font-size: 18px;
-      line-height: 1;
+      font-size: 16px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -272,14 +272,30 @@ import { AuthService } from '../../services/auth.service';
     }
 
     .source-toggle-btn {
-      padding: 6px 12px;
+      padding: 0 12px;
       border: 1px solid #ddd;
+      background: white;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      color: #666;
+      transition: all 0.2s;
+      height: 30px;
+    }
+
+    .source-toggle-loggedin {
+      padding: 0 10px 0 12px;
+      border-left: 1px solid #ddd;
+      border-top: 1px solid #ddd;
+      border-bottom: 1px solid #ddd;
+      border-right: none;
       background: white;
       border-radius: 4px 0 0 4px;
       cursor: pointer;
       font-size: 14px;
       color: #666;
       transition: all 0.2s;
+      height: 30px;
     }
 
     .source-toggle-btn.active {
@@ -291,19 +307,51 @@ import { AuthService } from '../../services/auth.service';
       background: #f0f0f0;
     }
 
+    .source-toggle-loggedin.active {
+      background: #28aad1;
+      color: white;
+    }
+
+    .source-toggle-loggedin:hover:not(.active) {
+      background: #f0f0f0;
+    }
+
+    .source-toggle-end {
+      width: 6px;
+      height: 30px;
+      border-left: none;
+      border-right: 1px solid #ddd;
+      border-top: 1px solid #ddd;
+      border-bottom: 1px solid #ddd;
+      background: white;
+      color: #666;
+      border-radius: 0 4px 4px 0;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .source-toggle-end.active {
+      background: #28aad1;
+      color: white;
+    }
+
+    .source-toggle-end:hover:not(.active) {
+      background: #f0f0f0;
+    }
+
     .edit-submission-btn {
       width: 24px;
-      height: 29.5px;
-      border-top: 1px solid #ddd;
-      border-right: 1px solid #ddd;
-      border-bottom: 1px solid #ddd;
-      border-left: none;
+      height: 30px;
+      border: 1px solid #ddd;
       background: #b77bfa;
       color: white;
       border-radius: 0 4px 4px 0;
       cursor: pointer;
       font-size: 14px;
-      line-height: 1;
       transition: background-color 0.2s;
       display: inline-flex;
       align-items: center;
