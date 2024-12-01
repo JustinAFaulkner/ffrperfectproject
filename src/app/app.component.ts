@@ -20,6 +20,11 @@ import { NavComponent } from './components/nav/nav.component';
       min-height: calc(100vh - 57px);
       max-width: 1200px;
       margin: 0 auto;
+      transition: background-color 0.3s;
+    }
+
+    :host-context(body.dark-mode) .app-container {
+      background-color: #141414;
     }
   `,
   ],

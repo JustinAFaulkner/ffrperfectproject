@@ -4,11 +4,17 @@ import { RouterModule } from '@angular/router';
 import { LoginModalComponent } from '../login/login-modal.component';
 import { AuthService } from '../../services/auth.service';
 import { AdminMenuComponent } from '../admin/admin-menu.component';
+import { ThemeService } from '../../services/theme.service';
 
 @Component({
   selector: 'app-nav',
   standalone: true,
-  imports: [CommonModule, RouterModule, LoginModalComponent, AdminMenuComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    LoginModalComponent,
+    AdminMenuComponent,
+  ],
   template: `
     <nav class="navbar">
       <div class="nav-brand">
@@ -34,6 +40,12 @@ import { AdminMenuComponent } from '../admin/admin-menu.component';
         </a>
       </div>
       <div class="nav-auth">
+        <button 
+          class="theme-toggle-btn" 
+          (click)="toggleTheme()"
+          [attr.aria-label]="(isDarkMode$ | async) ? 'Switch to light mode' : 'Switch to dark mode'">
+          <i class="fas" [class.fa-moon]="!(isDarkMode$ | async)" [class.fa-sun]="isDarkMode$ | async"></i>
+        </button>
         <app-admin-menu></app-admin-menu>
         <ng-container *ngIf="isLoggedIn$ | async; else loginButton">
           <button class="nav-btn logout-btn" (click)="logout()">
@@ -52,7 +64,8 @@ import { AdminMenuComponent } from '../admin/admin-menu.component';
       (close)="hideLoginModal()">
     </app-login-modal>
   `,
-  styles: [`
+  styles: [
+    `
     .navbar {
       display: flex;
       justify-content: space-between;
@@ -135,18 +148,41 @@ import { AdminMenuComponent } from '../admin/admin-menu.component';
       background: #e0e0e0;
     }
 
+    .theme-toggle-btn {
+      padding: 0.5rem;
+      border: none;
+      background: transparent;
+      color: white;
+      cursor: pointer;
+      font-size: 1.1rem;
+      border-radius: 4px;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .theme-toggle-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
     @media (max-width: 768px) {
       .nav-links {
         display: none;
       }
     }
-  `]
+  `,
+  ],
 })
 export class NavComponent {
   showModal = false;
   isLoggedIn$ = this.authService.isLoggedIn();
+  isDarkMode$ = this.themeService.isDarkMode$;
 
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private themeService: ThemeService
+  ) {}
 
   showLoginModal() {
     this.showModal = true;
@@ -154,6 +190,10 @@ export class NavComponent {
 
   hideLoginModal() {
     this.showModal = false;
+  }
+
+  toggleTheme() {
+    this.themeService.toggleDarkMode();
   }
 
   async logout() {

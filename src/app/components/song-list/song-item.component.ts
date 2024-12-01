@@ -316,33 +316,6 @@ import { AuthService } from '../../services/auth.service';
       background: #f0f0f0;
     }
 
-    .source-toggle-end {
-      width: 6px;
-      height: 30px;
-      border-left: none;
-      border-right: 1px solid #ddd;
-      border-top: 1px solid #ddd;
-      border-bottom: 1px solid #ddd;
-      background: white;
-      color: #666;
-      border-radius: 0 4px 4px 0;
-      cursor: pointer;
-      font-size: 14px;
-      transition: background-color 0.2s;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .source-toggle-end.active {
-      background: #28aad1;
-      color: white;
-    }
-
-    .source-toggle-end:hover:not(.active) {
-      background: #f0f0f0;
-    }
-
     .edit-submission-btn {
       width: 24px;
       height: 30px;
