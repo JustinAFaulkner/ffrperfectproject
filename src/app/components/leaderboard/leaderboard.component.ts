@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { LeaderboardService } from '../../services/leaderboard.service';
 import { ContributorStats } from '../../models/contributor-stats.interface';
@@ -7,7 +8,7 @@ import { ContributorStats } from '../../models/contributor-stats.interface';
 @Component({
   selector: 'app-leaderboard',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   template: `
     <div class="leaderboard-container">
       <div class="filters">
@@ -33,9 +34,10 @@ import { ContributorStats } from '../../models/contributor-stats.interface';
       </div>
 
       <div class="contributors-list">
-        <div 
+        <a 
           *ngFor="let contributor of filteredContributors" 
           class="contributor-card"
+          [routerLink]="['/user', contributor.name]"
           [class.gold]="contributor.rank === 1"
           [class.silver]="contributor.rank === 2"
           [class.bronze]="contributor.rank === 3">
@@ -44,7 +46,7 @@ import { ContributorStats } from '../../models/contributor-stats.interface';
             <span class="name">{{contributor.name}}</span>
             <span class="count">{{contributor.count}} submissions</span>
           </div>
-        </div>
+        </a>
       </div>
     </div>
   `,
@@ -92,6 +94,8 @@ import { ContributorStats } from '../../models/contributor-stats.interface';
       border-radius: 8px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
       transition: transform 0.2s;
+      text-decoration: none;
+      color: inherit;
     }
 
     .contributor-card:hover {
@@ -158,14 +162,14 @@ export class LeaderboardComponent implements OnInit {
   constructor(private leaderboardService: LeaderboardService) {}
 
   ngOnInit() {
-    this.leaderboardService.getContributorStats().subscribe(stats => {
+    this.leaderboardService.getContributorStats().subscribe((stats) => {
       this.contributors = stats;
       this.applyFilters();
     });
   }
 
   applyFilters() {
-    this.filteredContributors = this.contributors.filter(contributor => {
+    this.filteredContributors = this.contributors.filter((contributor) => {
       const matchesName = contributor.name
         .toLowerCase()
         .includes(this.nameFilter.toLowerCase());

@@ -6,12 +6,14 @@ import { SongService } from '../../services/song.service';
 import { FilterService } from '../../services/filter.service';
 import { CountService } from '../../services/count.service';
 import { SongItemComponent } from './song-item.component';
+import { StatsPanelComponent } from '../stats/stats-panel.component';
 
 @Component({
   selector: 'app-song-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, SongItemComponent],
+  imports: [CommonModule, StatsPanelComponent, FormsModule, SongItemComponent],
   template: `
+    <app-stats-panel></app-stats-panel>
     <div class="container">
       <div class="filters">
         <div class="search-filters">
