@@ -12,7 +12,7 @@ import { SongWithSubmissions } from '../../models/song-with-submissions.interfac
   standalone: true,
   imports: [CommonModule, SongItemComponent],
   template: `
-    <div class="profile-container" *ngIf="userStats$ | async as stats">
+    <div class="profile-container change" *ngIf="userStats$ | async as stats">
       <div class="profile-header">
         <div class="profile-info">
           <h1 class="username">{{stats.username}}</h1>
@@ -28,6 +28,14 @@ import { SongWithSubmissions } from '../../models/song-with-submissions.interfac
           <div class="stat-item">
             <span class="stat-label">Highest Difficulty</span>
             <span class="stat-value">{{stats.highestDifficulty}}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Average Difficulty</span>
+            <span class="stat-value">{{stats.avgDifficulty}}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Lowest Difficulty</span>
+            <span class="stat-value">{{stats.lowestDifficulty}}</span>
           </div>
         </div>
         <a 
