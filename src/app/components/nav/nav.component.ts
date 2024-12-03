@@ -30,6 +30,12 @@ import { ThemeService } from '../../services/theme.service';
           routerLinkActive="active" 
           [routerLinkActiveOptions]="{exact: true}"
           class="nav-link">
+          Home
+        </a>
+        <a 
+          routerLink="/songs" 
+          routerLinkActive="active"
+          class="nav-link">
           Songs
         </a>
         <a 
