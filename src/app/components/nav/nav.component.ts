@@ -24,7 +24,9 @@ import { ThemeService } from '../../services/theme.service';
           class="nav-logo"
         />
       </div>
-      <div class="nav-links">
+
+      <!-- Desktop Navigation -->
+      <div class="nav-links desktop-nav">
         <a 
           routerLink="/" 
           routerLinkActive="active" 
@@ -45,7 +47,9 @@ import { ThemeService } from '../../services/theme.service';
           Leaderboard
         </a>
       </div>
-      <div class="nav-auth">
+
+      <!-- Desktop Auth -->
+      <div class="nav-auth desktop-nav">
         <button 
           class="theme-toggle-btn" 
           (click)="toggleTheme()"
@@ -63,6 +67,55 @@ import { ThemeService } from '../../services/theme.service';
             Login
           </button>
         </ng-template>
+      </div>
+
+      <!-- Mobile Menu Button -->
+      <button class="mobile-menu-btn" (click)="toggleMobileMenu()">
+        <i class="fas" [class.fa-bars]="!showMobileMenu" [class.fa-times]="showMobileMenu"></i>
+      </button>
+
+      <!-- Mobile Navigation Drawer -->
+      <div class="mobile-nav" [class.open]="showMobileMenu">
+        <div class="mobile-nav-content">
+          <a 
+            routerLink="/" 
+            routerLinkActive="active" 
+            [routerLinkActiveOptions]="{exact: true}"
+            class="nav-link"
+            (click)="showMobileMenu = false">
+            Home
+          </a>
+          <a 
+            routerLink="/songs" 
+            routerLinkActive="active"
+            class="nav-link"
+            (click)="showMobileMenu = false">
+            Songs
+          </a>
+          <a 
+            routerLink="/leaderboard" 
+            routerLinkActive="active"
+            class="nav-link"
+            (click)="showMobileMenu = false">
+            Leaderboard
+          </a>
+          <button 
+            class="theme-toggle-btn mobile" 
+            (click)="toggleTheme()">
+            <i class="fas" [class.fa-moon]="!(isDarkMode$ | async)" [class.fa-sun]="isDarkMode$ | async"></i>
+            {{(isDarkMode$ | async) ? 'Light Mode' : 'Dark Mode'}}
+          </button>
+          <ng-container *ngIf="isLoggedIn$ | async; else mobileLoginButton">
+            <button class="nav-btn logout-btn" (click)="logout()">
+              Logout
+            </button>
+          </ng-container>
+          <ng-template #mobileLoginButton>
+            <button class="nav-btn login-btn" (click)="showLoginModal()">
+              Login
+            </button>
+          </ng-template>
+        </div>
       </div>
     </nav>
     <app-login-modal
@@ -177,13 +230,89 @@ import { ThemeService } from '../../services/theme.service';
         display: none;
       }
     }
-  `,
-  ],
+
+    .mobile-menu-btn {
+      display: none;
+      padding: 0.5rem;
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+
+    .mobile-nav {
+      display: none;
+      position: fixed;
+      top: 57px;
+      left: 0;
+      width: 100%;
+      height: calc(100vh - 57px);
+      background: #28aad1;
+      transform: translateX(-100%);
+      transition: transform 0.3s ease-in-out;
+    }
+
+    .mobile-nav.open {
+      transform: translateX(0);
+    }
+
+    .mobile-nav-content {
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .mobile-nav .nav-link {
+      color: white;
+      padding: 0.75rem;
+      border-radius: 4px;
+      text-decoration: none;
+    }
+
+    .mobile-nav .nav-link:hover,
+    .mobile-nav .nav-link.active {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .theme-toggle-btn.mobile {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: white;
+      padding: 0.75rem;
+      border-radius: 4px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+    }
+
+    .theme-toggle-btn.mobile:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    @media (max-width: 768px) {
+      .desktop-nav {
+        display: none;
+      }
+
+      .mobile-menu-btn,
+      .mobile-nav {
+        display: block;
+      }
+    }
+`],
 })
 export class NavComponent {
   showModal = false;
   isLoggedIn$ = this.authService.isLoggedIn();
   isDarkMode$ = this.themeService.isDarkMode$;
+  showMobileMenu = false;
+
+  toggleMobileMenu() {
+    this.showMobileMenu = !this.showMobileMenu;
+  }
 
   constructor(
     private authService: AuthService,

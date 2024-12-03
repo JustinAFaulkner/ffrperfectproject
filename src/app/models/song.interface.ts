@@ -7,4 +7,5 @@ export interface Song {
   arrows: number;
   stepartist: string;
   style?: string;
+  release: Date;
 }

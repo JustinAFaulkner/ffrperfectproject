@@ -10,7 +10,7 @@ import { map } from 'rxjs/operators';
   template: `
     <div class="stats-container">
       <div class="stat-card">
-        <div class="stat-label">FFR Perfect Project has</div>
+        <div class="stat-label">To Date,</div>
         <div class="stat-value">{{ totalSubmissions$ | async }}</div>
         <div class="stat-label">Total Submissions</div>
       </div>

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { SongWithSubmissions } from '../models/song-with-submissions.interface';
+import { SongFilters } from '../models/song-filters.interface';
 
 @Injectable({
   providedIn: 'root',
@@ -7,22 +8,10 @@ import { SongWithSubmissions } from '../models/song-with-submissions.interface';
 export class FilterService {
   filterSongs(
     songs: SongWithSubmissions[],
-    {
-      searchTerm = '',
-      selectedGenre = '',
-      videoFilter = 'all',
-      minDifficulty = 0,
-      maxDifficulty = 150,
-    }: {
-      searchTerm?: string;
-      selectedGenre?: string;
-      videoFilter?: 'all' | 'with' | 'without';
-      minDifficulty?: number;
-      maxDifficulty?: number;
-    }
+    filters: SongFilters
   ): SongWithSubmissions[] {
-    return songs.filter((song) => {
-      const searchLower = searchTerm.toLowerCase();
+    let filteredSongs = songs.filter((song) => {
+      const searchLower = filters.searchTerm.toLowerCase();
 
       const matchesSearch =
         song.title.toLowerCase().includes(searchLower) ||
@@ -33,21 +22,53 @@ export class FilterService {
           submission.contributor.toLowerCase().includes(searchLower)
         );
 
-      const matchesGenre = !selectedGenre || song.genre === selectedGenre;
+      const matchesGenre = !filters.genre || song.genre === filters.genre;
 
       const matchesVideo =
-        videoFilter === 'all' ||
-        (videoFilter === 'with' && song.submissions.length > 0) ||
-        (videoFilter === 'without' && song.submissions.length === 0);
+        filters.videoFilter === 'all' ||
+        (filters.videoFilter === 'with' && song.submissions.length > 0) ||
+        (filters.videoFilter === 'without' && song.submissions.length === 0);
 
       const matchesDifficulty =
-        song.difficulty >= minDifficulty && song.difficulty <= maxDifficulty;
+        song.difficulty >= filters.minDifficulty && 
+        song.difficulty <= filters.maxDifficulty;
 
-      return matchesSearch && matchesGenre && matchesVideo && matchesDifficulty;
+      const matchesNoteCount =
+        song.arrows >= filters.minNoteCount &&
+        song.arrows <= filters.maxNoteCount;
+
+      const matchesLength =
+        song.seconds >= filters.minLength &&
+        song.seconds <= filters.maxLength;
+
+      const matchesReleaseDate = !filters.releaseDate ||
+        (song.release && song.release >= new Date(filters.releaseDate));
+
+      return matchesSearch && matchesGenre && matchesVideo && 
+             matchesDifficulty && matchesNoteCount && 
+             matchesLength && matchesReleaseDate;
     });
-  }
-}
 
-function isEmpty(value: string | null | undefined): boolean {
-  return value === null || value === undefined || value === '';
+    // Apply sorting
+    filteredSongs.sort((a, b) => {
+      let comparison = 0;
+      switch (filters.sortBy) {
+        case 'id':
+          comparison = Number(a.id) - Number(b.id);
+          break;
+        case 'title':
+          comparison = a.title.localeCompare(b.title);
+          break;
+        case 'difficulty':
+          comparison = a.difficulty - b.difficulty;
+          break;
+        case 'seconds':
+          comparison = a.seconds - b.seconds;
+          break;
+      }
+      return filters.sortDirection === 'asc' ? comparison : -comparison;
+    });
+
+    return filteredSongs;
+  }
 }
