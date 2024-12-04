@@ -33,6 +33,9 @@ import { AuthService } from '../../services/auth.service';
       class="song-item"
       [class.has-video]="hasSubmissions"
       [class.no-video]="!hasSubmissions">
+      <div class="corner-mark" [class.completed]="hasSubmissions">
+        <i class="fas fa-check"></i>
+      </div>
       <div class="song-header" (click)="toggleExpand()">
         <div class="song-diff">
           {{song.difficulty}}
@@ -151,6 +154,37 @@ import { AuthService } from '../../services/auth.service';
       position: relative;
     }
 
+    .corner-mark {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-width: 2rem 2rem 0 0;
+      border-color: #e2e8f0 transparent transparent transparent;
+      transition: border-color 0.3s ease;
+      z-index: 1;
+    }
+
+    .corner-mark.completed {
+      border-color: #48bb78 transparent transparent transparent;
+    }
+
+    .corner-mark i {
+      position: absolute;
+      top: -1.8rem;
+      left: 0.4rem;
+      color: white;
+      font-size: 0.9rem;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .corner-mark.completed i {
+      opacity: 1;
+    }
+
     .song-item.has-video {
       background: linear-gradient(135deg, 
         white 0%, 
@@ -167,12 +201,50 @@ import { AuthService } from '../../services/auth.service';
       );
     }
 
+    :host-context(body.dark-mode) .song-item {
+      background: #2d2d2d;
+    }
+
+    :host-context(body.dark-mode) .song-item.has-video {
+      background: linear-gradient(135deg, 
+        #2d2d2d 0%, 
+        #2d2d2d 60%, 
+        rgba(144, 238, 144, 0.15) 100%
+      );
+    }
+
+    :host-context(body.dark-mode) .song-item.no-video {
+      background: linear-gradient(135deg, 
+        #2d2d2d 0%, 
+        #2d2d2d 60%, 
+        rgba(255, 99, 71, 0.1) 100%
+      );
+    }
+
+    :host-context(body.dark-mode) .corner-mark {
+      border-color: #404040 transparent transparent transparent;
+    }
+
+    :host-context(body.dark-mode) .corner-mark.completed {
+      border-color: #48bb78 transparent transparent transparent;
+    }
+
+    .song-status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
     .song-diff {
       display: inline-block;
       padding: 0.5em 0.5em 0.5em 0;
       margin: auto 0.5em auto 0;
       border-right: 2px solid black;
       font-weight: bold;
+    }
+
+    :host-context(body.dark-mode) .song-diff {
+      border-right-color: #666;
     }
 
     .song-header {
@@ -187,6 +259,10 @@ import { AuthService } from '../../services/auth.service';
 
     .song-header:hover {
       background-color: rgba(248, 248, 248, 0.7);
+    }
+
+    :host-context(body.dark-mode) .song-header:hover {
+      background-color: rgba(255, 255, 255, 0.05);
     }
 
     .song-info {
