@@ -7,7 +7,7 @@ import { SubmissionService } from '../../services/submission.service';
 import { SongService } from '../../services/song.service';
 import { Observable, BehaviorSubject, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { WikiUpdateItem } from '../../models/wiki-update-item.interface';
+import { WikiUpdateGroup } from '../../models/wiki-update-group.interface';
 
 @Component({
   selector: 'app-wiki-updates',
@@ -22,28 +22,31 @@ import { WikiUpdateItem } from '../../models/wiki-update-item.interface';
           type="text"
           [(ngModel)]="searchTerm"
           (input)="applyFilters()"
-          placeholder="Search songs or contributors..."
+          placeholder="Search {{ isUserWiki ? 'contributors or songs' : 'songs or contributors' }}..."
           class="search-input"
         />
       </div>
 
       <div class="updates-list">
         <div 
-          *ngFor="let item of filteredItems$ | async" 
-          class="update-item"
-          [class.updated]="item.isUpdated">
-          <div class="item-info">
-            <h3>{{ item.songTitle }}</h3>
-            <p class="contributor">Contributor: {{ item.contributor }}</p>
+          *ngFor="let group of filteredGroups$ | async" 
+          class="update-group">
+          <div class="group-header">
+            <h3>{{ group.key }}</h3>
+            <label class="checkbox-container">
+              <input
+                type="checkbox"
+                [checked]="false"
+                (change)="toggleGroupUpdate(group)"
+              />
+              <span class="checkmark"></span>
+            </label>
           </div>
-          <label class="checkbox-container">
-            <input
-              type="checkbox"
-              [checked]="item.isUpdated"
-              (change)="toggleUpdate(item)"
-            />
-            <span class="checkmark"></span>
-          </label>
+          <div class="group-items">
+            <p *ngFor="let item of group.items" class="item-title">
+              {{ item.title }}
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -88,52 +91,53 @@ import { WikiUpdateItem } from '../../models/wiki-update-item.interface';
       gap: 1rem;
     }
 
-    .update-item {
+    .update-group {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+
+    :host-context(body.dark-mode) .update-group {
+      background: #2d2d2d;
+    }
+
+    .group-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 1rem;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      transition: all 0.3s ease;
+      background: rgba(0,0,0,0.02);
+      border-bottom: 1px solid rgba(0,0,0,0.05);
     }
 
-    :host-context(body.dark-mode) .update-item {
-      background: #2d2d2d;
+    :host-context(body.dark-mode) .group-header {
+      background: rgba(255,255,255,0.02);
+      border-bottom-color: rgba(255,255,255,0.05);
     }
 
-    .update-item.updated {
-      background: #f0fff4;
-      border-left: 4px solid #48bb78;
-    }
-
-    :host-context(body.dark-mode) .update-item.updated {
-      background: #1a332b;
-      border-left: 4px solid #48bb78;
-    }
-
-    .item-info {
-      flex: 1;
-    }
-
-    .item-info h3 {
+    .group-header h3 {
       margin: 0;
       color: #333;
       font-size: 1.1rem;
+      font-weight: 600;
     }
 
-    :host-context(body.dark-mode) .item-info h3 {
+    :host-context(body.dark-mode) .group-header h3 {
       color: #e0e0e0;
     }
 
-    .contributor {
-      margin: 0.25rem 0 0;
+    .group-items {
+      padding: 1rem;
+    }
+
+    .item-title {
+      margin: 0.5rem 0;
       color: #666;
       font-size: 0.9rem;
     }
 
-    :host-context(body.dark-mode) .contributor {
+    :host-context(body.dark-mode) .item-title {
       color: #999;
     }
 
@@ -203,8 +207,8 @@ import { WikiUpdateItem } from '../../models/wiki-update-item.interface';
 export class WikiUpdatesComponent implements OnInit, OnDestroy {
   isUserWiki: boolean = false;
   searchTerm: string = '';
-  private itemsSubject = new BehaviorSubject<WikiUpdateItem[]>([]);
-  filteredItems$ = new Observable<WikiUpdateItem[]>();
+  private groupsSubject = new BehaviorSubject<WikiUpdateGroup[]>([]);
+  filteredGroups$ = new Observable<WikiUpdateGroup[]>();
   private subscription: Subscription = new Subscription();
 
   constructor(
@@ -216,13 +220,13 @@ export class WikiUpdatesComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.isUserWiki = this.route.snapshot.data['type'] === 'user';
-    this.loadItems();
+    this.loadGroups();
     this.applyFilters();
 
     // Subscribe to submission updates
     this.subscription.add(
       this.submissionService.submissionUpdates$.subscribe(() => {
-        this.loadItems();
+        this.loadGroups();
       })
     );
   }
@@ -231,26 +235,38 @@ export class WikiUpdatesComponent implements OnInit, OnDestroy {
     this.subscription.unsubscribe();
   }
 
-  private loadItems() {
+  private loadGroups() {
     this.songService.getSongs().subscribe(songs => {
       this.submissionService.getAllSubmissions().subscribe(submissionMap => {
-        const items: WikiUpdateItem[] = [];
+        const groupMap = new Map<string, WikiUpdateGroup>();
+
         songs.forEach(song => {
           const submissions = submissionMap[song.id] || [];
           submissions.forEach(sub => {
             if ((this.isUserWiki && !sub.userWikiUpdated) || 
                 (!this.isUserWiki && !sub.songWikiUpdated)) {
-              items.push({
+              const key = this.isUserWiki ? sub.contributor : song.title;
+              if (!groupMap.has(key)) {
+                groupMap.set(key, {
+                  key,
+                  items: []
+                });
+              }
+              
+              const group = groupMap.get(key)!;
+              group.items.push({
                 submissionId: sub.id,
                 songId: song.id,
-                songTitle: song.title,
-                contributor: sub.contributor,
-                isUpdated: this.isUserWiki ? sub.userWikiUpdated : sub.songWikiUpdated
+                title: this.isUserWiki ? song.title : sub.contributor
               });
             }
           });
         });
-        this.itemsSubject.next(items);
+
+        const groups = Array.from(groupMap.values())
+          .sort((a, b) => a.key.localeCompare(b.key));
+        
+        this.groupsSubject.next(groups);
         this.applyFilters();
       });
     });
@@ -258,29 +274,28 @@ export class WikiUpdatesComponent implements OnInit, OnDestroy {
 
   applyFilters() {
     const searchLower = this.searchTerm.toLowerCase();
-    this.filteredItems$ = this.itemsSubject.pipe(
-      map(items => items.filter(item => 
-        item.songTitle.toLowerCase().includes(searchLower) ||
-        item.contributor.toLowerCase().includes(searchLower)
+    this.filteredGroups$ = this.groupsSubject.pipe(
+      map(groups => groups.filter(group => 
+        group.key.toLowerCase().includes(searchLower) ||
+        group.items.some(item => item.title.toLowerCase().includes(searchLower))
       ))
     );
   }
 
-  async toggleUpdate(item: WikiUpdateItem) {
+  async toggleGroupUpdate(group: WikiUpdateGroup) {
     try {
-      await this.wikiUpdateService.toggleWikiStatus(
-        item.submissionId,
-        this.isUserWiki ? 'user' : 'song'
-      );
+      // Update all submissions in the group
+      for (const item of group.items) {
+        await this.wikiUpdateService.toggleWikiStatus(
+          item.submissionId,
+          this.isUserWiki ? 'user' : 'song'
+        );
+      }
       
-      // Update the local state immediately
-      const currentItems = this.itemsSubject.value;
-      const updatedItems = currentItems.map(i => 
-        i.submissionId === item.submissionId 
-          ? { ...i, isUpdated: true }
-          : i
-      );
-      this.itemsSubject.next(updatedItems);
+      // Remove the group from the list
+      const currentGroups = this.groupsSubject.value;
+      const updatedGroups = currentGroups.filter(g => g.key !== group.key);
+      this.groupsSubject.next(updatedGroups);
     } catch (error) {
       console.error('Error updating wiki status:', error);
     }
