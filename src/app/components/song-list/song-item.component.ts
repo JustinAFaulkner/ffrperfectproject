@@ -12,7 +12,11 @@ import { AuthService } from '../../services/auth.service';
 @Component({
   selector: 'app-song-item',
   standalone: true,
-  imports: [CommonModule, SubmissionModalComponent, SubmissionEditModalComponent],
+  imports: [
+    CommonModule,
+    SubmissionModalComponent,
+    SubmissionEditModalComponent,
+  ],
   animations: [
     trigger('expandCollapse', [
       transition(':enter', [
@@ -123,6 +127,7 @@ import { AuthService } from '../../services/auth.service';
 
     <app-submission-modal
       *ngIf="showModal"
+      [song]="song"
       (cancel)="hideSubmissionModal()"
       (submit)="handleSubmissionAdd($event)">
     </app-submission-modal>
@@ -136,7 +141,8 @@ import { AuthService } from '../../services/auth.service';
       (submit)="handleSubmissionEdit($event)">
     </app-submission-edit-modal>
   `,
-  styles: [`
+  styles: [
+    `
     .song-item {
       background: white;
       border-radius: 8px;
@@ -420,7 +426,8 @@ import { AuthService } from '../../services/auth.service';
       max-width: 100%;
       height: auto;
     }
-  `]
+  `,
+  ],
 })
 export class SongItemComponent {
   @Input() song!: SongWithSubmissions;
@@ -475,7 +482,6 @@ export class SongItemComponent {
 
   resyncSongDetails(event: Event) {
     event.stopPropagation();
-
     //Trigger a resync API call on this.song.id
   }
 
@@ -491,9 +497,9 @@ export class SongItemComponent {
     try {
       const newSubmission: Submission = {
         songId: Number(this.song.id),
-        ...submissionData
+        ...submissionData,
       };
-      
+
       await this.submissionService.addSubmission(this.song.id, newSubmission);
       this.song.submissions = [...this.song.submissions, newSubmission];
       this.currentSubmissionIndex = this.song.submissions.length - 1;
@@ -518,6 +524,7 @@ export class SongItemComponent {
       const submission = this.song.submissions[this.selectedIndex];
       await this.submissionService.deleteSubmission(submission);
       this.song.submissions.splice(this.selectedIndex, 1);
+      this.currentSubmissionIndex = this.song.submissions.length - 1;
       this.hideSubmissionEditModal();
     } catch (error) {
       console.error('Error deleting submission:', error);
@@ -525,6 +532,9 @@ export class SongItemComponent {
   }
 
   openUrl(songId: string): void {
-    window.open('https://www.flashflashrevolution.com/levelstats.php?level=' + songId, '_blank');
+    window.open(
+      'https://www.flashflashrevolution.com/levelstats.php?level=' + songId,
+      '_blank'
+    );
   }
 }

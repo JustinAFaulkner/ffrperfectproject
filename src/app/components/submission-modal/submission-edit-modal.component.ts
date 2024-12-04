@@ -3,11 +3,14 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Submission } from '../../models/submission.interface';
 import { SongWithSubmissions } from '../../models/song-with-submissions.interface';
+import { YoutubeInfoModalComponent } from '../shared/youtube-info-modal.component';
+import { ConfirmModalComponent } from '../shared/confirm-modal.component';
+import { UrlTransformerService } from '../../services/url-transformer.service';
 
 @Component({
   selector: 'app-submission-edit-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, YoutubeInfoModalComponent, ConfirmModalComponent],
   template: `
     <div class="modal-backdrop" (click)="onCancel()">
       <div class="modal-content" (click)="$event.stopPropagation()">
@@ -55,11 +58,15 @@ import { SongWithSubmissions } from '../../models/song-with-submissions.interfac
         </div>
 
         <div class="button-group">
-          <button class="btn-delete" (click)="onDelete()">
+          <button class="btn-delete" (click)="showDeleteConfirm = true">
             <i class="fa fa-trash trash-icon"></i>
             Delete
           </button>
           <div class="button-group-right">
+            <button class="btn-yt-info" (click)="showYtInfo = true">
+              <i class="fab fa-youtube"></i>
+              YT Info
+            </button>
             <button class="btn-cancel" (click)="onCancel()">Cancel</button>
             <button 
               class="btn-submit" 
@@ -72,8 +79,25 @@ import { SongWithSubmissions } from '../../models/song-with-submissions.interfac
         </div>
       </div>
     </div>
+
+    <app-youtube-info-modal
+      *ngIf="showYtInfo"
+      [song]="song"
+      [contributor]="submission.contributor"
+      (close)="showYtInfo = false">
+    </app-youtube-info-modal>
+
+    <app-confirm-modal
+      *ngIf="showDeleteConfirm"
+      title="Delete Submission"
+      message="Are you sure you want to delete this submission? This action cannot be undone."
+      confirmText="Delete"
+      (confirm)="onConfirmDelete()"
+      (cancel)="showDeleteConfirm = false">
+    </app-confirm-modal>
   `,
-  styles: [`
+  styles: [
+    `
     .modal-backdrop {
       position: fixed;
       top: 0;
@@ -96,9 +120,19 @@ import { SongWithSubmissions } from '../../models/song-with-submissions.interfac
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     }
 
+    :host-context(body.dark-mode) .modal-content {
+      background: #2d2d2d;
+      color: #e0e0e0;
+    }
+
     h2 {
       margin: 0 0 1.5rem;
       color: #333;
+    }
+
+    :host-context(body.dark-mode) h2,
+    :host-context(body.dark-mode) h3 {
+      color: #e0e0e0;
     }
 
     .form-group {
@@ -111,12 +145,22 @@ import { SongWithSubmissions } from '../../models/song-with-submissions.interfac
       color: #666;
     }
 
+    :host-context(body.dark-mode) label {
+      color: #999;
+    }
+
     .form-control {
       width: 100%;
       padding: 0.5rem;
       border: 1px solid #ddd;
       border-radius: 4px;
       font-size: 1rem;
+    }
+
+    :host-context(body.dark-mode) .form-control {
+      background: #333;
+      border-color: #444;
+      color: #e0e0e0;
     }
 
     .checkbox-group {
@@ -139,7 +183,6 @@ import { SongWithSubmissions } from '../../models/song-with-submissions.interfac
 
     .button-group-right {
       display: flex;
-      justify-content: flex-end;
       gap: 1rem;
     }
 
@@ -162,8 +205,17 @@ import { SongWithSubmissions } from '../../models/song-with-submissions.interfac
       color: #666;
     }
 
+    :host-context(body.dark-mode) .btn-cancel {
+      background: #333;
+      color: #e0e0e0;
+    }
+
     .btn-cancel:hover {
       background: #e0e0e0;
+    }
+
+    :host-context(body.dark-mode) .btn-cancel:hover {
+      background: #444;
     }
 
     .btn-submit {
@@ -180,7 +232,7 @@ import { SongWithSubmissions } from '../../models/song-with-submissions.interfac
     }
 
     .btn-delete {
-      display:flex;
+      display: flex;
       gap: 6px;
       background: #fff184;
       align-items: center;
@@ -198,15 +250,33 @@ import { SongWithSubmissions } from '../../models/song-with-submissions.interfac
     .trash-icon {
       font-size: 14px;
     }
-  `]
+
+    .btn-yt-info {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: #ff0000;
+      color: white;
+    }
+
+    .btn-yt-info:hover {
+      background: #cc0000;
+    }
+  `,
+  ],
 })
 export class SubmissionEditModalComponent {
   @Input() song!: SongWithSubmissions;
   @Input() submissionIndex!: number;
-  
+
   @Output() cancel = new EventEmitter<void>();
   @Output() delete = new EventEmitter<void>();
   @Output() submit = new EventEmitter<Submission>();
+
+  private urlTransformer: UrlTransformerService = new UrlTransformerService;
+
+  showYtInfo = false;
+  showDeleteConfirm = false;
 
   submission: Submission = {
     id: '',
@@ -214,7 +284,7 @@ export class SubmissionEditModalComponent {
     youtubeUrl: '',
     contributor: '',
     songWikiUpdated: false,
-    userWikiUpdated: false
+    userWikiUpdated: false,
   };
 
   ngOnInit(): void {
@@ -227,7 +297,7 @@ export class SubmissionEditModalComponent {
           youtubeUrl: currentSubmission.youtubeUrl,
           contributor: currentSubmission.contributor,
           songWikiUpdated: currentSubmission.songWikiUpdated,
-          userWikiUpdated: currentSubmission.userWikiUpdated
+          userWikiUpdated: currentSubmission.userWikiUpdated,
         };
       }
     }
@@ -235,8 +305,8 @@ export class SubmissionEditModalComponent {
 
   get isValid(): boolean {
     return (
-      (this.submission.youtubeUrl.includes("/watch?v=") ||
-       this.submission.youtubeUrl.includes("/embed/")) &&
+      (this.submission.youtubeUrl.includes('/watch?v=') ||
+        this.submission.youtubeUrl.includes('/embed/')) &&
       this.submission.contributor.trim() !== ''
     );
   }
@@ -245,12 +315,17 @@ export class SubmissionEditModalComponent {
     this.cancel.emit();
   }
 
-  onDelete(): void {
+  onConfirmDelete(): void {
+    this.showDeleteConfirm = false;
     this.delete.emit();
   }
 
   onSubmit(): void {
     if (this.isValid) {
+      if (this.submission.youtubeUrl.includes('/watch?v=')) {
+        this.submission.youtubeUrl = this.urlTransformer.transformYoutubeUrl(this.submission.youtubeUrl as string);
+      }
+      
       this.submit.emit({ ...this.submission });
     }
   }

@@ -10,7 +10,7 @@ import { map } from 'rxjs/operators';
   template: `
     <div class="stats-container">
       <div class="stat-card">
-        <div class="stat-label">To Date,</div>
+        <div class="stat-label">Featuring</div>
         <div class="stat-value">{{ totalSubmissions$ | async }}</div>
         <div class="stat-label">Total Submissions</div>
       </div>
@@ -22,7 +22,7 @@ import { map } from 'rxjs/operators';
       <div class="stat-card">
         <div class="stat-label">From</div>
         <div class="stat-value">{{ uniqueContributors$ | async }}</div>
-        <div class="stat-label">Unique Contributors</div>
+        <div class="stat-label">Contributors</div>
       </div>
     </div>
   `,
