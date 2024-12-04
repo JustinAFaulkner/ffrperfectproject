@@ -79,7 +79,7 @@ export class SongSyncService {
 
       // Process each song
       for (const [id, song] of Object.entries(response)) {        
-        if (added > 10) {
+        if (added > 1) {
             break;
         }
 

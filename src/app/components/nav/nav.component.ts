@@ -1,8 +1,10 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { Router } from '@angular/router';
 import { LoginModalComponent } from '../login/login-modal.component';
 import { AuthService } from '../../services/auth.service';
+import { SongSyncService } from '../../services/song-sync.service';
 import { AdminMenuComponent } from '../admin/admin-menu.component';
 import { ThemeService } from '../../services/theme.service';
 
@@ -121,8 +123,10 @@ import { ThemeService } from '../../services/theme.service';
               <div class="nav-link" (click)="onSongWikiList()">
                 Song Wiki Update List
               </div>
-              <div class="nav-link" (click)="onSyncSongs()">
-                Sync New Songs
+              <div class="nav-link"
+                (click)="onSyncSongs()"
+                [class.disabled]="isSyncing">
+                {{ isSyncing ? 'Syncing...' : 'Sync New Songs' }}
               </div>
             </div>
           </ng-container>
@@ -195,6 +199,11 @@ import { ThemeService } from '../../services/theme.service';
       border-radius: 4px;
       transition: all 0.2s;
       text-decoration: none;
+    }
+
+    .nav-link.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
 
     .nav-link:hover {
@@ -390,11 +399,14 @@ import { ThemeService } from '../../services/theme.service';
 export class NavComponent {
   showModal = false;
   showMobileMenu = false;
+  isSyncing = false;
   isLoggedIn$ = this.authService.isLoggedIn();
   isDarkMode$ = this.themeService.isDarkMode$;
 
   constructor(
+    private router: Router,
     private authService: AuthService,
+    private songSyncService: SongSyncService,
     private themeService: ThemeService
   ) {}
 
@@ -425,17 +437,31 @@ export class NavComponent {
   }
 
   onUserWikiList() {
-    // To be implemented
+    this.router.navigate(['/user-wiki-updates']);
     this.showMobileMenu = false;
+
   }
 
   onSongWikiList() {
-    // To be implemented
+    this.router.navigate(['/song-wiki-updates']);
     this.showMobileMenu = false;
   }
 
-  onSyncSongs() {
-    // To be implemented
-    this.showMobileMenu = false;
+  async onSyncSongs() {
+    if (this.isSyncing)
+      return;
+    
+    try {
+      this.isSyncing = true;
+      const result = await this.songSyncService.syncNewSongs();
+      alert(
+        `Sync complete!\nAdded: ${result.added} songs\nExisting: ${result.existing} songs`
+      );
+    } catch (error) {
+      console.error('Error syncing songs:', error);
+      alert('Error syncing songs. Please try again.');
+    } finally {
+      this.isSyncing = false;
+    }
   }
 }

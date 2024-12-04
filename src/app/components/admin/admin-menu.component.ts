@@ -70,6 +70,11 @@ import { AuthService } from '../../services/auth.service';
       margin-top: 0;
     }
 
+    :host-context(body.dark-mode) .dropdown-menu {
+      background: #2d2d2d;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+
     .dropdown-item {
       display: block;
       width: 100%;
@@ -82,8 +87,16 @@ import { AuthService } from '../../services/auth.service';
       color: #333;
     }
 
+    :host-context(body.dark-mode) .dropdown-item {
+      color: #e0e0e0;
+    }
+
     .dropdown-item:hover {
       background: #f5f5f5;
+    }
+
+    :host-context(body.dark-mode) .dropdown-item:hover {
+      background: #404040;
     }
 
     .dropdown-item:disabled {
@@ -93,6 +106,10 @@ import { AuthService } from '../../services/auth.service';
 
     .dropdown-item:not(:last-child) {
       border-bottom: 1px solid #eee;
+    }
+
+    :host-context(body.dark-mode) .dropdown-item:not(:last-child) {
+      border-bottom-color: #404040;
     }
   `]
 })
