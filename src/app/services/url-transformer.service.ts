@@ -13,7 +13,7 @@ export class UrlTransformerService {
       const videoId = new URL(transformedUrl).searchParams.get('v');
       
       if (!videoId) {
-        console.error('Could not extract video ID from URL:', url);
+        //console.error('Could not extract video ID from URL:', url);
         return url;
       }
       

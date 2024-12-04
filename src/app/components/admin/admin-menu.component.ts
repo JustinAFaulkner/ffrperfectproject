@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { SongSyncService } from '../../services/song-sync.service';
 import { AuthService } from '../../services/auth.service';
 
@@ -101,23 +102,26 @@ export class AdminMenuComponent {
   isLoggedIn$ = this.authService.isLoggedIn();
 
   constructor(
+    private router: Router,
     private songSyncService: SongSyncService,
     private authService: AuthService
   ) {}
 
   onUserWikiList() {
-    // To be implemented
+    this.router.navigate(['/user-wiki-updates']);
   }
 
   onSongWikiList() {
-    // To be implemented
+    this.router.navigate(['/song-wiki-updates']);
   }
 
   async onSyncSongs() {
     try {
       this.isSyncing = true;
       const result = await this.songSyncService.syncNewSongs();
-      alert(`Sync complete!\nAdded: ${result.added} songs\nExisting: ${result.existing} songs`);
+      alert(
+        `Sync complete!\nAdded: ${result.added} songs\nExisting: ${result.existing} songs`
+      );
     } catch (error) {
       console.error('Error syncing songs:', error);
       alert('Error syncing songs. Please try again.');
