@@ -22,13 +22,14 @@ import { map } from 'rxjs/operators';
           placeholder="Search contributors..."
           class="search-input"
         />
-        <label class="toggle-filter">
+        <label class="switch">
           <input
             type="checkbox"
             [(ngModel)]="showOwedOnly"
             (change)="filterContributors()"
           />
-          Show Owed Badges Only
+          <span class="slider"></span>
+          <span class="switch-label">Show Owed Badges Only</span>
         </label>
       </div>
 
@@ -38,31 +39,37 @@ import { map } from 'rxjs/operators';
             <span class="contributor-name">{{ contributor.username }}</span>
             <span class="submission-count">{{ contributor.submissionCount }} submissions</span>
           </div>
-          <div class="badge-controls">
-            <label class="badge-checkbox">
-              <input
-                type="checkbox"
-                [checked]="contributor.badges.badge1"
-                (change)="toggleBadge(contributor.username, 'badge1', $event)"
-              />
-              Badge 1
-            </label>
-            <label class="badge-checkbox">
-              <input
-                type="checkbox"
-                [checked]="contributor.badges.badge2"
-                (change)="toggleBadge(contributor.username, 'badge2', $event)"
-              />
-              Badge 2
-            </label>
-            <label class="badge-checkbox">
-              <input
-                type="checkbox"
-                [checked]="contributor.badges.badge3"
-                (change)="toggleBadge(contributor.username, 'badge3', $event)"
-              />
-              Badge 3
-            </label>
+          <div class="badge-section">
+            <span class="badge-label">Badges:</span>
+            <div class="badge-controls">
+              <label class="checkbox-container">
+                <input
+                  type="checkbox"
+                  [checked]="contributor.badges.badge1"
+                  (change)="toggleBadge(contributor.username, 'badge1', $event)"
+                />
+                <span class="checkmark"></span>
+                <span class="badge-number">1</span>
+              </label>
+              <label class="checkbox-container">
+                <input
+                  type="checkbox"
+                  [checked]="contributor.badges.badge2"
+                  (change)="toggleBadge(contributor.username, 'badge2', $event)"
+                />
+                <span class="checkmark"></span>
+                <span class="badge-number">2</span>
+              </label>
+              <label class="checkbox-container">
+                <input
+                  type="checkbox"
+                  [checked]="contributor.badges.badge3"
+                  (change)="toggleBadge(contributor.username, 'badge3', $event)"
+                />
+                <span class="checkmark"></span>
+                <span class="badge-number">3</span>
+              </label>
+            </div>
           </div>
         </div>
       </div>
@@ -105,15 +112,57 @@ import { map } from 'rxjs/operators';
       color: #e0e0e0;
     }
 
-    .toggle-filter {
+    /* Toggle Switch Styles */
+    .switch {
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      color: #666;
       cursor: pointer;
+      position: relative;
     }
 
-    :host-context(body.dark-mode) .toggle-filter {
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: relative;
+      display: inline-block;
+      width: 48px;
+      height: 24px;
+      background-color: #ccc;
+      border-radius: 24px;
+      transition: .4s;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      border-radius: 50%;
+      transition: .4s;
+    }
+
+    .switch input:checked + .slider {
+      background-color: #28aad1;
+    }
+
+    .switch input:checked + .slider:before {
+      transform: translateX(24px);
+    }
+
+    .switch-label {
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    :host-context(body.dark-mode) .switch-label {
       color: #999;
     }
 
@@ -161,20 +210,97 @@ import { map } from 'rxjs/operators';
       color: #999;
     }
 
+    .badge-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .badge-label {
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    :host-context(body.dark-mode) .badge-label {
+      color: #999;
+    }
+
     .badge-controls {
       display: flex;
       gap: 1rem;
     }
 
-    .badge-checkbox {
+    /* Checkbox Styles */
+    .checkbox-container {
+      position: relative;
+      padding-left: 35px;
+      cursor: pointer;
+      user-select: none;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      color: #666;
-      cursor: pointer;
     }
 
-    :host-context(body.dark-mode) .badge-checkbox {
+    .checkbox-container input {
+      position: absolute;
+      opacity: 0;
+      cursor: pointer;
+      height: 0;
+      width: 0;
+    }
+
+    .checkmark {
+      position: absolute;
+      left: 0;
+      height: 25px;
+      width: 25px;
+      background-color: #eee;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+    }
+
+    :host-context(body.dark-mode) .checkmark {
+      background-color: #444;
+    }
+
+    .checkbox-container:hover input ~ .checkmark {
+      background-color: #ccc;
+    }
+
+    :host-context(body.dark-mode) .checkbox-container:hover input ~ .checkmark {
+      background-color: #555;
+    }
+
+    .checkbox-container input:checked ~ .checkmark {
+      background-color: #48bb78;
+    }
+
+    .checkmark:after {
+      content: "";
+      position: absolute;
+      display: none;
+    }
+
+    .checkbox-container input:checked ~ .checkmark:after {
+      display: block;
+    }
+
+    .checkbox-container .checkmark:after {
+      left: 9px;
+      top: 5px;
+      width: 5px;
+      height: 10px;
+      border: solid white;
+      border-width: 0 3px 3px 0;
+      transform: rotate(45deg);
+    }
+
+    .badge-number {
+      margin-left: 0.5rem;
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    :host-context(body.dark-mode) .badge-number {
       color: #999;
     }
 
@@ -192,6 +318,7 @@ import { map } from 'rxjs/operators';
 
       .badge-controls {
         justify-content: space-between;
+        width: 100%;
       }
     }
   `]
