@@ -123,6 +123,9 @@ import { ThemeService } from '../../services/theme.service';
               <div class="nav-link" (click)="onSongWikiList()">
                 Song Wiki Update List
               </div>
+              <div class="nav-link" (click)="onBadgeManagement()">
+                Badge Management
+              </div>
               <div class="nav-link"
                 (click)="onSyncSongs()"
                 [class.disabled]="isSyncing">
@@ -444,6 +447,11 @@ export class NavComponent {
 
   onSongWikiList() {
     this.router.navigate(['/song-wiki-updates']);
+    this.showMobileMenu = false;
+  }
+  
+  onBadgeManagement() {
+    this.router.navigate(['/badge-management']);
     this.showMobileMenu = false;
   }
 

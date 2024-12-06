@@ -21,6 +21,9 @@ import { AuthService } from '../../services/auth.service';
         <button class="dropdown-item" (click)="onSongWikiList()">
           Song Wiki Update List
         </button>
+        <button class="dropdown-item" (click)="onBadgeManagement()">
+          Badge Management
+        </button>
         <button 
           class="dropdown-item" 
           (click)="onSyncSongs()"
@@ -130,6 +133,10 @@ export class AdminMenuComponent {
 
   onSongWikiList() {
     this.router.navigate(['/song-wiki-updates']);
+  }
+  
+  onBadgeManagement() {
+    this.router.navigate(['/badge-management']);
   }
 
   async onSyncSongs() {

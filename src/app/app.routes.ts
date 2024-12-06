@@ -4,6 +4,7 @@ import { LeaderboardComponent } from './components/leaderboard/leaderboard.compo
 import { UserProfileComponent } from './components/user-profile/user-profile.component';
 import { HomeComponent } from './components/home/home.component';
 import { WikiUpdatesComponent } from './components/wiki-updates/wiki-updates.component';
+import { BadgeManagementComponent } from './components/badge-management/badge-management.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -14,6 +15,10 @@ export const routes: Routes = [
     path: 'user-wiki-updates', 
     component: WikiUpdatesComponent,
     data: { type: 'user' }
+  },
+  { 
+    path: 'badge-management',
+    component: BadgeManagementComponent
   },
   { 
     path: 'song-wiki-updates', 
