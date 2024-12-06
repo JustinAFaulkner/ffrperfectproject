@@ -8,200 +8,238 @@ import { SongService } from '../../services/song.service';
 import { Observable, BehaviorSubject, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { WikiUpdateGroup } from '../../models/wiki-update-group.interface';
+import { WikiTextModalComponent } from './wiki-text-modal.component';
 
 @Component({
   selector: 'app-wiki-updates',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, WikiTextModalComponent],
   template: `
-    <div class="container">
-      <h1>{{ isUserWiki ? 'User' : 'Song' }} Wiki Updates Remaining</h1>
-      
-      <div class="filters">
-        <input
-          type="text"
-          [(ngModel)]="searchTerm"
-          (input)="applyFilters()"
-          placeholder="Search {{ isUserWiki ? 'contributors or songs' : 'songs or contributors' }}..."
-          class="search-input"
-        />
-      </div>
+  <div class="container">
+  <h1>{{ isUserWiki ? 'User' : 'Song' }} Wiki Updates Remaining</h1>
+  
+  <div class="filters">
+    <input
+      type="text"
+      [(ngModel)]="searchTerm"
+      (input)="applyFilters()"
+      placeholder="Search {{ isUserWiki ? 'contributors or songs' : 'songs or contributors' }}..."
+      class="search-input"
+    />
+  </div>
 
-      <div class="updates-list">
-        <div 
-          *ngFor="let group of filteredGroups$ | async" 
-          class="update-group">
-          <div class="group-header">
-            <h3>{{ group.key }}</h3>
-            <label class="checkbox-container">
-              <input
-                type="checkbox"
-                [checked]="false"
-                (change)="toggleGroupUpdate(group)"
-              />
-              <span class="checkmark"></span>
-            </label>
-          </div>
-          <div class="group-items">
-            <p *ngFor="let item of group.items" class="item-title">
-              {{ item.title }}
-            </p>
-          </div>
+  <div class="updates-list">
+    <div 
+      *ngFor="let group of filteredGroups$ | async" 
+      class="update-group">
+      <div class="group-header">
+        <h3>{{ group.key }}</h3>
+        <div class="header-actions">
+          <button class="wiki-text-btn" (click)="showWikiText(group)">
+            <i class="fas fa-code"></i>
+            Wiki Text
+          </button>
+          <label class="checkbox-container">
+            <input
+              type="checkbox"
+              [checked]="false"
+              (change)="toggleGroupUpdate(group)"
+            />
+            <span class="checkmark"></span>
+          </label>
         </div>
       </div>
+      <div class="group-items">
+        <p *ngFor="let item of group.items" class="item-title">
+          {{ item.title }}
+        </p>
+      </div>
     </div>
-  `,
-  styles: [`
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 20px;
-    }
+  </div>
+</div>
 
-    h1 {
-      color: #333;
-      margin-bottom: 1.5rem;
-    }
+<app-wiki-text-modal
+  *ngIf="showModal"
+  [isUserWiki]="isUserWiki"
+  [group]="selectedGroup!"
+  (close)="hideWikiText()">
+</app-wiki-text-modal>
+`,
+styles: [`
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
 
-    :host-context(body.dark-mode) h1 {
-      color: #e0e0e0;
-    }
+h1 {
+  color: #333;
+  margin-bottom: 1.5rem;
+}
 
-    .filters {
-      margin-bottom: 1.5rem;
-    }
+:host-context(body.dark-mode) h1 {
+  color: #e0e0e0;
+}
 
-    .search-input {
-      width: 100%;
-      padding: 0.75rem;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 1rem;
-    }
+.filters {
+  margin-bottom: 1.5rem;
+}
 
-    :host-context(body.dark-mode) .search-input {
-      background: #333;
-      border-color: #444;
-      color: #e0e0e0;
-    }
+.search-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
 
-    .updates-list {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
+:host-context(body.dark-mode) .search-input {
+  background: #333;
+  border-color: #444;
+  color: #e0e0e0;
+}
 
-    .update-group {
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      overflow: hidden;
-    }
+.updates-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
 
-    :host-context(body.dark-mode) .update-group {
-      background: #2d2d2d;
-    }
+.update-group {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
 
-    .group-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1rem;
-      background: rgba(0,0,0,0.02);
-      border-bottom: 1px solid rgba(0,0,0,0.05);
-    }
+:host-context(body.dark-mode) .update-group {
+  background: #2d2d2d;
+}
 
-    :host-context(body.dark-mode) .group-header {
-      background: rgba(255,255,255,0.02);
-      border-bottom-color: rgba(255,255,255,0.05);
-    }
+.group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: rgba(0,0,0,0.02);
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+}
 
-    .group-header h3 {
-      margin: 0;
-      color: #333;
-      font-size: 1.1rem;
-      font-weight: 600;
-    }
+:host-context(body.dark-mode) .group-header {
+  background: rgba(255,255,255,0.02);
+  border-bottom-color: rgba(255,255,255,0.05);
+}
 
-    :host-context(body.dark-mode) .group-header h3 {
-      color: #e0e0e0;
-    }
+.group-header h3 {
+  margin: 0;
+  color: #333;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
 
-    .group-items {
-      padding: 1rem;
-    }
+:host-context(body.dark-mode) .group-header h3 {
+  color: #e0e0e0;
+}
 
-    .item-title {
-      margin: 0.5rem 0;
-      color: #666;
-      font-size: 0.9rem;
-    }
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
 
-    :host-context(body.dark-mode) .item-title {
-      color: #999;
-    }
+.wiki-text-btn {
+  padding: 0.5rem 1rem;
+  background: #28aad1;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
 
-    .checkbox-container {
-      position: relative;
-      padding-left: 35px;
-      cursor: pointer;
-      user-select: none;
-    }
+.wiki-text-btn:hover {
+  background: #2391b2;
+}
 
-    .checkbox-container input {
-      position: absolute;
-      opacity: 0;
-      cursor: pointer;
-      height: 0;
-      width: 0;
-    }
+.group-items {
+  padding: 1rem;
+}
 
-    .checkmark {
-      position: absolute;
-      top: -12px;
-      left: 0;
-      height: 25px;
-      width: 25px;
-      background-color: #eee;
-      border-radius: 4px;
-      transition: all 0.2s ease;
-    }
+.item-title {
+  margin: 0.5rem 0;
+  color: #666;
+  font-size: 0.9rem;
+}
 
-    :host-context(body.dark-mode) .checkmark {
-      background-color: #444;
-    }
+:host-context(body.dark-mode) .item-title {
+  color: #999;
+}
 
-    .checkbox-container:hover input ~ .checkmark {
-      background-color: #ccc;
-    }
+.checkbox-container {
+  position: relative;
+  padding-left: 35px;
+  cursor: pointer;
+  user-select: none;
+}
 
-    :host-context(body.dark-mode) .checkbox-container:hover input ~ .checkmark {
-      background-color: #555;
-    }
+.checkbox-container input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
 
-    .checkbox-container input:checked ~ .checkmark {
-      background-color: #48bb78;
-    }
+.checkmark {
+  position: absolute;
+  top: -12px;
+  left: 0;
+  height: 25px;
+  width: 25px;
+  background-color: #eee;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
 
-    .checkmark:after {
-      content: "";
-      position: absolute;
-      display: none;
-    }
+:host-context(body.dark-mode) .checkmark {
+  background-color: #444;
+}
 
-    .checkbox-container input:checked ~ .checkmark:after {
-      display: block;
-    }
+.checkbox-container:hover input ~ .checkmark {
+  background-color: #ccc;
+}
 
-    .checkbox-container .checkmark:after {
-      left: 9px;
-      top: 5px;
-      width: 5px;
-      height: 10px;
-      border: solid white;
-      border-width: 0 3px 3px 0;
-      transform: rotate(45deg);
-    }
+:host-context(body.dark-mode) .checkbox-container:hover input ~ .checkmark {
+  background-color: #555;
+}
+
+.checkbox-container input:checked ~ .checkmark {
+  background-color: #48bb78;
+}
+
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+.checkbox-container input:checked ~ .checkmark:after {
+  display: block;
+}
+
+.checkbox-container .checkmark:after {
+  left: 9px;
+  top: 5px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 3px 3px 0;
+  transform: rotate(45deg);
+}
   `]
 })
 export class WikiUpdatesComponent implements OnInit, OnDestroy {
@@ -210,7 +248,9 @@ export class WikiUpdatesComponent implements OnInit, OnDestroy {
   private groupsSubject = new BehaviorSubject<WikiUpdateGroup[]>([]);
   filteredGroups$ = new Observable<WikiUpdateGroup[]>();
   private subscription: Subscription = new Subscription();
-
+  showModal = false;
+  selectedGroup: WikiUpdateGroup | null = null;
+  
   constructor(
     private route: ActivatedRoute,
     private wikiUpdateService: WikiUpdateService,
@@ -223,7 +263,6 @@ export class WikiUpdatesComponent implements OnInit, OnDestroy {
     this.loadGroups();
     this.applyFilters();
 
-    // Subscribe to submission updates
     this.subscription.add(
       this.submissionService.submissionUpdates$.subscribe(() => {
         this.loadGroups();
@@ -284,7 +323,6 @@ export class WikiUpdatesComponent implements OnInit, OnDestroy {
 
   async toggleGroupUpdate(group: WikiUpdateGroup) {
     try {
-      // Update all submissions in the group
       for (const item of group.items) {
         await this.wikiUpdateService.toggleWikiStatus(
           item.submissionId,
@@ -292,12 +330,51 @@ export class WikiUpdatesComponent implements OnInit, OnDestroy {
         );
       }
       
-      // Remove the group from the list
       const currentGroups = this.groupsSubject.value;
       const updatedGroups = currentGroups.filter(g => g.key !== group.key);
       this.groupsSubject.next(updatedGroups);
     } catch (error) {
       console.error('Error updating wiki status:', error);
     }
+  }
+
+  showWikiText(group: WikiUpdateGroup) {
+    this.selectedGroup = group;
+    this.showModal = true;
+
+    /*this.songService.getSongs().subscribe(songs => {
+      this.submissionService.getAllSubmissions().subscribe(submissionMap => {
+        if (this.isUserWiki) {
+          // For user wiki, we need all songs for this contributor
+          const songIds = group.items.map(item => item.songId);
+          const relevantSongs = songs.filter(song => songIds.includes(song.id));
+          
+          // Create an array of submissions with their corresponding songs
+          this.selectedSubmissions = group.items.map(item => {
+            const song = songs.find(s => s.id === item.songId)!;
+            const submission = submissionMap[item.songId].find(
+              sub => sub.contributor === group.key
+            )!;
+            return submission;
+          });
+          
+          // Use any song for context (it's only used for the title format)
+          this.selectedSong = relevantSongs[0];
+        } else {
+          // For song wiki, we need all contributors for this song
+          this.selectedSong = songs.find(song => song.title === group.key)!;
+          this.selectedSubmissions = submissionMap[this.selectedSong.id].filter(
+            sub => !sub.songWikiUpdated
+          );
+        }
+        this.showModal = true;
+      });
+    });*/
+  }
+  
+  
+  hideWikiText() {
+    this.showModal = false;
+    this.selectedGroup = null;
   }
 }
