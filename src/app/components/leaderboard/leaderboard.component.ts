@@ -31,6 +31,15 @@ import { ContributorStats } from '../../models/contributor-stats.interface';
             />
           </label>
         </div>
+        <label class="switch">
+          <input
+            type="checkbox"
+            [(ngModel)]="showFirstsLeaderboard"
+            (change)="applyFilters()"
+          />
+          <span class="slider"></span>
+          <span class="switch-label">Show Firsts Leaderboard</span>
+        </label>
       </div>
 
       <div class="contributors-list">
@@ -38,13 +47,16 @@ import { ContributorStats } from '../../models/contributor-stats.interface';
           *ngFor="let contributor of filteredContributors" 
           class="contributor-card"
           [routerLink]="['/user', contributor.name]"
-          [class.gold]="contributor.rank === 1"
-          [class.silver]="contributor.rank === 2"
-          [class.bronze]="contributor.rank === 3">
-          <div class="rank">{{contributor.rank}}</div>
+          [class.gold]="showFirstsLeaderboard ? contributor.firstRank === 1 : contributor.rank === 1"
+          [class.silver]="showFirstsLeaderboard ? contributor.firstRank === 2 : contributor.rank === 2"
+          [class.bronze]="showFirstsLeaderboard ? contributor.firstRank === 3 : contributor.rank === 3">
+          <div class="rank">{{showFirstsLeaderboard ? contributor.firstRank : contributor.rank}}</div>
           <div class="contributor-info">
             <span class="name">{{contributor.name}}</span>
-            <span class="count">{{contributor.count}} submissions</span>
+            <span class="count">
+              {{contributor.count}} submissions
+              <span class="first-count">({{contributor.firstCount}} firsts)</span>
+            </span>
           </div>
         </a>
       </div>
@@ -72,12 +84,78 @@ import { ContributorStats } from '../../models/contributor-stats.interface';
       font-size: 14px;
     }
 
+    :host-context(body.dark-mode) .search-input {
+      background: #333;
+      border-color: #444;
+      color: #e0e0e0;
+    }
+
     .number-input {
       width: 80px;
       padding: 8px;
       border: 1px solid #ddd;
       border-radius: 4px;
       font-size: 14px;
+    }
+
+    :host-context(body.dark-mode) .number-input {
+      background: #333;
+      border-color: #444;
+      color: #e0e0e0;
+    }
+
+    /* Toggle Switch Styles */
+    .switch {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: relative;
+      display: inline-block;
+      width: 48px;
+      height: 24px;
+      background-color: #ccc;
+      border-radius: 24px;
+      transition: .4s;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      border-radius: 50%;
+      transition: .4s;
+    }
+
+    .switch input:checked + .slider {
+      background-color: #28aad1;
+    }
+
+    .switch input:checked + .slider:before {
+      transform: translateX(24px);
+    }
+
+    .switch-label {
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    :host-context(body.dark-mode) .switch-label {
+      color: #999;
     }
 
     .contributors-list {
@@ -139,6 +217,10 @@ import { ContributorStats } from '../../models/contributor-stats.interface';
       font-size: 0.9rem;
     }
 
+    .first-count {
+      color: #28aad1;
+    }
+
     @media (max-width: 600px) {
       .filters {
         flex-direction: column;
@@ -158,6 +240,7 @@ export class LeaderboardComponent implements OnInit {
   filteredContributors: ContributorStats[] = [];
   nameFilter: string = '';
   minContributions: number = 0;
+  showFirstsLeaderboard: boolean = false;
 
   constructor(private leaderboardService: LeaderboardService) {}
 
@@ -175,6 +258,14 @@ export class LeaderboardComponent implements OnInit {
         .includes(this.nameFilter.toLowerCase());
       const matchesMin = contributor.count >= this.minContributions;
       return matchesName && matchesMin;
+    });
+
+    // Sort based on selected leaderboard type
+    this.filteredContributors.sort((a, b) => {
+      if (this.showFirstsLeaderboard) {
+        return b.firstCount - a.firstCount;
+      }
+      return b.count - a.count;
     });
   }
 }

@@ -16,19 +16,31 @@ export class LeaderboardService {
         // Flatten all submissions into a single array
         const allSubmissions = Object.values(submissionMap).flat();
         
-        // Count submissions per contributor
+        // Count submissions and first submissions per contributor
         const contributorCounts = allSubmissions.reduce((acc, submission) => {
           const contributor = submission.contributor;
-          acc[contributor] = (acc[contributor] || 0) + 1;
+          if (!acc[contributor]) {
+            acc[contributor] = { total: 0, firsts: 0 };
+          }
+          acc[contributor].total++;
+          if (submission.firstSub) {
+            acc[contributor].firsts++;
+          }
           return acc;
-        }, {} as Record<string, number>);
+        }, {} as Record<string, { total: number; firsts: number }>);
 
-        // Convert to array and sort by count
+        // Convert to array and prepare for ranking
         const stats = Object.entries(contributorCounts)
-          .map(([name, count]) => ({ name, count, rank: 0 }))
-          .sort((a, b) => b.count - a.count);
+          .map(([name, counts]) => ({
+            name,
+            count: counts.total,
+            firstCount: counts.firsts,
+            rank: 0,
+            firstRank: 0
+          }));
 
-        // Assign ranks (handling ties)
+        // Sort and assign total submission ranks
+        stats.sort((a, b) => b.count - a.count);
         let currentRank = 1;
         let currentCount = -1;
         let sameRankCount = 0;
@@ -44,7 +56,25 @@ export class LeaderboardService {
           stat.rank = currentRank;
         });
 
-        return stats;
+        // Sort and assign first submission ranks
+        stats.sort((a, b) => b.firstCount - a.firstCount);
+        currentRank = 1;
+        let currentFirstCount = -1;
+        sameRankCount = 0;
+
+        stats.forEach((stat, index) => {
+          if (stat.firstCount !== currentFirstCount) {
+            currentRank = index + 1 - sameRankCount;
+            currentFirstCount = stat.firstCount;
+            sameRankCount = 0;
+          } else {
+            sameRankCount++;
+          }
+          stat.firstRank = currentRank;
+        });
+
+        // Return to original total submission sort
+        return stats.sort((a, b) => b.count - a.count);
       })
     );
   }

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Firestore, doc, getDoc, setDoc, collection, getDocs } from '@angular/fire/firestore';
-import { Observable, from, map, of, combineLatest } from 'rxjs';
-import { catchError, switchMap } from 'rxjs/operators';
+import { Observable, from, of, combineLatest } from 'rxjs';
+import { catchError, map, switchMap } from 'rxjs/operators';
 import { UserBadges, ContributorBadges } from '../models/user-badges.interface';
 import { LeaderboardService } from './leaderboard.service';
 
@@ -25,6 +25,7 @@ export class BadgeService {
             return contributors.map(contributor => ({
               username: contributor.name,
               submissionCount: contributor.count,
+              firstCount: contributor.firstCount,
               badges: badgesMap[contributor.name] || {
                 badge1: false,
                 badge2: false,

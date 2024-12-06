@@ -55,6 +55,14 @@ import { UrlTransformerService } from '../../services/url-transformer.service';
             />
             User Wiki Updated
           </label>
+
+          <label>
+            <input
+              type="checkbox"
+              [(ngModel)]="submission.firstSub"
+            />
+            First Submission
+          </label>
         </div>
 
         <div class="button-group">
@@ -96,8 +104,7 @@ import { UrlTransformerService } from '../../services/url-transformer.service';
       (cancel)="showDeleteConfirm = false">
     </app-confirm-modal>
   `,
-  styles: [
-    `
+  styles: [`
     .modal-backdrop {
       position: fixed;
       top: 0;
@@ -262,8 +269,7 @@ import { UrlTransformerService } from '../../services/url-transformer.service';
     .btn-yt-info:hover {
       background: #cc0000;
     }
-  `,
-  ],
+  `]
 })
 export class SubmissionEditModalComponent {
   @Input() song!: SongWithSubmissions;
@@ -285,6 +291,7 @@ export class SubmissionEditModalComponent {
     contributor: '',
     songWikiUpdated: false,
     userWikiUpdated: false,
+    firstSub: false
   };
 
   ngOnInit(): void {
@@ -298,6 +305,7 @@ export class SubmissionEditModalComponent {
           contributor: currentSubmission.contributor,
           songWikiUpdated: currentSubmission.songWikiUpdated,
           userWikiUpdated: currentSubmission.userWikiUpdated,
+          firstSub: currentSubmission.firstSub
         };
       }
     }

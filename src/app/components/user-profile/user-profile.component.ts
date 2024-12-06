@@ -12,18 +12,27 @@ import { SongWithSubmissions } from '../../models/song-with-submissions.interfac
   standalone: true,
   imports: [CommonModule, SongItemComponent],
   template: `
-    <div class="profile-container change" *ngIf="userStats$ | async as stats">
+    <div class="profile-container" *ngIf="userStats$ | async as stats">
       <div class="profile-header">
         <div class="profile-info">
           <h1 class="username">{{stats.username}}</h1>
-          <div class="rank-badge" [class]="getRankClass(stats.rank)">
-            Rank #{{stats.rank}}
+          <div class="rank-badges">
+            <div class="rank-badge" [class]="getRankClass(stats.rank)">
+              Rank #{{stats.rank}}
+            </div>
+            <div class="rank-badge firsts" [class]="getRankClass(stats.firstRank)">
+              Firsts Rank #{{stats.firstRank}}
+            </div>
           </div>
         </div>
         <div class="stats-grid">
           <div class="stat-item">
             <span class="stat-label">Total Submissions</span>
             <span class="stat-value">{{stats.submissionCount}}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">First Submissions</span>
+            <span class="stat-value">{{stats.firstSubmissionCount}}</span>
           </div>
           <div class="stat-item">
             <span class="stat-label">Highest Difficulty</span>
@@ -84,6 +93,16 @@ import { SongWithSubmissions } from '../../models/song-with-submissions.interfac
       margin: 0;
       font-size: 2rem;
       color: #333;
+    }
+
+    .rank-badges {
+      display: flex;
+      gap: 10px;
+    }
+
+    .rank-badge.firsts {
+      background: linear-gradient(135deg, #28aad1 0%, #3dbde4 100%);
+      color: white;
     }
 
     .rank-badge {

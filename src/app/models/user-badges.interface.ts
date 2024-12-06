@@ -7,5 +7,6 @@ export interface UserBadges {
 export interface ContributorBadges {
   username: string;
   submissionCount: number;
+  firstCount: number;
   badges: UserBadges;
 }

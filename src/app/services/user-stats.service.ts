@@ -31,20 +31,23 @@ export class UserStatsService {
           throw new Error('User not found');
         }
 
-        const highestDifficulty = Math.max(
-          ...userSongs.map((song: SongWithSubmissions) => song.difficulty)
-        );
+        const difficulties = userSongs.map(song => song.difficulty);
+        const highestDifficulty = Math.max(...difficulties, 0);
+        const lowestDifficulty = Math.min(...difficulties, 0);
+        const avgDifficulty = difficulties.length > 0 
+          ? difficulties.reduce((a, b) => a + b, 0) / difficulties.length 
+          : 0;
 
-        const lowestDifficulty = Math.min(
-            ...userSongs.map((song: SongWithSubmissions) => song.difficulty)
+        const firstSubmissions = userSongs.filter(song => 
+          song.submissions.some(sub => sub.contributor === username && sub.firstSub)
         );
-
-        const avgDifficulty = (userSongs.reduce((sum, s) => sum + s.difficulty, 0)) / userSongs.length;
 
         return {
           username,
           rank: contributor.rank,
+          firstRank: contributor.firstRank,
           submissionCount: contributor.count,
+          firstSubmissionCount: contributor.firstCount,
           highestDifficulty,
           lowestDifficulty,
           avgDifficulty,

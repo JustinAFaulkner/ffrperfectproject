@@ -37,7 +37,10 @@ import { map } from 'rxjs/operators';
         <div *ngFor="let contributor of filteredContributors$ | async" class="contributor-item">
           <div class="contributor-info">
             <span class="contributor-name">{{ contributor.username }}</span>
-            <span class="submission-count">{{ contributor.submissionCount }} submissions</span>
+            <span class="submission-count">
+              {{ contributor.submissionCount }} submissions 
+              <span class="first-count">({{ contributor.firstCount }} firsts)</span>
+            </span>
           </div>
           <div class="badge-section">
             <span class="badge-label">Badges:</span>
@@ -110,6 +113,15 @@ import { map } from 'rxjs/operators';
       background: #333;
       border-color: #444;
       color: #e0e0e0;
+    }
+
+    .first-count {
+      color: #28aad1;
+      margin-left: 0.25rem;
+    }
+
+    :host-context(body.dark-mode) .first-count {
+      color: #3dbde4;
     }
 
     /* Toggle Switch Styles */

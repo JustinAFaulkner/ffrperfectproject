@@ -81,8 +81,7 @@ import { UrlTransformerService } from '../../services/url-transformer.service';
       (close)="showYtInfo = false">
     </app-youtube-info-modal>
   `,
-  styles: [
-    `
+  styles: [`
     .modal-backdrop {
       position: fixed;
       top: 0;
@@ -223,8 +222,7 @@ import { UrlTransformerService } from '../../services/url-transformer.service';
     .btn-yt-info:hover {
       background: #cc0000;
     }
-  `,
-  ],
+  `]
 })
 export class SubmissionModalComponent {
   @Input() song!: SongWithSubmissions;
@@ -241,6 +239,7 @@ export class SubmissionModalComponent {
     contributor: '',
     songWikiUpdated: false,
     userWikiUpdated: false,
+    firstSub: false
   };
 
   get isValid(): boolean {

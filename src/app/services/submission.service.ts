@@ -23,7 +23,6 @@ export class SubmissionService {
   private submissionsCache$ = new ReplaySubject<Record<string, Submission[]>>(1);
   private initialized = false;
   
-  // New subject to notify of submission updates
   private submissionUpdatesSubject = new Subject<void>();
   public submissionUpdates$ = this.submissionUpdatesSubject.asObservable();
 
@@ -53,6 +52,14 @@ export class SubmissionService {
         contributor: data['contributor'] as string,
         songWikiUpdated: data['songWikiUpdated'] as boolean,
         userWikiUpdated: data['userWikiUpdated'] as boolean,
+        firstSub: data['firstSub'] as boolean || false
+      });
+
+      // Sort submissions to put firstSub=true first
+      submissionMap[songId].sort((a, b) => {
+        if (a.firstSub && !b.firstSub) return -1;
+        if (!a.firstSub && b.firstSub) return 1;
+        return 0;
       });
     });
 
@@ -72,38 +79,30 @@ export class SubmissionService {
       const submissionRef = doc(this.firestore, this.submissionsCollection, submissionId);
       const updateField = type === 'user' ? 'userWikiUpdated' : 'songWikiUpdated';
 
-      // Update Firestore
       await updateDoc(submissionRef, {
         [updateField]: true
       });
 
-      // Update cache
       const currentMap = await firstValueFrom(this.submissionsCache$);
       const updatedMap = { ...currentMap };
       
-      // Find and update the submission in the cache
       for (const songId in updatedMap) {
         const submissions = updatedMap[songId];
         const submissionIndex = submissions.findIndex((s: Submission) => s.id === submissionId);
         
         if (submissionIndex !== -1) {
-          // Create a new submission object with the updated status
           const updatedSubmission = {
             ...submissions[submissionIndex],
             [type === 'user' ? 'userWikiUpdated' : 'songWikiUpdated']: true
           };
           
-          // Update the submission in the array
           updatedMap[songId] = [
             ...submissions.slice(0, submissionIndex),
             updatedSubmission,
             ...submissions.slice(submissionIndex + 1)
           ];
           
-          // Update the cache
           this.submissionsCache$.next(updatedMap);
-          
-          // Notify subscribers of the update
           this.submissionUpdatesSubject.next();
           break;
         }
@@ -118,6 +117,10 @@ export class SubmissionService {
     try {
       const submissionsRef = collection(this.firestore, this.submissionsCollection);
 
+      // Check if this is the first submission for this song
+      const currentMap = await firstValueFrom(this.submissionsCache$);
+      const isFirstSubmission = !currentMap[songId] || currentMap[songId].length === 0;
+
       // Prepare the data for Firestore
       const submissionData = {
         songId: Number(songId),
@@ -125,13 +128,15 @@ export class SubmissionService {
         contributor: submission.contributor,
         songWikiUpdated: submission.songWikiUpdated,
         userWikiUpdated: submission.userWikiUpdated,
+        firstSub: isFirstSubmission // Set firstSub based on whether this is the first submission
       };
 
       // Add to Firestore
       const docRef = await addDoc(submissionsRef, submissionData);
 
-      // Update the submission with the new ID
+      // Update the submission with the new ID and firstSub status
       submission.id = docRef.id;
+      submission.firstSub = isFirstSubmission;
 
       // Update cache
       this.submissionsCache$.pipe(take(1)).subscribe((currentMap) => {
@@ -164,6 +169,7 @@ export class SubmissionService {
         contributor: submission.contributor,
         songWikiUpdated: submission.songWikiUpdated,
         userWikiUpdated: submission.userWikiUpdated,
+        firstSub: submission.firstSub
       };
 
       // Update in Firestore
