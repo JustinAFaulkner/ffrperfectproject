@@ -37,6 +37,9 @@ import { SongSyncService } from '../../services/song-sync.service'
       <div class="corner-mark" [class.completed]="hasSubmissions">
         <i class="fas fa-check"></i>
       </div>
+      <div class="first-mark" *ngIf="showFirstIndicator && isFirstSubmission">
+        <span>1st</span>
+      </div>
       <div class="song-header" (click)="toggleExpand()">
         <div class="song-diff">
           {{song.difficulty}}
@@ -184,6 +187,27 @@ import { SongSyncService } from '../../services/song-sync.service'
 
     .corner-mark.completed i {
       opacity: 1;
+    }
+
+    .first-mark {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-width: 0 2rem 2rem 0;
+      border-color: transparent #28aad1 transparent transparent;
+      z-index: 1;
+    }
+
+    .first-mark span {
+      position: absolute;
+      top: 0.05rem;
+      right: -1.8rem;
+      color: white;
+      font-size: 0.7rem;
+      font-weight: bold;
     }
 
     .song-item.has-video {
@@ -509,7 +533,12 @@ import { SongSyncService } from '../../services/song-sync.service'
 export class SongItemComponent {
   @Input() song!: SongWithSubmissions;
   @Input() isExpanded: boolean = false;
+  @Input() showFirstIndicator: boolean = false;
   @Output() expandToggle = new EventEmitter<void>();
+
+  get isFirstSubmission(): boolean {
+    return this.song.submissions.some(sub => sub.firstSub);
+  }
 
   currentSubmissionIndex: number = 0;
   showModal: boolean = false;

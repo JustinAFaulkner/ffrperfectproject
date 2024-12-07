@@ -62,6 +62,7 @@ import { SongWithSubmissions } from '../../models/song-with-submissions.interfac
           *ngFor="let song of stats.songs"
           [song]="filterSubmissionsForUser(song, stats.username)"
           [isExpanded]="expandedSong === song.id"
+          [showFirstIndicator]="true"
           (expandToggle)="toggleSong(song)">
         </app-song-item>
       </div>
