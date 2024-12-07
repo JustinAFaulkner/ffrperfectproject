@@ -1,8 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Firestore, collection, doc, setDoc, getDocs } from '@angular/fire/firestore';
+import {
+  Firestore,
+  collection,
+  doc,
+  setDoc,
+  getDocs,
+} from '@angular/fire/firestore';
 import { environment } from '../../environments/environment';
 import { firstValueFrom } from 'rxjs';
+import { SongService } from './song.service';
 
 interface FFRSong {
   id: number;
@@ -21,11 +28,11 @@ interface FFRSong {
 }
 
 interface FFRApiResponse {
-    [key: string]: FFRSong;
+  [key: string]: FFRSong;
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class SongSyncService {
   private readonly apiUrl = 'https://www.flashflashrevolution.com/api/api.php';
@@ -33,25 +40,40 @@ export class SongSyncService {
 
   constructor(
     private http: HttpClient,
-    private firestore: Firestore
+    private firestore: Firestore,
+    private songService: SongService
   ) {}
 
   private convertGenre(genreId: number): string {
-    switch(genreId) {
-      case 1: return 'Dance';
-      case 2: return 'Dance 2';
-      case 3: return 'Funk';
-      case 4: return 'Arcade';
-      case 5: return 'Rock';
-      case 6: return 'Classical';
-      case 7: return 'Misc';
-      case 8: return 'Secret';
-      case 9: return 'Purchased';
-      case 10: return 'Token';
-      case 11: return 'Hip-Hop';
-      case 12: return 'Skill Token';
-      case 13: return 'Legacy';
-      default: return 'Unknown';
+    switch (genreId) {
+      case 1:
+        return 'Dance';
+      case 2:
+        return 'Dance 2';
+      case 3:
+        return 'Funk';
+      case 4:
+        return 'Arcade';
+      case 5:
+        return 'Rock';
+      case 6:
+        return 'Classical';
+      case 7:
+        return 'Misc';
+      case 8:
+        return 'Secret';
+      case 9:
+        return 'Purchased';
+      case 10:
+        return 'Token';
+      case 11:
+        return 'Hip-Hop';
+      case 12:
+        return 'Skill Token';
+      case 13:
+        return 'Legacy';
+      default:
+        return 'Unknown';
     }
   }
 
@@ -60,12 +82,54 @@ export class SongSyncService {
     return minutes * 60 + seconds;
   }
 
-  async syncNewSongs(): Promise<{ added: number, existing: number }> {
+  async resyncSong(songId: string): Promise<boolean> {
+    try {
+      // Fetch song from FFR API
+      const response = await firstValueFrom(
+        this.http.get<Record<string, any>>(
+          `${this.apiUrl}?action=songlist&key=${environment.ffrApi.key}&levelid=${songId}`
+        )
+      );
+
+      // Get the first (and should be only) song from response
+      const song = Object.values(response)[0];
+      if (!song) {
+        throw new Error('Song not found in API response');
+      }
+
+      // Update song in Firestore
+      const songDoc = doc(this.firestore, this.songsCollection, songId);
+      await setDoc(songDoc, {
+        title: song.name,
+        artist: song.author,
+        stepArtist: song.stepauthor,
+        genre: this.convertGenre(song.genre),
+        difficulty: song.difficulty,
+        seconds: this.convertLength(song.length),
+        arrows: song.note_count,
+        min_nps: song.min_nps,
+        max_nps: song.max_nps,
+        release: new Date(song.timestamp * 1000),
+      }, { merge: true });
+
+      // Notify SongService of the update
+      this.songService.notifySongUpdate(songId);
+
+      return true;
+    } catch (error) {
+      console.error('Error resyncing song:', error);
+      throw error;
+    }
+  }
+
+  async syncNewSongs(): Promise<{ added: number; existing: number }> {
     try {
       // Get existing song IDs from Firestore
       const existingSongs = new Set<string>();
-      const snapshot = await getDocs(collection(this.firestore, this.songsCollection));
-      snapshot.forEach(doc => existingSongs.add(doc.id));
+      const snapshot = await getDocs(
+        collection(this.firestore, this.songsCollection)
+      );
+      snapshot.forEach((doc) => existingSongs.add(doc.id));
 
       // Fetch songs from FFR API
       const response = await firstValueFrom(
@@ -78,13 +142,17 @@ export class SongSyncService {
       let existing = 0;
 
       // Process each song
-      for (const [id, song] of Object.entries(response)) {        
-        if (added > 1) {
-            break;
+      for (const [id, song] of Object.entries(response)) {
+        if (added > 10) {
+          break;
         }
 
         if (!existingSongs.has(song.id.toString())) {
-          const songDoc = doc(this.firestore, this.songsCollection, song.id.toString());
+          const songDoc = doc(
+            this.firestore,
+            this.songsCollection,
+            song.id.toString()
+          );
           await setDoc(songDoc, {
             title: song.name,
             artist: song.author,
@@ -95,7 +163,7 @@ export class SongSyncService {
             arrows: song.note_count,
             min_nps: song.min_nps,
             max_nps: song.max_nps,
-            release: new Date(song.timestamp * 1000) //Multiple by 1000 as this timestamp is in seconds compared to milliseconds
+            release: new Date(song.timestamp * 1000), //Multiple by 1000 as this timestamp is in seconds compared to milliseconds
           });
           added++;
         } else {

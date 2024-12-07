@@ -8,6 +8,7 @@ import { SubmissionModalComponent } from '../submission-modal/submission-modal.c
 import { Submission } from '../../models/submission.interface';
 import { SubmissionEditModalComponent } from '../submission-modal/submission-edit-modal.component';
 import { AuthService } from '../../services/auth.service';
+import { SongSyncService } from '../../services/song-sync.service'
 
 @Component({
   selector: 'app-song-item',
@@ -521,7 +522,8 @@ export class SongItemComponent {
   constructor(
     private sanitizer: DomSanitizer,
     private submissionService: SubmissionService,
-    private authService: AuthService
+    private authService: AuthService,
+    private songSyncService: SongSyncService
   ) {}
 
   get hasSubmissions(): boolean {
@@ -556,9 +558,13 @@ export class SongItemComponent {
     this.showEditModal = true;
   }
 
-  resyncSongDetails(event: Event) {
+  async resyncSongDetails(event: Event) {
     event.stopPropagation();
-    //Trigger a resync API call on this.song.id
+    try {
+      await this.songSyncService.resyncSong(this.song.id);
+    } catch (error) {
+      console.error('Error resyncing song:', error);
+    }
   }
 
   hideSubmissionModal() {

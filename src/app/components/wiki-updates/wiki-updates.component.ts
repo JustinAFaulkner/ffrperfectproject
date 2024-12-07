@@ -341,35 +341,6 @@ export class WikiUpdatesComponent implements OnInit, OnDestroy {
   showWikiText(group: WikiUpdateGroup) {
     this.selectedGroup = group;
     this.showModal = true;
-
-    /*this.songService.getSongs().subscribe(songs => {
-      this.submissionService.getAllSubmissions().subscribe(submissionMap => {
-        if (this.isUserWiki) {
-          // For user wiki, we need all songs for this contributor
-          const songIds = group.items.map(item => item.songId);
-          const relevantSongs = songs.filter(song => songIds.includes(song.id));
-          
-          // Create an array of submissions with their corresponding songs
-          this.selectedSubmissions = group.items.map(item => {
-            const song = songs.find(s => s.id === item.songId)!;
-            const submission = submissionMap[item.songId].find(
-              sub => sub.contributor === group.key
-            )!;
-            return submission;
-          });
-          
-          // Use any song for context (it's only used for the title format)
-          this.selectedSong = relevantSongs[0];
-        } else {
-          // For song wiki, we need all contributors for this song
-          this.selectedSong = songs.find(song => song.title === group.key)!;
-          this.selectedSubmissions = submissionMap[this.selectedSong.id].filter(
-            sub => !sub.songWikiUpdated
-          );
-        }
-        this.showModal = true;
-      });
-    });*/
   }
   
   

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Song } from '../models/song.interface';
 import { SongWithSubmissions } from '../models/song-with-submissions.interface';
 import { SubmissionService } from './submission.service';
-import { Observable, BehaviorSubject, from } from 'rxjs';
+import { Observable, BehaviorSubject, from, Subject } from 'rxjs';
 import { map, switchMap, take } from 'rxjs/operators';
 import {
   Firestore,
@@ -19,6 +19,10 @@ export class SongService {
   private readonly songsCollection = 'songs';
   private songsSubject = new BehaviorSubject<SongWithSubmissions[]>([]);
   public songs$ = this.songsSubject.asObservable();
+  
+  // Add a subject for song updates
+  private songUpdateSubject = new Subject<string>();
+  public songUpdate$ = this.songUpdateSubject.asObservable();
 
   constructor(
     private firestore: Firestore,
@@ -30,6 +34,16 @@ export class SongService {
     this.submissionService.submissionUpdates$.subscribe(() => {
       this.loadSongs();
     });
+
+    // Subscribe to song updates
+    this.songUpdate$.subscribe(() => {
+      this.loadSongs();
+    });
+  }
+
+  // Add method to notify of song updates
+  notifySongUpdate(songId: string) {
+    this.songUpdateSubject.next(songId);
   }
 
   private loadSongs(): void {
