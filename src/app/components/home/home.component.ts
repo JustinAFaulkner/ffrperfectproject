@@ -19,9 +19,9 @@ import { ProjectSidebarComponent } from './project-sidebar.component';
         <app-project-stats></app-project-stats>
         <app-project-info></app-project-info>
       </div>
-      <aside class="sidebar">
+      <div class="sidebar">
         <app-project-sidebar></app-project-sidebar>
-      </aside>
+      </div>
     </div>
   `,
   styles: [`
@@ -34,19 +34,37 @@ import { ProjectSidebarComponent } from './project-sidebar.component';
       padding: 1rem;
     }
 
+    .main-content {
+      min-width: 0; /* Prevents content from overflowing */
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 1rem;
+      height: fit-content;
+    }
+
     @media (max-width: 1024px) {
       .home-container {
         grid-template-columns: 1fr;
+        gap: 1rem;
       }
 
       .sidebar {
-        order: -1;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+        position: static;
       }
     }
 
     @media (max-width: 768px) {
       .home-container {
-        padding: 0;
+        padding: 0.5rem;
+      }
+
+      .sidebar {
+        display: block;
       }
     }
   `]

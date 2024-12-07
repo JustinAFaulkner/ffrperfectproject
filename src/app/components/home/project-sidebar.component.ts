@@ -50,14 +50,15 @@ import { CommonModule } from '@angular/common';
   `,
   styles: [`
     .sidebar-container {
-      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
     }
 
     .sidebar-section {
       background: white;
       border-radius: 8px;
       padding: 1.5rem;
-      margin-bottom: 1rem;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       transition: background-color 0.3s;
     }
@@ -147,9 +148,19 @@ import { CommonModule } from '@angular/common';
       background: #444;
     }
 
+    @media (max-width: 1024px) {
+      .sidebar-section {
+        margin: 0;
+      }
+    }
+
     @media (max-width: 768px) {
       .sidebar-container {
-        padding: 0;
+        gap: 0.5rem;
+      }
+
+      .sidebar-section {
+        padding: 1rem;
       }
     }
   `]
