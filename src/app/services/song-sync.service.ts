@@ -1,34 +1,16 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import {
-  Firestore,
-  collection,
-  doc,
-  setDoc,
-  getDocs,
-} from '@angular/fire/firestore';
 import { environment } from '../../environments/environment';
 import { firstValueFrom } from 'rxjs';
-import { SongService } from './song.service';
 
-interface FFRSong {
-  id: number;
-  name: string;
-  author: string;
-  stepauthor: string;
-  genre: number;
-  difficulty: number;
-  length: string;
-  note_count: number;
-  min_nps: number;
-  max_nps: number;
-  timestamp: number;
-  timestamp_format: string;
-  swf_version: number;
+interface SyncResponse {
+  inserted: number;
+  msg: string;
 }
 
-interface FFRApiResponse {
-  [key: string]: FFRSong;
+interface RefreshResponse {
+  success: boolean;
+  msg: string;
 }
 
 @Injectable({
@@ -36,58 +18,48 @@ interface FFRApiResponse {
 })
 export class SongSyncService {
   private readonly apiUrl = 'https://www.flashflashrevolution.com/api/api.php';
-  private readonly songsCollection = 'songs';
+  private readonly syncUrl = 'https://ffrperfectproject.com/api/ffr-sync';
 
-  constructor(
-    private http: HttpClient,
-    private firestore: Firestore,
-    private songService: SongService
-  ) {}
+  constructor(private http: HttpClient) {}
 
-  private convertGenre(genreId: number): string {
-    switch (genreId) {
-      case 1:
-        return 'Dance';
-      case 2:
-        return 'Dance 2';
-      case 3:
-        return 'Funk';
-      case 4:
-        return 'Arcade';
-      case 5:
-        return 'Rock';
-      case 6:
-        return 'Classical';
-      case 7:
-        return 'Misc';
-      case 8:
-        return 'Secret';
-      case 9:
-        return 'Purchased';
-      case 10:
-        return 'Token';
-      case 11:
-        return 'Hip-Hop';
-      case 12:
-        return 'Skill Token';
-      case 13:
-        return 'Legacy';
-      default:
-        return 'Unknown';
+  async syncNewSongs(): Promise<SyncResponse> {
+    try {
+      // Step 1: Fetch songs from FFR API
+      const response = await firstValueFrom(
+        this.http.get(
+          `${this.apiUrl}?action=songlist&key=${environment.ffrApi.key}`,
+          { responseType: 'json' }
+        )
+      );
+
+      // Step 2: Send songs to sync endpoint as JSON
+      const payload = JSON.stringify({ songs: response });      
+      const syncResponse = await firstValueFrom(
+        this.http.post<SyncResponse>(
+          `${this.syncUrl}?action=sync-new`,
+          payload,
+          {
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }
+        )
+      );
+
+      return syncResponse;
+    } catch (error) {
+      console.error('Error syncing songs:', error);
+      throw error;
     }
-  }
-
-  private convertLength(length: string): number {
-    const [minutes, seconds] = length.split(':').map(Number);
-    return minutes * 60 + seconds;
   }
 
   async resyncSong(songId: string): Promise<boolean> {
     try {
-      // Fetch song from FFR API
+      // Step 1: Fetch song from FFR API
       const response = await firstValueFrom(
-        this.http.get<Record<string, any>>(
-          `${this.apiUrl}?action=songlist&key=${environment.ffrApi.key}&levelid=${songId}`
+        this.http.get(
+          `${this.apiUrl}?action=songlist&key=${environment.ffrApi.key}&levelid=${songId}`,
+          { responseType: 'json' }
         )
       );
 
@@ -97,83 +69,23 @@ export class SongSyncService {
         throw new Error('Song not found in API response');
       }
 
-      // Update song in Firestore
-      const songDoc = doc(this.firestore, this.songsCollection, songId);
-      await setDoc(songDoc, {
-        title: song.name,
-        artist: song.author,
-        stepArtist: song.stepauthor,
-        genre: this.convertGenre(song.genre),
-        difficulty: song.difficulty,
-        seconds: this.convertLength(song.length),
-        arrows: song.note_count,
-        min_nps: song.min_nps,
-        max_nps: song.max_nps,
-        release: new Date(song.timestamp * 1000),
-      }, { merge: true });
-
-      // Notify SongService of the update
-      this.songService.notifySongUpdate(songId);
-
-      return true;
-    } catch (error) {
-      console.error('Error resyncing song:', error);
-      throw error;
-    }
-  }
-
-  async syncNewSongs(): Promise<{ added: number; existing: number }> {
-    try {
-      // Get existing song IDs from Firestore
-      const existingSongs = new Set<string>();
-      const snapshot = await getDocs(
-        collection(this.firestore, this.songsCollection)
-      );
-      snapshot.forEach((doc) => existingSongs.add(doc.id));
-
-      // Fetch songs from FFR API
-      const response = await firstValueFrom(
-        this.http.get<FFRApiResponse>(
-          `${this.apiUrl}?action=songlist&key=${environment.ffrApi.key}`
+      // Step 2: Send song to refresh endpoint as JSON
+      const payload = JSON.stringify({ song: song });
+      const refreshResponse = await firstValueFrom(
+        this.http.post<RefreshResponse>(
+          `${this.syncUrl}?action=refresh-song`,
+          payload,
+          {
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }
         )
       );
 
-      let added = 0;
-      let existing = 0;
-
-      // Process each song
-      for (const [id, song] of Object.entries(response)) {
-        if (added > 10) {
-          break;
-        }
-
-        if (!existingSongs.has(song.id.toString())) {
-          const songDoc = doc(
-            this.firestore,
-            this.songsCollection,
-            song.id.toString()
-          );
-          await setDoc(songDoc, {
-            title: song.name,
-            artist: song.author,
-            stepArtist: song.stepauthor,
-            genre: this.convertGenre(song.genre),
-            difficulty: song.difficulty,
-            seconds: this.convertLength(song.length),
-            arrows: song.note_count,
-            min_nps: song.min_nps,
-            max_nps: song.max_nps,
-            release: new Date(song.timestamp * 1000), //Multiple by 1000 as this timestamp is in seconds compared to milliseconds
-          });
-          added++;
-        } else {
-          existing++;
-        }
-      }
-
-      return { added, existing };
+      return refreshResponse.success;
     } catch (error) {
-      console.error('Error syncing songs:', error);
+      console.error('Error resyncing song:', error);
       throw error;
     }
   }
