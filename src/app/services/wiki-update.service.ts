@@ -1,32 +1,23 @@
 import { Injectable } from '@angular/core';
-import { Firestore, doc, updateDoc } from '@angular/fire/firestore';
 import { SubmissionService } from './submission.service';
+import { LoggingService } from './logging.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class WikiUpdateService {
-  private readonly submissionsCollection = 'submissions';
-
   constructor(
-    private firestore: Firestore,
-    private submissionService: SubmissionService
+    private submissionService: SubmissionService,
+    private logger: LoggingService
   ) {}
 
   async toggleWikiStatus(submissionId: string, type: 'user' | 'song'): Promise<void> {
+    this.logger.info('Toggling wiki status', { submissionId, type });
     try {
-      const submissionRef = doc(this.firestore, this.submissionsCollection, submissionId);
-      const updateField = type === 'user' ? 'userWikiUpdated' : 'songWikiUpdated';
-      
-      // Update Firestore
-      await updateDoc(submissionRef, {
-        [updateField]: true
-      });
-
-      // Update in-memory cache through SubmissionService
       await this.submissionService.updateWikiStatus(submissionId, type);
+      this.logger.info('Wiki status updated successfully', { submissionId, type });
     } catch (error) {
-      console.error('Error updating wiki status:', error);
+      this.logger.error('Error updating wiki status', { submissionId, type, error });
       throw error;
     }
   }

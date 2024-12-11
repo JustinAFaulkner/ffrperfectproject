@@ -1,7 +1,7 @@
 export interface Submission {
   id: string;
   songId: number;
-  youtubeUrl: string;
+  url: string;
   contributor: string;
   songWikiUpdated: boolean;
   userWikiUpdated: boolean;

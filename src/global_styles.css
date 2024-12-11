@@ -12,33 +12,30 @@ body {
   transition: background-color 0.3s, color 0.3s;
 }
 
+/* Virtual Scrolling Styles */
+.cdk-virtual-scroll-viewport {
+  overflow-x: hidden !important;
+}
+
+.cdk-virtual-scroll-viewport::-webkit-scrollbar {
+  width: 0 !important;
+  display: none;
+}
+
+.cdk-virtual-scroll-viewport {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+.cdk-virtual-scroll-content-wrapper {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
 /* Dark mode styles */
 body.dark-mode {
   background-color: #1a1a1a;
   color: #e0e0e0;
-}
-
-body.dark-mode .search-input,
-body.dark-mode .number-input,
-body.dark-mode .difficulty-input,
-body.dark-mode .genre-select {
-  background-color: #2d2d2d;
-  color: #e0e0e0;
-  border-color: black;
-}
-
-body.dark-mode .video-toggle-group {
-  background-color: #2d2d2d;
-  border-color: black;
-}
-
-body.dark-mode .video-toggle-btn {
-  color: #e0e0e0;
-}
-
-body.dark-mode .video-toggle-btn.active {
-  background-color: black;
-  color: white;
 }
 
 /* Dark mode overrides */
@@ -91,10 +88,6 @@ body.dark-mode .source-toggle-loggedin:hover:not(.active) {
   background: #444;
 }
 
-body.dark-mode .edit-submission-btn {
-  border-color: #444;
-}
-
 body.dark-mode .stats-panel {
   background: #2d2d2d;
 }
@@ -110,11 +103,6 @@ body.dark-mode .stat-value {
 body.dark-mode .modal-content {
   background: #2d2d2d;
   color: #e0e0e0;
-}
-
-body.dark-mode .modal-header h2,
-body.dark-mode .modal-content h2 {
-  color: #e0e0e0 !important;
 }
 
 body.dark-mode .form-control {
@@ -140,32 +128,6 @@ body.dark-mode .btn-cancel:hover {
   background: #444;
 }
 
-/* Leaderboard dark mode */
-body.dark-mode .contributor-card {
-  background: #2d2d2d;
-  color: #e0e0e0;
-}
-
-body.dark-mode .contributor-card .name {
-  color: #e0e0e0;
-}
-
-body.dark-mode .contributor-card .count {
-  color: #e0e0e0;
-}
-
-body.dark-mode .contributor-card.gold {
-  background: linear-gradient(135deg, #2d2d2d, #ffd700 150%);
-}
-
-body.dark-mode .contributor-card.silver {
-  background: linear-gradient(135deg, #2d2d2d, #c0c0c0 150%);
-}
-
-body.dark-mode .contributor-card.bronze {
-  background: linear-gradient(135deg, #2d2d2d, #cd7f32 150%);
-}
-
 /* Profile page dark mode */
 body.dark-mode .profile-header {
   background: #2d2d2d;
@@ -178,5 +140,3 @@ body.dark-mode .username {
 body.dark-mode .submissions-title {
   color: #e0e0e0;
 }
-
-/* Add any additional global styles here */

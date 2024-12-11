@@ -197,7 +197,7 @@ export class YoutubeInfoModalComponent {
 
 Artist: ${this.song.artist}
 Difficulty: ${this.song.difficulty}
-Step Artist: ${this.song.stepartist}
+Step Artist: ${this.song.stepArtist}
 Length: ${formattedLength}
 
 ${this.song.artist}: 
@@ -207,6 +207,6 @@ ${this.contributor}: http://www.flashflashrevolution.com/profile/${this.contribu
   copyText(element: HTMLInputElement | HTMLTextAreaElement) {
     element.select();
     document.execCommand('copy');
-    element.setSelectionRange(0, 0); // Remove selection
+    element.setSelectionRange(0, 0);
   }
 }
