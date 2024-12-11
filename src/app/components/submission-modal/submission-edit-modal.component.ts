@@ -18,13 +18,13 @@ import { UrlTransformerService } from '../../services/url-transformer.service';
         <h3>{{ song.title }}</h3>
         <hr class="edit-hr"/>
         <div class="form-group">
-          <label for="youtubeUrl">YouTube URL</label>
+          <label for="url">YouTube URL</label>
           <input
             type="url"
-            id="youtubeUrl"
-            [(ngModel)]="submission.youtubeUrl"
+            id="url"
+            [(ngModel)]="submission.url"
             class="form-control"
-            value="{{ song.submissions[submissionIndex].youtubeUrl }}"
+            value="{{ song.submissions[submissionIndex].url }}"
           />
         </div>
 
@@ -287,7 +287,7 @@ export class SubmissionEditModalComponent {
   submission: Submission = {
     id: '',
     songId: 0,
-    youtubeUrl: '',
+    url: '',
     contributor: '',
     songWikiUpdated: false,
     userWikiUpdated: false,
@@ -301,7 +301,7 @@ export class SubmissionEditModalComponent {
         this.submission = {
           id: currentSubmission.id,
           songId: Number(this.song.id),
-          youtubeUrl: currentSubmission.youtubeUrl,
+          url: currentSubmission.url,
           contributor: currentSubmission.contributor,
           songWikiUpdated: currentSubmission.songWikiUpdated,
           userWikiUpdated: currentSubmission.userWikiUpdated,
@@ -313,8 +313,8 @@ export class SubmissionEditModalComponent {
 
   get isValid(): boolean {
     return (
-      (this.submission.youtubeUrl.includes('/watch?v=') ||
-        this.submission.youtubeUrl.includes('/embed/')) &&
+      (this.submission.url.includes('/watch?v=') ||
+        this.submission.url.includes('/embed/')) &&
       this.submission.contributor.trim() !== ''
     );
   }
@@ -330,10 +330,10 @@ export class SubmissionEditModalComponent {
 
   onSubmit(): void {
     if (this.isValid) {
-      if (this.submission.youtubeUrl.includes('/watch?v=')) {
-        this.submission.youtubeUrl = this.urlTransformer.transformYoutubeUrl(this.submission.youtubeUrl as string);
+      if (this.submission.url.includes('/watch?v=')) {
+        this.submission.url = this.urlTransformer.transformYoutubeUrl(this.submission.url as string);
       }
-      
+
       this.submit.emit({ ...this.submission });
     }
   }

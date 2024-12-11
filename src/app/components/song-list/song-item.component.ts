@@ -8,7 +8,7 @@ import { SubmissionModalComponent } from '../submission-modal/submission-modal.c
 import { Submission } from '../../models/submission.interface';
 import { SubmissionEditModalComponent } from '../submission-modal/submission-edit-modal.component';
 import { AuthService } from '../../services/auth.service';
-import { SongSyncService } from '../../services/song-sync.service'
+import { SongSyncService } from '../../services/song-sync.service';
 
 @Component({
   selector: 'app-song-item',
@@ -49,7 +49,7 @@ import { SongSyncService } from '../../services/song-sync.service'
           <span class="song-subtitle">
             <span>{{ song.artist }}</span>
             <span *ngIf="!isExpanded">
-                Stepped by: {{song.stepartist}}
+                Stepped by: {{song.stepArtist}}
             </span>
           </span>
         </div>
@@ -113,9 +113,9 @@ import { SongSyncService } from '../../services/song-sync.service'
             </button>
           </div>    
         </div>
-        <div class="video-container" *ngIf="currentSubmission?.youtubeUrl; else noVideo">
+        <div class="video-container" *ngIf="hasSubmissions && currentSubmission?.url; else noVideo">
           <iframe
-            [src]="getSafeUrl(currentSubmission.youtubeUrl)"
+            [src]="getSafeUrl(currentSubmission.url)"
             frameborder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowfullscreen>

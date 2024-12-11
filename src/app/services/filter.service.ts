@@ -11,15 +11,16 @@ export class FilterService {
     filters: SongFilters
   ): SongWithSubmissions[] {
     let filteredSongs = songs.filter((song) => {
-      const searchLower = filters.searchTerm.toLowerCase();
+      const searchLower = (filters.searchTerm || '').toLowerCase();
 
       const matchesSearch =
-        song.title.toLowerCase().includes(searchLower) ||
-        song.artist.toLowerCase().includes(searchLower) ||
-        song.stepartist?.toLowerCase().includes(searchLower) ||
+        !searchLower ||
+        song.title?.toLowerCase().includes(searchLower) ||
+        song.artist?.toLowerCase().includes(searchLower) ||
+        song.stepArtist?.toLowerCase().includes(searchLower) ||
         song.style?.toLowerCase().includes(searchLower) ||
         song.submissions.some((submission) =>
-          submission.contributor.toLowerCase().includes(searchLower)
+          submission.contributor?.toLowerCase().includes(searchLower)
         );
 
       const matchesGenre = !filters.genre || song.genre === filters.genre;
@@ -57,13 +58,13 @@ export class FilterService {
           comparison = Number(a.id) - Number(b.id);
           break;
         case 'title':
-          comparison = a.title.localeCompare(b.title);
+          comparison = (a.title || '').localeCompare(b.title || '');
           break;
         case 'difficulty':
-          comparison = a.difficulty - b.difficulty;
+          comparison = (a.difficulty || 0) - (b.difficulty || 0);
           break;
         case 'seconds':
-          comparison = a.seconds - b.seconds;
+          comparison = (a.seconds || 0) - (b.seconds || 0);
           break;
       }
       return filters.sortDirection === 'asc' ? comparison : -comparison;

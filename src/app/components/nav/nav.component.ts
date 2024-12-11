@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
-import { Router } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { LoginModalComponent } from '../login/login-modal.component';
 import { AuthService } from '../../services/auth.service';
 import { SongSyncService } from '../../services/song-sync.service';
@@ -470,6 +469,7 @@ export class NavComponent {
       alert('Error syncing songs. Please try again.');
     } finally {
       this.isSyncing = false;
+      this.showMobileMenu = false;
     }
   }
 }

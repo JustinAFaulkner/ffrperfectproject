@@ -16,11 +16,11 @@ import { UrlTransformerService } from '../../services/url-transformer.service';
         <h2>Add New Submission</h2>
         
         <div class="form-group">
-          <label for="youtubeUrl">YouTube URL</label>
+          <label for="url">YouTube URL</label>
           <input
             type="url"
-            id="youtubeUrl"
-            [(ngModel)]="submission.youtubeUrl"
+            id="url"
+            [(ngModel)]="submission.url"
             class="form-control"
             placeholder="https://www.youtube.com/watch?v=..."
           />
@@ -235,7 +235,7 @@ export class SubmissionModalComponent {
   submission: Submission = {
     id: 'A',
     songId: 0,
-    youtubeUrl: '',
+    url: '',
     contributor: '',
     songWikiUpdated: false,
     userWikiUpdated: false,
@@ -244,8 +244,8 @@ export class SubmissionModalComponent {
 
   get isValid(): boolean {
     return (
-      (this.submission.youtubeUrl.includes('/watch?v=') ||
-        this.submission.youtubeUrl.includes('/embed/')) &&
+      (this.submission.url.includes('/watch?v=') ||
+        this.submission.url.includes('/embed/')) &&
       this.submission.contributor.trim() !== ''
     );
   }
@@ -256,8 +256,8 @@ export class SubmissionModalComponent {
 
   onSubmit(): void {
     if (this.isValid) {
-      if (this.submission.youtubeUrl.includes('/watch?v=')) {
-        this.submission.youtubeUrl = this.urlTransformer.transformYoutubeUrl(this.submission.youtubeUrl as string);
+      if (this.submission.url.includes('/watch?v=')) {
+        this.submission.url = this.urlTransformer.transformYoutubeUrl(this.submission.url as string);
       }
 
       this.submit.emit({ ...this.submission });

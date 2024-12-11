@@ -39,7 +39,8 @@ import { map } from 'rxjs/operators';
       </div>
     </div>
   `,
-  styles: [`
+  styles: [
+    `
     .stats-panel {
       background: white;
       border-radius: 8px;
@@ -84,7 +85,8 @@ import { map } from 'rxjs/operators';
         justify-content: space-around;
       }
     }
-  `]
+  `,
+  ],
 })
 export class StatsPanelComponent {
   songlist = this.songService.getSongs();
