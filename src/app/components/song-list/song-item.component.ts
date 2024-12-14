@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { animate, style, transition, trigger } from '@angular/animations';
@@ -9,15 +9,15 @@ import { Submission } from '../../models/submission.interface';
 import { SubmissionEditModalComponent } from '../submission-modal/submission-edit-modal.component';
 import { AuthService } from '../../services/auth.service';
 import { SongSyncService } from '../../services/song-sync.service';
+import { ModalService } from '../../services/modal.service';
 
 @Component({
   selector: 'app-song-item',
   standalone: true,
   imports: [
     CommonModule,
-    SubmissionModalComponent,
-    SubmissionEditModalComponent,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   animations: [
     trigger('expandCollapse', [
       transition(':enter', [
@@ -536,10 +536,6 @@ export class SongItemComponent {
   @Input() showFirstIndicator: boolean = false;
   @Output() expandToggle = new EventEmitter<void>();
 
-  get isFirstSubmission(): boolean {
-    return this.song.submissions.some(sub => sub.firstSub);
-  }
-
   currentSubmissionIndex: number = 0;
   showModal: boolean = false;
   showEditModal: boolean = false;
@@ -552,8 +548,13 @@ export class SongItemComponent {
     private sanitizer: DomSanitizer,
     private submissionService: SubmissionService,
     private authService: AuthService,
-    private songSyncService: SongSyncService
+    private songSyncService: SongSyncService,
+    private modalService: ModalService
   ) {}
+
+  get isFirstSubmission(): boolean {
+    return this.song.submissions.some(sub => sub.firstSub);
+  }
 
   get hasSubmissions(): boolean {
     return this.song.submissions.length > 0;
@@ -577,14 +578,45 @@ export class SongItemComponent {
 
   showSubmissionModal(event: Event) {
     event.stopPropagation();
-    this.showModal = true;
+    const modalRef = this.modalService.open<SubmissionModalComponent>(SubmissionModalComponent, {
+      song: this.song,
+      cancel: new EventEmitter<void>(),
+      submit: new EventEmitter<Submission>()
+    });
+
+    modalRef.instance.cancel.subscribe(() => {
+      this.modalService.closeModal();
+    });
+
+    modalRef.instance.submit.subscribe(async (submission: Submission) => {
+      await this.handleSubmissionAdd(submission);
+      this.modalService.closeModal();
+    });
   }
 
   showSubmissionEditModal(event: Event, submissionIndex: number) {
     event.stopPropagation();
-    this.selectedSong = this.song;
-    this.selectedIndex = submissionIndex;
-    this.showEditModal = true;
+    const modalRef = this.modalService.open<SubmissionEditModalComponent>(SubmissionEditModalComponent, {
+      song: this.song,
+      submissionIndex,
+      cancel: new EventEmitter<void>(),
+      delete: new EventEmitter<void>(),
+      submit: new EventEmitter<Submission>()
+    });
+
+    modalRef.instance.cancel.subscribe(() => {
+      this.modalService.closeModal();
+    });
+
+    modalRef.instance.delete.subscribe(async () => {
+      await this.handleSubmissionDelete();
+      this.modalService.closeModal();
+    });
+
+    modalRef.instance.submit.subscribe(async (submission: Submission) => {
+      await this.handleSubmissionEdit(submission);
+      this.modalService.closeModal();
+    });
   }
 
   async resyncSongDetails(event: Event) {
