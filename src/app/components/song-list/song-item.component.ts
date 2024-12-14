@@ -131,22 +131,6 @@ import { ModalService } from '../../services/modal.service';
         </ng-template>
       </div>
     </div>
-
-    <app-submission-modal
-      *ngIf="showModal"
-      [song]="song"
-      (cancel)="hideSubmissionModal()"
-      (submit)="handleSubmissionAdd($event)">
-    </app-submission-modal>
-
-    <app-submission-edit-modal
-      *ngIf="showEditModal"
-      [song]="selectedSong"
-      [submissionIndex]="selectedIndex"
-      (delete)="handleSubmissionDelete()"
-      (cancel)="hideSubmissionEditModal()"
-      (submit)="handleSubmissionEdit($event)">
-    </app-submission-edit-modal>
   `,
   styles: [
     `
