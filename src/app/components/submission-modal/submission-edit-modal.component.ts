@@ -14,7 +14,12 @@ import { UrlTransformerService } from '../../services/url-transformer.service';
   template: `
     <div class="modal-backdrop" (click)="onCancel()">
       <div class="modal-content" (click)="$event.stopPropagation()">
-        <h2>Edit Submission</h2>
+        <div class="modal-header">
+          <h2>Edit Submission</h2>
+          <button class="btn-delete" (click)="showDeleteConfirm = true">
+            <i class="fa fa-trash trash-icon"></i>
+          </button>
+        </div>
         <h3>{{ song.title }}</h3>
         <hr class="edit-hr"/>
         <div class="form-group">
@@ -66,15 +71,11 @@ import { UrlTransformerService } from '../../services/url-transformer.service';
         </div>
 
         <div class="button-group">
-          <button class="btn-delete" (click)="showDeleteConfirm = true">
-            <i class="fa fa-trash trash-icon"></i>
-            Delete
-          </button>
-          <div class="button-group-right">
-            <button class="btn-yt-info" (click)="showYtInfo = true">
+          <button class="btn-yt-info" (click)="showYtInfo = true">
               <i class="fab fa-youtube"></i>
               YT Info
-            </button>
+          </button>
+          <div class="button-group-right">
             <button class="btn-cancel" (click)="onCancel()">Cancel</button>
             <button 
               class="btn-submit" 
@@ -238,14 +239,19 @@ import { UrlTransformerService } from '../../services/url-transformer.service';
       margin-bottom: 8px;
     }
 
-    .btn-delete {
+    .modal-header {
       display: flex;
-      gap: 6px;
+      justify-content: space-between;
+    }
+
+    .btn-delete {
       background: #fff184;
       align-items: center;
-      justify-content: space-between;
+      display: flex;
       color: #866611;
       border: 1px solid #cc9b1a;
+      max-height: 30px;
+      margin-top: 6px;
     }
 
     .btn-delete:hover {

@@ -11,12 +11,15 @@ import { map } from 'rxjs/operators';
 import { WikiUpdateGroup } from '../../models/wiki-update-group.interface';
 import { WikiTextModalComponent } from './wiki-text-modal.component';
 import { Song } from '../../models/song.interface';
+import { AccessDeniedComponent } from '../shared/access-denied.component';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-wiki-updates',
   standalone: true,
-  imports: [CommonModule, FormsModule, WikiTextModalComponent],
+  imports: [CommonModule, FormsModule, WikiTextModalComponent, AccessDeniedComponent],
   template: `
+  <ng-container *ngIf="isLoggedIn$ | async; else accessDenied">
     <div class="container">
       <h1>{{ isUserWiki ? 'User' : 'Song' }} Wiki Updates Remaining</h1>
       
@@ -66,6 +69,10 @@ import { Song } from '../../models/song.interface';
       [group]="selectedGroup!"
       (close)="hideWikiText()">
     </app-wiki-text-modal>
+  </ng-container>
+  <ng-template #accessDenied>
+    <app-access-denied></app-access-denied>
+  </ng-template>
   `,
   styles: [`
     .container {
@@ -245,6 +252,7 @@ import { Song } from '../../models/song.interface';
   `]
 })
 export class WikiUpdatesComponent implements OnInit, OnDestroy {
+  isLoggedIn$ = this.authService.isLoggedIn();
   isUserWiki: boolean = false;
   searchTerm: string = '';
   private groupsSubject = new BehaviorSubject<WikiUpdateGroup[]>([]);
@@ -254,6 +262,7 @@ export class WikiUpdatesComponent implements OnInit, OnDestroy {
   selectedGroup: WikiUpdateGroup | null = null;
   
   constructor(
+    private authService: AuthService,
     private route: ActivatedRoute,
     private wikiUpdateService: WikiUpdateService,
     private submissionService: SubmissionService,

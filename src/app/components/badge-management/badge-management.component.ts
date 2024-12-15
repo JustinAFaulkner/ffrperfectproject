@@ -5,12 +5,15 @@ import { BadgeService } from '../../services/badge.service';
 import { ContributorBadges, BadgeKey } from '../../models/user-badges.interface';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { AccessDeniedComponent } from '../shared/access-denied.component';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-badge-management',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AccessDeniedComponent],
   template: `
+  <ng-container *ngIf="isLoggedIn$ | async; else accessDenied">
     <div class="container">
       <h1>Badge Management</h1>
       
@@ -79,6 +82,10 @@ import { map } from 'rxjs/operators';
         </div>
       </div>
     </div>
+  </ng-container>
+  <ng-template #accessDenied>
+    <app-access-denied></app-access-denied>
+  </ng-template>
   `,
   styles: [`
     .container {
@@ -343,12 +350,16 @@ import { map } from 'rxjs/operators';
   `]
 })
 export class BadgeManagementComponent implements OnInit {
+  isLoggedIn$ = this.authService.isLoggedIn();
   private contributorsSubject = new BehaviorSubject<ContributorBadges[]>([]);
   filteredContributors$ = this.contributorsSubject.asObservable();
   searchTerm = '';
   showOwedOnly = false;
 
-  constructor(private badgeService: BadgeService) {}
+  constructor(
+    private authService: AuthService,
+    private badgeService: BadgeService
+  ) {}
 
   ngOnInit() {
     this.loadContributors();
