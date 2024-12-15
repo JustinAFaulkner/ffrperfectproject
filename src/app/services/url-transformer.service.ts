@@ -4,6 +4,13 @@ import { Injectable } from '@angular/core';
   providedIn: 'root',
 })
 export class UrlTransformerService {
+  private readonly patterns = {
+    watchUrl: /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/,
+    embedUrl: /youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/,
+    studioUrl: /studio\.youtube\.com\/video\/([a-zA-Z0-9_-]{11})(?:\/edit)?/,
+    directId: /^[a-zA-Z0-9_-]{11}$/
+  };
+
   transformYoutubeUrl(url: string): string {
     if (!url) return '';
     
@@ -33,25 +40,12 @@ export class UrlTransformerService {
 
   private extractVideoId(url: string): string | null {
     try {
-      // Handle standard watch URLs
-      if (url.includes('watch?v=')) {
-        const urlObj = new URL(url);
-        const videoId = urlObj.searchParams.get('v');
-        if (videoId) return videoId;
-      }
-      
-      // Handle youtu.be URLs
-      if (url.includes('youtu.be/')) {
-        const parts = url.split('youtu.be/');
-        if (parts[1]) {
-          const videoId = parts[1].split(/[?#]/)[0];
-          if (videoId) return videoId;
+      // Try each pattern to extract video ID
+      for (const [key, pattern] of Object.entries(this.patterns)) {
+        const match = url.match(pattern);
+        if (match && match[1]) {
+          return match[1];
         }
-      }
-      
-      // Handle direct video ID format
-      if (/^[a-zA-Z0-9_-]{11}$/.test(url)) {
-        return url;
       }
       
       return null;

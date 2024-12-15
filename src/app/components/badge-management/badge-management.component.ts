@@ -29,7 +29,7 @@ import { map } from 'rxjs/operators';
             (change)="filterContributors()"
           />
           <span class="slider"></span>
-          <span class="switch-label">Show Owed Badges Only</span>
+          <span class="switch-label">Owed Badges Only</span>
         </label>
       </div>
 
@@ -259,6 +259,68 @@ import { map } from 'rxjs/operators';
 
     :host-context(body.dark-mode) .badge-number {
       color: #999;
+    }
+
+    /* Toggle Switch Styles */
+    .switch {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: relative;
+      display: inline-block;
+      width: 48px;
+      height: 24px;
+      background-color: #ccc;
+      border-radius: 24px;
+      transition: .4s;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      border-radius: 50%;
+      transition: .4s;
+    }
+
+    .switch input:checked + .slider {
+      background-color: #28aad1;
+    }
+
+    .switch input:checked + .slider:before {
+      transform: translateX(24px);
+    }
+
+    .switch-label {
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    :host-context(body.dark-mode) .switch-label {
+      color: #999;
+    }
+
+    :host-context(body.dark-mode) .slider {
+      background-color: #333;
+    }
+
+    :host-context(body.dark-mode) .slider:before {
+      background-color: #e0e0e0;
     }
 
     @media (max-width: 768px) {

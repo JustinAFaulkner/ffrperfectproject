@@ -158,6 +158,14 @@ import { ContributorStats } from '../../models/contributor-stats.interface';
       color: #999;
     }
 
+    :host-context(body.dark-mode) .slider {
+      background-color: #333;
+    }
+
+    :host-context(body.dark-mode) .slider:before {
+      background-color: #e0e0e0;
+    }
+
     .contributors-list {
       display: flex;
       flex-direction: column;
@@ -173,7 +181,12 @@ import { ContributorStats } from '../../models/contributor-stats.interface';
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
       transition: transform 0.2s;
       text-decoration: none;
-      color: inherit;
+      color: #333;
+    }
+
+    :host-context(body.dark-mode) .contributor-card {
+      background: #333;
+      color: #e0e0e0;
     }
 
     .contributor-card:hover {
@@ -182,14 +195,32 @@ import { ContributorStats } from '../../models/contributor-stats.interface';
 
     .contributor-card.gold {
       background: linear-gradient(135deg, white, #ffd700 150%);
+      color: #333;
+    }
+
+    :host-context(body.dark-mode) .contributor-card.gold {
+      background: linear-gradient(135deg, #333, #ffd700 150%);
+      color: #e0e0e0;
     }
 
     .contributor-card.silver {
       background: linear-gradient(135deg, white, #c0c0c0 150%);
+      color: #333;
+    }
+
+    :host-context(body.dark-mode) .contributor-card.silver {
+      background: linear-gradient(135deg, #333, #c0c0c0 150%);
+      color: #e0e0e0;
     }
 
     .contributor-card.bronze {
       background: linear-gradient(135deg, white, #cd7f32 150%);
+      color: #333;
+    }
+
+    :host-context(body.dark-mode) .contributor-card.bronze {
+      background: linear-gradient(135deg, #333, #cd7f32 150%);
+      color: #e0e0e0;
     }
 
     .rank {
@@ -197,7 +228,6 @@ import { ContributorStats } from '../../models/contributor-stats.interface';
       font-weight: bold;
       width: 40px;
       text-align: center;
-      color: #666;
     }
 
     .contributor-info {
@@ -209,11 +239,9 @@ import { ContributorStats } from '../../models/contributor-stats.interface';
 
     .name {
       font-weight: 500;
-      color: #333;
     }
 
     .count {
-      color: #666;
       font-size: 0.9rem;
     }
 
