@@ -78,20 +78,20 @@ import { ModalService } from '../../services/modal.service';
             <div 
               *ngFor="let submission of song.submissions; let i = index"
               class="submission-btn-group">
-            <button
-              (click)="setSubmission(i)"
-              [class.active]="currentSubmissionIndex === i"
-              [class.source-toggle-loggedin]="isLoggedIn$ | async"
-              [class.source-toggle-btn]="!(isLoggedIn$ | async)">
-              {{ submission.contributor }}
-            </button>
-            <button 
-              *ngIf="isLoggedIn$ | async"
-              class="edit-submission-btn"
-              (click)="showSubmissionEditModal($event, i)"
-              title="Edit Submission">
-              <i class="fas fa-pencil-alt edit-btn"></i>
-            </button>
+              <button
+                (click)="setSubmission(i)"
+                [class.active]="currentSubmissionIndex === i"
+                [class.source-toggle-loggedin]="isLoggedIn$ | async"
+                [class.source-toggle-btn]="!(isLoggedIn$ | async)">
+                {{ submission.contributor }}
+              </button>
+              <button 
+                *ngIf="isLoggedIn$ | async"
+                class="edit-submission-btn"
+                (click)="showSubmissionEditModal($event, i)"
+                title="Edit Submission">
+                <i class="fas fa-pencil-alt edit-btn"></i>
+              </button>
             </div>
           </div>
           <div class="video-controls-right">
@@ -521,11 +521,7 @@ export class SongItemComponent {
   @Output() expandToggle = new EventEmitter<void>();
 
   currentSubmissionIndex: number = 0;
-  showModal: boolean = false;
-  showEditModal: boolean = false;
-  editSubmissionIndex: number = 0;
-  selectedSong!: SongWithSubmissions;
-  selectedIndex: number = 0;
+  selectedSubmissionIndex: number = -1;
   isLoggedIn$ = this.authService.isLoggedIn();
 
   constructor(
@@ -580,9 +576,11 @@ export class SongItemComponent {
 
   showSubmissionEditModal(event: Event, submissionIndex: number) {
     event.stopPropagation();
+    this.selectedSubmissionIndex = submissionIndex;
+
     const modalRef = this.modalService.open<SubmissionEditModalComponent>(SubmissionEditModalComponent, {
       song: this.song,
-      submissionIndex,
+      submissionIndex: this.selectedSubmissionIndex,
       cancel: new EventEmitter<void>(),
       delete: new EventEmitter<void>(),
       submit: new EventEmitter<Submission>()
@@ -612,14 +610,6 @@ export class SongItemComponent {
     }
   }
 
-  hideSubmissionModal() {
-    this.showModal = false;
-  }
-
-  hideSubmissionEditModal() {
-    this.showEditModal = false;
-  }
-
   async handleSubmissionAdd(submissionData: Omit<Submission, 'songId'>) {
     try {
       const newSubmission: Submission = {
@@ -630,7 +620,6 @@ export class SongItemComponent {
       await this.submissionService.addSubmission(this.song.id, newSubmission);
       this.song.submissions = [...this.song.submissions, newSubmission];
       this.currentSubmissionIndex = this.song.submissions.length - 1;
-      this.hideSubmissionModal();
     } catch (error) {
       console.error('Error adding submission:', error);
     }
@@ -639,8 +628,7 @@ export class SongItemComponent {
   async handleSubmissionEdit(submissionData: Submission) {
     try {
       await this.submissionService.updateSubmission(submissionData);
-      this.song.submissions[this.selectedIndex] = submissionData;
-      this.hideSubmissionEditModal();
+      this.song.submissions[this.selectedSubmissionIndex] = submissionData;
     } catch (error) {
       console.error('Error updating submission:', error);
     }
@@ -648,11 +636,10 @@ export class SongItemComponent {
 
   async handleSubmissionDelete() {
     try {
-      const submission = this.song.submissions[this.selectedIndex];
+      const submission = this.song.submissions[this.selectedSubmissionIndex];
       await this.submissionService.deleteSubmission(submission);
-      this.song.submissions.splice(this.selectedIndex, 1);
-      this.currentSubmissionIndex = this.song.submissions.length - 1;
-      this.hideSubmissionEditModal();
+      this.song.submissions = this.song.submissions.filter((_, index) => index !== this.selectedSubmissionIndex);
+      this.currentSubmissionIndex = Math.min(this.currentSubmissionIndex, this.song.submissions.length - 1);
     } catch (error) {
       console.error('Error deleting submission:', error);
     }
