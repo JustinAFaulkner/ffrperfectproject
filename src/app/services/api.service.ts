@@ -55,6 +55,7 @@ export class ApiService {
   }
 
   createOrUpdateSubmission(submission: {
+    id?: string | null;
     songId: number;
     username: string;
     url: string;

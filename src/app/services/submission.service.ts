@@ -77,6 +77,7 @@ export class SubmissionService {
       if (submission) {
         this.logger.info('Found submission to update', submission);
         await this.apiService.createOrUpdateSubmission({
+          id: submission.id,
           songId: submission.songId,
           username: submission.contributor,
           url: submission.url,
@@ -120,6 +121,7 @@ export class SubmissionService {
     this.logger.info('Updating submission', submission);
     try {
       await this.apiService.createOrUpdateSubmission({
+        id: submission.id,
         songId: submission.songId,
         username: submission.contributor,
         url: submission.url,
