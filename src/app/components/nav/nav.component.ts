@@ -6,6 +6,7 @@ import { AuthService } from '../../services/auth.service';
 import { SongSyncService } from '../../services/song-sync.service';
 import { AdminMenuComponent } from '../admin/admin-menu.component';
 import { ThemeService } from '../../services/theme.service';
+import { ConfirmModalComponent } from '../shared/confirm-modal.component';
 
 @Component({
   selector: 'app-nav',
@@ -15,6 +16,7 @@ import { ThemeService } from '../../services/theme.service';
     RouterModule,
     LoginModalComponent,
     AdminMenuComponent,
+    ConfirmModalComponent
   ],
   template: `
     <nav class="navbar">
@@ -130,6 +132,11 @@ import { ThemeService } from '../../services/theme.service';
                 [class.disabled]="isSyncing">
                 {{ isSyncing ? 'Syncing...' : 'Sync New Songs' }}
               </div>
+              <div class="nav-link"
+                (click)="showResyncConfirm = true"
+                [class.disabled]="isSyncing">
+                {{ isSyncing ? 'Syncing...' : 'Re-Sync All Songs' }}
+              </div>
             </div>
           </ng-container>
         </div>
@@ -161,6 +168,15 @@ import { ThemeService } from '../../services/theme.service';
       *ngIf="showModal"
       (close)="hideLoginModal()">
     </app-login-modal>
+
+    <app-confirm-modal
+      *ngIf="showResyncConfirm"
+      title="Re-Sync All Songs"
+      message="Are you sure you want to re-sync all songs? This will update the song info for all songs in the database."
+      confirmText="Re-Sync"
+      (confirm)="onResyncAllSongs()"
+      (cancel)="showResyncConfirm = false">
+    </app-confirm-modal>
   `,
   styles: [`
     .navbar {
@@ -402,6 +418,7 @@ export class NavComponent {
   showModal = false;
   showMobileMenu = false;
   isSyncing = false;
+  showResyncConfirm = false;
   isLoggedIn$ = this.authService.isLoggedIn();
   isDarkMode$ = this.themeService.isDarkMode$;
 
@@ -470,6 +487,23 @@ export class NavComponent {
     } finally {
       this.isSyncing = false;
       this.showMobileMenu = false;
+    }
+  }
+
+
+  async onResyncAllSongs() {
+    if (this.isSyncing) return;
+    
+    try {
+      this.isSyncing = true;
+      this.showResyncConfirm = false;
+      await this.songSyncService.resyncAllSongs();
+      alert('Songs have been resynced successfully');
+    } catch (error) {
+      console.error('Error resyncing songs:', error);
+      alert('Error resyncing songs. Please try again.');
+    } finally {
+      this.isSyncing = false;
     }
   }
 }

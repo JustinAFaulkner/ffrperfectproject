@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { SongSyncService } from '../../services/song-sync.service';
 import { AuthService } from '../../services/auth.service';
+import { ConfirmModalComponent } from '../shared/confirm-modal.component';
 
 @Component({
   selector: 'app-admin-menu',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ConfirmModalComponent],
   template: `
     <div class="admin-dropdown" *ngIf="isLoggedIn$ | async">
       <button class="admin-btn">
@@ -30,8 +31,23 @@ import { AuthService } from '../../services/auth.service';
           [disabled]="isSyncing">
           {{ isSyncing ? 'Syncing...' : 'Sync New Songs' }}
         </button>
+        <button 
+          class="dropdown-item" 
+          (click)="showResyncConfirm = true"
+          [disabled]="isSyncing">
+          {{ isSyncing ? 'Syncing...' : 'Re-Sync All Songs' }}
+        </button>
       </div>
     </div>
+
+    <app-confirm-modal
+      *ngIf="showResyncConfirm"
+      title="Re-Sync All Songs"
+      message="Are you sure you want to re-sync all songs? This will update the song info for all songs in the database."
+      confirmText="Re-Sync"
+      (confirm)="onResyncAllSongs()"
+      (cancel)="showResyncConfirm = false">
+    </app-confirm-modal>
   `,
   styles: [`
     .admin-dropdown {
@@ -119,6 +135,7 @@ import { AuthService } from '../../services/auth.service';
 export class AdminMenuComponent {
   isOpen = false;
   isSyncing = false;
+  showResyncConfirm = false;
   isLoggedIn$ = this.authService.isLoggedIn();
 
   constructor(
@@ -149,6 +166,22 @@ export class AdminMenuComponent {
     } catch (error) {
       console.error('Error syncing songs:', error);
       alert('Error syncing songs. Please try again.');
+    } finally {
+      this.isSyncing = false;
+    }
+  }
+
+  async onResyncAllSongs() {
+    if (this.isSyncing) return;
+    
+    try {
+      this.isSyncing = true;
+      this.showResyncConfirm = false;
+      await this.songSyncService.resyncAllSongs();
+      alert('Songs have been resynced successfully');
+    } catch (error) {
+      console.error('Error resyncing songs:', error);
+      alert('Error resyncing songs. Please try again.');
     } finally {
       this.isSyncing = false;
     }
