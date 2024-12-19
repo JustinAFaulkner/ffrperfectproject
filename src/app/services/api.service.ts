@@ -11,6 +11,13 @@ interface ApiResponse<T> {
   data: T;
 }
 
+interface UserResponse {
+  username: string;
+  badge_one: boolean;
+  badge_two: boolean;
+  badge_three: boolean;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -74,14 +81,23 @@ export class ApiService {
   }
 
   // Users
-  getAllUsers(): Observable<Record<string, UserBadges>> {
-    return this.http.get<ApiResponse<Record<string, UserBadges>>>(`${this.baseUrl}/users`)
+  getAllUsers(): Observable<UserResponse[]> {
+    return this.http.get<ApiResponse<UserResponse[]>>(`${this.baseUrl}/users`)
       .pipe(map(response => response.data));
   }
 
-  getUser(username: string): Observable<UserBadges> {
-    return this.http.get<ApiResponse<UserBadges>>(`${this.baseUrl}/users?username=${username}`)
-      .pipe(map(response => response.data));
+  getUser(username: string): Observable<UserBadges | null> {
+    return this.getAllUsers().pipe(
+      map(users => {
+        const user = users.find(u => u.username === username);
+        if (!user) return null;
+        return {
+          badge_one: user.badge_one,
+          badge_two: user.badge_two,
+          badge_three: user.badge_three
+        };
+      })
+    );
   }
 
   updateUser(username: string, badges: UserBadges): Observable<UserBadges> {

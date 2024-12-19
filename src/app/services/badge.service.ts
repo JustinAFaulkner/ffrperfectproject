@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
+import { firstValueFrom } from 'rxjs';
 import { UserBadges, ContributorBadges, BadgeKey } from '../models/user-badges.interface';
 import { LeaderboardService } from './leaderboard.service';
 import { ApiService } from './api.service';
@@ -18,17 +19,20 @@ export class BadgeService {
     return this.leaderboardService.getContributorStats().pipe(
       switchMap(contributors => {
         return this.apiService.getAllUsers().pipe(
-          map(badgesMap => {
-            return contributors.map(contributor => ({
-              username: contributor.name,
-              submissionCount: contributor.count,
-              firstCount: contributor.firstCount,
-              badges: {
-                badge1: badgesMap[contributor.name]?.badge_one || false,
-                badge2: badgesMap[contributor.name]?.badge_two || false,
-                badge3: badgesMap[contributor.name]?.badge_three || false
-              }
-            }));
+          map(users => {
+            return contributors.map(contributor => {
+              const userBadges = users.find(u => u.username === contributor.name);
+              return {
+                username: contributor.name,
+                submissionCount: contributor.count,
+                firstCount: contributor.firstCount,
+                badges: {
+                  badge1: userBadges?.badge_one || false,
+                  badge2: userBadges?.badge_two || false,
+                  badge3: userBadges?.badge_three || false
+                }
+              };
+            });
           })
         );
       })
@@ -40,15 +44,22 @@ export class BadgeService {
     badgeKey: BadgeKey, 
     value: boolean
   ): Promise<void> {
-    const currentBadges = await this.apiService.getUser(username).toPromise() || {
+    const currentBadges = await firstValueFrom(this.apiService.getUser(username)) || {
       badge_one: false,
       badge_two: false,
       badge_three: false
     };
 
-    await this.apiService.updateUser(username, {
+    // Map component badge keys to API badge keys
+    const badgeMapping: Record<BadgeKey, keyof UserBadges> = {
+      'badge_one': 'badge_one',
+      'badge_two': 'badge_two', 
+      'badge_three': 'badge_three'
+    };
+
+    await firstValueFrom(this.apiService.updateUser(username, {
       ...currentBadges,
-      [badgeKey]: value
-    }).toPromise();
+      [badgeMapping[badgeKey]]: value
+    }));
   }
 }

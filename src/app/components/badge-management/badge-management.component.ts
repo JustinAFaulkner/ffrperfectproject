@@ -399,12 +399,14 @@ export class BadgeManagementComponent implements OnInit {
     event: Event
   ) {
     const checkbox = event.target as HTMLInputElement;
+    const checked = checkbox.checked;
+    
     try {
-      await this.badgeService.updateBadge(username, badgeKey, checkbox.checked);
+      await this.badgeService.updateBadge(username, badgeKey, checked);
       this.loadContributors();
     } catch (error) {
       console.error('Error updating badge:', error);
-      checkbox.checked = !checkbox.checked;
+      checkbox.checked = !checked;
     }
   }
 }
