@@ -6,11 +6,13 @@ import { WikiUpdateService } from '../../services/wiki-update.service';
 import { SubmissionService } from '../../services/submission.service';
 import { SongService } from '../../services/song.service';
 import { LoggingService } from '../../services/logging.service';
-import { BehaviorSubject, Subscription } from 'rxjs';
+import { BehaviorSubject, Subscription, combineLatest } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { WikiUpdateGroup } from '../../models/wiki-update-group.interface';
 import { WikiTextModalComponent } from './wiki-text-modal.component';
 import { Song } from '../../models/song.interface';
+import { Submission } from '../../models/submission.interface';
+import { SongWithSubmissions } from '../../models/song-with-submissions.interface';
 import { AccessDeniedComponent } from '../shared/access-denied.component';
 import { AuthService } from '../../services/auth.service';
 
@@ -20,65 +22,186 @@ import { AuthService } from '../../services/auth.service';
   imports: [CommonModule, FormsModule, WikiTextModalComponent, AccessDeniedComponent],
   template: `
   <ng-container *ngIf="isLoggedIn$ | async; else accessDenied">
-    <div class="container">
-      <h1>{{ isUserWiki ? 'User' : 'Song' }} Wiki Updates Remaining</h1>
-      
-      <div class="filters">
-        <input
-          type="text"
-          [(ngModel)]="searchTerm"
-          (input)="filterGroups()"
-          placeholder="Search {{ isUserWiki ? 'contributors or songs' : 'songs or contributors' }}..."
-          class="search-input"
-        />
-      </div>
+      <div class="container">
+        <h1>{{ isUserWiki ? 'User' : 'Song' }} Wiki Updates Remaining</h1>
+        
+        <div class="header-controls">
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            (input)="filterGroups()"
+            placeholder="Search {{ isUserWiki ? 'contributors or songs' : 'songs or contributors' }}..."
+            class="search-input"
+          />
+          <button 
+            class="update-btn" 
+            [disabled]="selectedGroups.length === 0"
+            (click)="updateSelectedGroups()">
+            <i class="fas fa-save"></i>
+            Update
+            <span class="update-count" *ngIf="selectedGroups.length > 0">
+              {{selectedGroups.length}}
+            </span>
+          </button>
+        </div>
 
-      <div class="updates-list">
-        <div 
-          *ngFor="let group of filteredGroups$ | async" 
-          class="update-group">
-          <div class="group-header">
-            <h3>{{ group.key }}</h3>
-            <div class="header-actions">
-              <button class="wiki-text-btn" (click)="showWikiText(group)">
-                <i class="fas fa-code"></i>
-                Wiki Text
-              </button>
-              <label class="checkbox-container">
-                <input
-                  type="checkbox"
-                  [checked]="false"
-                  (change)="toggleGroupUpdate(group)"
-                />
-                <span class="checkmark"></span>
-              </label>
+        <div class="selected-groups" *ngIf="selectedGroups.length > 0">
+          <h2>Mark Wiki Updated</h2>
+          <div class="updates-list">
+            <div 
+              *ngFor="let group of selectedGroups" 
+              class="update-group selected">
+              <div class="group-header">
+                <h3>{{ group.key }}</h3>
+                <div class="header-actions">
+                  <button class="wiki-text-btn" (click)="showWikiText(group)">
+                    <i class="fas fa-code"></i>
+                    Wiki Text
+                  </button>
+                  <label class="checkbox-container">
+                    <input
+                      type="checkbox"
+                      [checked]="true"
+                      (change)="toggleGroupSelection(group)"
+                    />
+                    <span class="checkmark"></span>
+                  </label>
+                </div>
+              </div>
+              <div class="group-items">
+                <p *ngFor="let item of group.items" class="item-title">
+                  {{ item.title }}
+                </p>
+              </div>
             </div>
           </div>
-          <div class="group-items">
-            <p *ngFor="let item of group.items" class="item-title">
-              {{ item.title }}
-            </p>
+        </div>
+
+        <div class="remaining-groups">
+          <h2>Remaining Updates</h2>
+          <div class="updates-list">
+            <div 
+              *ngFor="let group of filteredGroups$ | async" 
+              class="update-group">
+              <div class="group-header">
+                <h3>{{ group.key }}</h3>
+                <div class="header-actions">
+                  <button class="wiki-text-btn" (click)="showWikiText(group)">
+                    <i class="fas fa-code"></i>
+                    Wiki Text
+                  </button>
+                  <label class="checkbox-container">
+                    <input
+                      type="checkbox"
+                      [checked]="false"
+                      (change)="toggleGroupSelection(group)"
+                    />
+                    <span class="checkmark"></span>
+                  </label>
+                </div>
+              </div>
+              <div class="group-items">
+                <p *ngFor="let item of group.items" class="item-title">
+                  {{ item.title }}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <app-wiki-text-modal
-      *ngIf="showModal"
-      [isUserWiki]="isUserWiki"
-      [group]="selectedGroup!"
-      (close)="hideWikiText()">
-    </app-wiki-text-modal>
-  </ng-container>
-  <ng-template #accessDenied>
-    <app-access-denied></app-access-denied>
-  </ng-template>
+      <app-wiki-text-modal
+        *ngIf="showModal"
+        [isUserWiki]="isUserWiki"
+        [group]="selectedGroup!"
+        (close)="hideWikiText()">
+      </app-wiki-text-modal>
+    </ng-container>
+    <ng-template #accessDenied>
+      <app-access-denied></app-access-denied>
+    </ng-template>
   `,
   styles: [`
     .container {
       max-width: 800px;
       margin: 0 auto;
       padding: 20px;
+    }
+
+    .header-controls {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      align-items: center;
+    }
+
+    .search-input {
+      flex: 1;
+      padding: 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+
+    .update-btn {
+      padding: 0.75rem 1.5rem;
+      background: #28aad1;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1rem;
+      min-width: 120px;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .update-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+
+    .update-btn:not(:disabled):hover {
+      background: #2391b2;
+    }
+
+    .update-count {
+      background: rgba(0,0,0,0.1);
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-size: 12px;
+      min-width: 20px;
+      text-align: center;
+    }
+
+    h2 {
+      margin: 1.5rem 0 1rem;
+      color: #333;
+      font-size: 1.2rem;
+    }
+
+    :host-context(body.dark-mode) h2 {
+      color: #e0e0e0;
+    }
+
+    .selected-groups {
+      margin-bottom: 2rem;
+    }
+
+    .update-group {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      overflow: hidden;
+      margin-bottom: 0.5rem;
+    }
+
+    .update-group.selected {
+      border: 2px solid #28aad1;
     }
 
     h1 {
@@ -260,7 +383,8 @@ export class WikiUpdatesComponent implements OnInit, OnDestroy {
   private subscription: Subscription = new Subscription();
   showModal = false;
   selectedGroup: WikiUpdateGroup | null = null;
-  
+  selectedGroups: WikiUpdateGroup[] = [];
+
   constructor(
     private authService: AuthService,
     private route: ActivatedRoute,
@@ -285,116 +409,124 @@ export class WikiUpdatesComponent implements OnInit, OnDestroy {
   private loadGroups() {
     this.logger.info('Loading groups');
     
-    this.songService.getSongs().subscribe(songs => {
-      this.logger.info(`Loaded ${songs.length} songs`);
+    combineLatest([
+      this.songService.getSongs(),
+      this.submissionService.getAllSubmissions()
+    ]).subscribe(([songs, submissions]: [SongWithSubmissions[], Submission[]]) => {
+      this.logger.info(`Processing ${songs.length} songs and ${submissions.length} submissions`);
       
-      this.submissionService.getAllSubmissions().subscribe(submissions => {
-        this.logger.info(`Processing ${submissions.length} submissions`);
-        
-        // Create a map for quick song lookups
-        const songMap = new Map<string, Song>();
-        songs.forEach(song => songMap.set(song.id.toString(), song));
-        
-        // Group submissions that need updates
-        const groupMap = new Map<string, WikiUpdateGroup>();
-        let needsUpdateCount = 0;
+      // Create a map for quick song lookups
+      const songMap = new Map<string, Song>();
+      songs.forEach((song: Song) => songMap.set(song.id.toString(), song));
+      
+      // Group submissions that need updates
+      const groupMap = new Map<string, WikiUpdateGroup>();
+      let needsUpdateCount = 0;
 
-        submissions.forEach(submission => {
-          const song = songMap.get(submission.songId.toString());
-          if (!song) {
-            this.logger.warn(`Song not found for submission`, { 
-              songId: submission.songId, 
-              contributor: submission.contributor 
-            });
-            return;
-          }
+      submissions.forEach((submission: Submission) => {
+        const song = songMap.get(submission.songId.toString());
+        if (!song) {
+          this.logger.warn(`Song not found for submission`, { 
+            songId: submission.songId,
+            contributor: submission.contributor 
+          });
+          return;
+        }
 
-          const needsUpdate = this.isUserWiki ? 
-            !submission.userWikiUpdated : 
-            !submission.songWikiUpdated;
+        const needsUpdate = this.isUserWiki ? 
+          !submission.userWikiUpdated : 
+          !submission.songWikiUpdated;
 
-          if (needsUpdate) {
-            needsUpdateCount++;
-            const key = this.isUserWiki ? submission.contributor : song.title;
-            
-            if (!groupMap.has(key)) {
-              groupMap.set(key, {
-                key,
-                items: []
-              });
-            }
-
-            const group = groupMap.get(key)!;
-            group.items.push({
-              submissionId: submission.id,
-              songId: song.id,
-              title: this.isUserWiki ? song.title : submission.contributor
+        if (needsUpdate) {
+          needsUpdateCount++;
+          const key = this.isUserWiki ? submission.contributor : song.title;
+          
+          if (!groupMap.has(key)) {
+            groupMap.set(key, {
+              key,
+              items: []
             });
           }
-        });
 
-        const groups = Array.from(groupMap.values())
-          .sort((a, b) => a.key.localeCompare(b.key));
-
-        this.logger.info('Groups processed', {
-          totalGroups: groups.length,
-          totalItemsNeedingUpdate: needsUpdateCount,
-          type: this.isUserWiki ? 'user' : 'song'
-        });
-
-        this.groupsSubject.next(groups);
-        this.filterGroups();
+          const group = groupMap.get(key)!;
+          group.items.push({
+            submissionId: submission.id,
+            songId: song.id,
+            title: this.isUserWiki ? song.title : submission.contributor
+          });
+        }
       });
+
+      const groups = Array.from(groupMap.values())
+        .sort((a, b) => a.key.localeCompare(b.key));
+
+      this.logger.info('Groups processed', {
+        totalGroups: groups.length,
+        totalItemsNeedingUpdate: needsUpdateCount,
+        type: this.isUserWiki ? 'user' : 'song'
+      });
+
+      this.groupsSubject.next(groups);
+      this.filterGroups();
     });
+}
+
+  toggleGroupSelection(group: WikiUpdateGroup) {
+    const index = this.selectedGroups.findIndex(g => g.key === group.key);
+    if (index === -1) {
+      this.selectedGroups.push(group);
+      this.filterGroups(); // Re-filter to remove from main list
+    } else {
+      this.selectedGroups.splice(index, 1);
+      this.filterGroups(); // Re-filter to add back to main list
+    }
   }
 
   filterGroups() {
     const searchLower = this.searchTerm.toLowerCase();
     this.filteredGroups$ = this.groupsSubject.pipe(
       map(groups => {
-        const filtered = groups.filter(group => 
-          group.key.toLowerCase().includes(searchLower) ||
-          group.items.some(item => item.title.toLowerCase().includes(searchLower))
-        );
-        
-        this.logger.info('Groups filtered', {
-          originalCount: groups.length,
-          filteredCount: filtered.length,
-          searchTerm: this.searchTerm
-        });
-        
-        return filtered;
+        const selectedKeys = new Set(this.selectedGroups.map(g => g.key));
+        return groups
+          .filter(group => !selectedKeys.has(group.key)) // Exclude selected groups
+          .filter(group => 
+            group.key.toLowerCase().includes(searchLower) ||
+            group.items.some(item => item.title.toLowerCase().includes(searchLower))
+          );
       })
     );
   }
 
-  async toggleGroupUpdate(group: WikiUpdateGroup) {
-    this.logger.info('Toggling group update', {
-      key: group.key,
-      itemCount: group.items.length
+  async updateSelectedGroups() {
+    if (this.selectedGroups.length === 0) return;
+  
+    this.logger.info('Starting batch update', {
+      groupCount: this.selectedGroups.length,
+      type: this.isUserWiki ? 'user' : 'song'
     });
-    
+  
     try {
-      for (const item of group.items) {
-        await this.wikiUpdateService.toggleWikiStatus(
-          item.submissionId,
-          this.isUserWiki ? 'user' : 'song'
-        );
+      // Process all groups
+      for (const group of this.selectedGroups) {
+        this.logger.info('Processing group', { key: group.key });
+        
+        // Update all items in the group
+        for (const item of group.items) {
+          await this.wikiUpdateService.toggleWikiStatus(
+            item.submissionId,
+            this.isUserWiki ? 'user' : 'song'
+          );
+        }
       }
+  
+      // Clear selected groups and reload data
+      this.selectedGroups = [];
+      this.loadGroups();
       
-      const currentGroups = this.groupsSubject.value;
-      const updatedGroups = currentGroups.filter(g => g.key !== group.key);
-      this.groupsSubject.next(updatedGroups);
-      
-      this.logger.info('Group update completed', {
-        key: group.key,
-        remainingGroups: updatedGroups.length
-      });
+      this.logger.info('Batch update completed successfully');
     } catch (error) {
-      this.logger.error('Error updating wiki status for group', {
-        key: group.key,
-        error
-      });
+      this.logger.error('Error during batch update', error);
+      alert('An error occurred while updating. Please try again.');
     }
   }
 

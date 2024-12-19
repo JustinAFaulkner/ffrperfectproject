@@ -4,6 +4,7 @@ import { Submission } from '../models/submission.interface';
 import { ApiService } from './api.service';
 import { UrlTransformerService } from './url-transformer.service';
 import { LoggingService } from './logging.service';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -71,25 +72,26 @@ export class SubmissionService {
   async updateWikiStatus(submissionId: string, type: 'user' | 'song'): Promise<void> {
     this.logger.info('Updating wiki status', { submissionId, type });
     try {
-      const submissions = await this.getAllSubmissions().toPromise();
+      const submissions = await firstValueFrom(this.getAllSubmissions());
       const submission = submissions?.find(s => s.id === submissionId);
-
+  
       if (submission) {
         this.logger.info('Found submission to update', submission);
-        await this.apiService.createOrUpdateSubmission({
-          id: submission.id,
+        await firstValueFrom(this.apiService.createOrUpdateSubmission({
+          id: submissionId,
           songId: submission.songId,
           username: submission.contributor,
           url: submission.url,
           firstSub: submission.firstSub,
           songWikiUpdated: type === 'song' ? true : submission.songWikiUpdated,
           userWikiUpdated: type === 'user' ? true : submission.userWikiUpdated
-        }).toPromise();
-
+        }));
+  
         this.loadSubmissions();
         this.submissionUpdatesSubject.next();
       } else {
         this.logger.warn('Submission not found for update', { submissionId });
+        throw new Error('Submission not found');
       }
     } catch (error) {
       this.logger.error('Error updating wiki status', error);
