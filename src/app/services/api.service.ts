@@ -87,24 +87,36 @@ export class ApiService {
   }
 
   getUser(username: string): Observable<UserBadges | null> {
-    return this.getAllUsers().pipe(
-      map(users => {
-        const user = users.find(u => u.username === username);
-        if (!user) return null;
-        return {
-          badge_one: user.badge_one,
-          badge_two: user.badge_two,
-          badge_three: user.badge_three
-        };
-      })
-    );
+    return this.http.get<ApiResponse<UserResponse[]>>(`${this.baseUrl}/users?username=${username}`)
+      .pipe(
+        map(response => {
+          const user = response.data[0];
+          if (!user) return null;
+          return {
+            badge_one: user.badge_one,
+            badge_two: user.badge_two,
+            badge_three: user.badge_three
+          };
+        })
+      );
   }
 
   updateUser(username: string, badges: UserBadges): Observable<UserBadges> {
-    return this.http.post<ApiResponse<UserBadges>>(`${this.baseUrl}/users`, {
+    const apiPayload = {
       username,
-      ...badges
-    }).pipe(map(response => response.data));
+      badge_one: badges.badge_one ? 1 : 0,
+      badge_two: badges.badge_two ? 1 : 0,
+      badge_three: badges.badge_three ? 1 : 0
+    };
+
+    return this.http.post<ApiResponse<UserBadges>>(`${this.baseUrl}/users`, apiPayload)
+      .pipe(
+        map(response => ({
+          badge_one: Boolean(response.data.badge_one),
+          badge_two: Boolean(response.data.badge_two),
+          badge_three: Boolean(response.data.badge_three)
+        }))
+      );
   }
 
   deleteUser(username: string): Observable<void> {
