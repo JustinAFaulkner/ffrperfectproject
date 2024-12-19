@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 import { SongWithSubmissions } from '../../models/song-with-submissions.interface';
 import { SongService } from '../../services/song.service';
 import { FilterService } from '../../services/filter.service';
@@ -9,25 +10,29 @@ import { SongItemComponent } from './song-item.component';
 import { FilterDrawerComponent } from './filter-drawer.component';
 import { SortSelectComponent } from './sort-select.component';
 import { SongFilters, defaultFilters } from '../../models/song-filters.interface';
+import { StatsPanelComponent } from '../stats/stats-panel.component';
 
 @Component({
   selector: 'app-song-list',
   standalone: true,
   imports: [
-    CommonModule, 
-    FormsModule, 
-    SongItemComponent, 
+    CommonModule,
+    FormsModule,
+    ScrollingModule,
+    SongItemComponent,
     FilterDrawerComponent,
-    SortSelectComponent
+    SortSelectComponent,
+    StatsPanelComponent
   ],
   template: `
+    <app-stats-panel></app-stats-panel>
     <div class="container">
       <div class="filters">
         <div class="search-filters">
           <input
             type="text"
             [(ngModel)]="filters.searchTerm"
-            (input)="filterSongs()"
+            (ngModelChange)="filterSongs()"
             placeholder="Search songs..."
             class="search-input"
           />
@@ -83,7 +88,7 @@ import { SongFilters, defaultFilters } from '../../models/song-filters.interface
               <input
                 type="number"
                 [(ngModel)]="filters.minDifficulty"
-                (input)="filterSongs()"
+                (ngModelChange)="filterSongs()"
                 min="0"
                 [max]="filters.maxDifficulty"
                 class="difficulty-input"
@@ -94,7 +99,7 @@ import { SongFilters, defaultFilters } from '../../models/song-filters.interface
               <input
                 type="number"
                 [(ngModel)]="filters.maxDifficulty"
-                (input)="filterSongs()"
+                (ngModelChange)="filterSongs()"
                 [min]="filters.minDifficulty"
                 max="150"
                 class="difficulty-input"
@@ -104,13 +109,21 @@ import { SongFilters, defaultFilters } from '../../models/song-filters.interface
         </div>
       </div>
 
-      <div class="song-list">
-        <app-song-item
-          *ngFor="let song of filteredSongs"
-          [song]="song"
-          [isExpanded]="expandedSong === song.id"
-          (expandToggle)="toggleSong(song)">
-        </app-song-item>
+      <div class="song-list-container">
+        <cdk-virtual-scroll-viewport 
+          class="song-list-viewport"
+          [itemSize]="80"
+          [minBufferPx]="400"
+          [maxBufferPx]="800">
+          <div class="song-list">
+            <app-song-item
+              *cdkVirtualFor="let song of filteredSongs; trackBy: trackBySong"
+              [song]="song"
+              [isExpanded]="expandedSong === song.id"
+              (expandToggle)="toggleSong(song)">
+            </app-song-item>
+          </div>
+        </cdk-virtual-scroll-viewport>
       </div>
     </div>
 
@@ -122,12 +135,14 @@ import { SongFilters, defaultFilters } from '../../models/song-filters.interface
       (filterChange)="onFilterChange($event)">
     </app-filter-drawer>
   `,
-  styles: [
-    `
+  styles: [`
     .container {
       padding: 20px;
       max-width: 800px;
       margin: 0 auto;
+      height: calc(100vh - 120px);
+      display: flex;
+      flex-direction: column;
     }
 
     .filters {
@@ -167,6 +182,7 @@ import { SongFilters, defaultFilters } from '../../models/song-filters.interface
       gap: 6px;
       font-size: 14px;
       color: #666;
+      position: relative;
     }
 
     :host-context(body.dark-mode) .filter-btn {
@@ -181,6 +197,29 @@ import { SongFilters, defaultFilters } from '../../models/song-filters.interface
 
     :host-context(body.dark-mode) .filter-btn:hover {
       background: #444;
+    }
+
+    .filter-count {
+      background: #28aad1;
+      color: white;
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-size: 12px;
+      min-width: 20px;
+      text-align: center;
+    }
+
+    .clear-filters {
+      padding: 4px;
+      background: none;
+      border: none;
+      color: #666;
+      cursor: pointer;
+      margin-left: 4px;
+    }
+
+    .clear-filters:hover {
+      color: #333;
     }
     
     .filter-group {
@@ -275,10 +314,34 @@ import { SongFilters, defaultFilters } from '../../models/song-filters.interface
       background: rgba(255,255,255,0.1);
     }
 
+    .song-list-container {
+      flex: 1;
+      min-height: 0;
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    :host-context(body.dark-mode) .song-list-container {
+      background: #2d2d2d;
+    }
+
+    .song-list-viewport {
+      height: 100%;
+    }
+
     .song-list {
       display: flex;
       flex-direction: column;
       gap: 10px;
+      padding: 10px;
+      background: #f5f5f5;
+      border: none;
+      box-shadow: none;
+    }
+    
+    :host-context(body.dark-mode) .song-list {
+      background: #141414;
     }
 
     @media (max-width: 768px) {
@@ -305,44 +368,7 @@ import { SongFilters, defaultFilters } from '../../models/song-filters.interface
         gap: 10px;
       }
     }
-
-    .filter-btn {
-      position: relative;
-      padding: 8px 16px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      background: white;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 14px;
-      color: #666;
-    }
-
-    .filter-count {
-      background: #28aad1;
-      color: white;
-      padding: 2px 6px;
-      border-radius: 10px;
-      font-size: 12px;
-      min-width: 20px;
-      text-align: center;
-    }
-
-    .clear-filters {
-      padding: 4px;
-      background: none;
-      border: none;
-      color: #666;
-      cursor: pointer;
-      margin-left: 4px;
-    }
-
-    .clear-filters:hover {
-      color: #333;
-    }
-`],
+  `]
 })
 export class SongListComponent {
   songs: SongWithSubmissions[] = [];
@@ -363,12 +389,6 @@ export class SongListComponent {
     return count;
   }
 
-  clearAllFilters(event: Event) {
-    event.stopPropagation();
-    this.filters = { ...defaultFilters };
-    this.filterSongs();
-  }
-
   constructor(
     private songService: SongService,
     private filterService: FilterService,
@@ -383,6 +403,16 @@ export class SongListComponent {
       this.videoCounts = this.countService.getVideoCounts(songs);
       this.filterSongs();
     });
+  }
+
+  trackBySong(index: number, song: SongWithSubmissions): string {
+    return song.id;
+  }
+
+  clearAllFilters(event: Event) {
+    event.stopPropagation();
+    this.filters = { ...defaultFilters };
+    this.filterSongs();
   }
 
   setVideoFilter(filter: 'all' | 'with' | 'without') {

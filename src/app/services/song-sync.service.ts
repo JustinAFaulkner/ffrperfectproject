@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, Subject } from 'rxjs';
+import { Song } from '../models/song.interface';
 
 interface SyncResponse {
   inserted: number;
@@ -9,8 +10,8 @@ interface SyncResponse {
 }
 
 interface RefreshResponse {
-  success: boolean;
-  msg: string;
+  data: Song;
+  message: string;
 }
 
 @Injectable({
@@ -19,12 +20,14 @@ interface RefreshResponse {
 export class SongSyncService {
   private readonly apiUrl = 'https://www.flashflashrevolution.com/api/api.php';
   private readonly syncUrl = 'https://ffrperfectproject.com/api/ffr-sync';
+  
+  private songUpdateSubject = new Subject<string>();
+  public songUpdate$ = this.songUpdateSubject.asObservable();
 
   constructor(private http: HttpClient) {}
 
   async syncNewSongs(): Promise<SyncResponse> {
     try {
-      // Step 1: Fetch songs from FFR API
       const response = await firstValueFrom(
         this.http.get(
           `${this.apiUrl}?action=songlist&key=${environment.ffrApi.key}`,
@@ -32,7 +35,6 @@ export class SongSyncService {
         )
       );
 
-      // Step 2: Send songs to sync endpoint as JSON
       const payload = JSON.stringify({ songs: response });      
       const syncResponse = await firstValueFrom(
         this.http.post<SyncResponse>(
@@ -55,7 +57,6 @@ export class SongSyncService {
 
   async resyncSong(songId: string): Promise<boolean> {
     try {
-      // Step 1: Fetch song from FFR API
       const response = await firstValueFrom(
         this.http.get(
           `${this.apiUrl}?action=songlist&key=${environment.ffrApi.key}&levelid=${songId}`,
@@ -63,13 +64,11 @@ export class SongSyncService {
         )
       );
 
-      // Get the first (and should be only) song from response
       const song = Object.values(response)[0];
       if (!song) {
         throw new Error('Song not found in API response');
       }
 
-      // Step 2: Send song to refresh endpoint as JSON
       const payload = JSON.stringify({ song: song });
       const refreshResponse = await firstValueFrom(
         this.http.post<RefreshResponse>(
@@ -83,7 +82,13 @@ export class SongSyncService {
         )
       );
 
-      return refreshResponse.success;
+      const success = (refreshResponse.message === "Song refreshed successfully");
+
+      if (success) {
+        this.songUpdateSubject.next(songId);
+      }
+
+      return success;
     } catch (error) {
       console.error('Error resyncing song:', error);
       throw error;

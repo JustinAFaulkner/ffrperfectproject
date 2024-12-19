@@ -2,83 +2,93 @@ import { Injectable } from '@angular/core';
 import { Song } from '../models/song.interface';
 import { SongWithSubmissions } from '../models/song-with-submissions.interface';
 import { SubmissionService } from './submission.service';
-import { Observable, BehaviorSubject, from, Subject } from 'rxjs';
-import { map, switchMap, take } from 'rxjs/operators';
-import {
-  Firestore,
-  collection,
-  getDocs,
-  query,
-  orderBy,
-} from '@angular/fire/firestore';
+import { Observable, BehaviorSubject, combineLatest, firstValueFrom } from 'rxjs';
+import { map, tap } from 'rxjs/operators';
+import { ApiService } from './api.service';
+import { SongSyncService } from './song-sync.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class SongService {
-  private readonly songsCollection = 'songs';
   private songsSubject = new BehaviorSubject<SongWithSubmissions[]>([]);
   public songs$ = this.songsSubject.asObservable();
-  
-  // Add a subject for song updates
-  private songUpdateSubject = new Subject<string>();
-  public songUpdate$ = this.songUpdateSubject.asObservable();
 
   constructor(
-    private firestore: Firestore,
-    private submissionService: SubmissionService
+    private apiService: ApiService,
+    private submissionService: SubmissionService,
+    private songSyncService: SongSyncService
   ) {
     this.loadSongs();
     
-    // Subscribe to submission updates
     this.submissionService.submissionUpdates$.subscribe(() => {
       this.loadSongs();
     });
 
-    // Subscribe to song updates
-    this.songUpdate$.subscribe(() => {
-      this.loadSongs();
+    this.songSyncService.songUpdate$.subscribe(songId => {
+      this.refreshSong(songId);
     });
   }
 
-  // Add method to notify of song updates
-  notifySongUpdate(songId: string) {
-    this.songUpdateSubject.next(songId);
+  private loadSongs(): void {
+    combineLatest([
+      this.apiService.getAllSongs(),
+      this.submissionService.getAllSubmissions()
+    ]).pipe(
+      map(([songs, submissions]) => {
+        return songs.map(song => this.processSong(song, submissions));
+      })
+    ).subscribe(songs => this.songsSubject.next(songs));
   }
 
-  private loadSongs(): void {
-    const songsRef = collection(this.firestore, this.songsCollection);
-    const songsQuery = query(songsRef, orderBy('title'));
+  private processSong(song: Song, submissions: any[]): SongWithSubmissions {
+    const processedSong: Song = {
+      ...song,
+      stepArtist: song.stepArtist || 'Unknown',
+      seconds: typeof song.seconds === 'number' ? song.seconds : 0,
+      release: song.release ? new Date(song.release) : new Date(0)
+    };
 
-    from(getDocs(songsQuery))
-      .pipe(
-        map((snapshot) =>
-          snapshot.docs.map((doc) => ({
-            id: doc.id,
-            title: doc.data()['title'] as string,
-            artist: doc.data()['artist'] as string,
-            seconds: doc.data()['seconds'] as number,
-            genre: doc.data()['genre'] as string,
-            difficulty: doc.data()['difficulty'] as number,
-            arrows: doc.data()['arrows'] as number,
-            stepartist: doc.data()['stepArtist'] as string,
-            style: doc.data()['style'] as string | undefined,
-            release: doc.data()['release']?.toDate() || new Date(0)
-          }))
-        ),
-        switchMap((songs: (Song & { id: string })[]) =>
-          this.submissionService.getAllSubmissions().pipe(
-            map((submissionMap) =>
-              songs.map((song) => ({
-                ...song,
-                submissions: submissionMap[song.id] || [],
-              }))
-            )
-          )
-        ),
-        take(1)
-      )
-      .subscribe((songs) => this.songsSubject.next(songs));
+    const songId = song.id.toString();
+    const songSubmissions = submissions.filter(sub => 
+      sub.songId.toString() === songId
+    );
+    
+    return {
+      ...processedSong,
+      submissions: songSubmissions
+    };
+  }
+
+  private async refreshSong(songId: string): Promise<void> {
+    try {
+      const [updatedSong, submissions] = await Promise.all([
+        firstValueFrom(this.apiService.getSong(songId)),
+        firstValueFrom(this.submissionService.getAllSubmissions())
+      ]);
+
+      if (!updatedSong) {
+        console.error('No song data received');
+        return;
+      }
+
+      if (!submissions) {
+        console.error('No submissions data received');
+        return;
+      }
+
+      const currentSongs = this.songsSubject.value;
+      const updatedSongs = currentSongs.map(song => {
+        if (song.id === songId) {
+          return this.processSong(updatedSong, submissions);
+        }
+        return song;
+      });
+
+      this.songsSubject.next(updatedSongs);
+    } catch (error) {
+      console.error('Error refreshing song:', error);
+    }
   }
 
   getSongs(): Observable<SongWithSubmissions[]> {

@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { animate, style, transition, trigger } from '@angular/animations';
@@ -8,16 +8,16 @@ import { SubmissionModalComponent } from '../submission-modal/submission-modal.c
 import { Submission } from '../../models/submission.interface';
 import { SubmissionEditModalComponent } from '../submission-modal/submission-edit-modal.component';
 import { AuthService } from '../../services/auth.service';
-import { SongSyncService } from '../../services/song-sync.service'
+import { SongSyncService } from '../../services/song-sync.service';
+import { ModalService } from '../../services/modal.service';
 
 @Component({
   selector: 'app-song-item',
   standalone: true,
   imports: [
     CommonModule,
-    SubmissionModalComponent,
-    SubmissionEditModalComponent,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   animations: [
     trigger('expandCollapse', [
       transition(':enter', [
@@ -49,7 +49,7 @@ import { SongSyncService } from '../../services/song-sync.service'
           <span class="song-subtitle">
             <span>{{ song.artist }}</span>
             <span *ngIf="!isExpanded">
-                Stepped by: {{song.stepartist}}
+                Stepped by: {{song.stepArtist}}
             </span>
           </span>
         </div>
@@ -78,20 +78,20 @@ import { SongSyncService } from '../../services/song-sync.service'
             <div 
               *ngFor="let submission of song.submissions; let i = index"
               class="submission-btn-group">
-            <button
-              (click)="setSubmission(i)"
-              [class.active]="currentSubmissionIndex === i"
-              [class.source-toggle-loggedin]="isLoggedIn$ | async"
-              [class.source-toggle-btn]="!(isLoggedIn$ | async)">
-              {{ submission.contributor }}
-            </button>
-            <button 
-              *ngIf="isLoggedIn$ | async"
-              class="edit-submission-btn"
-              (click)="showSubmissionEditModal($event, i)"
-              title="Edit Submission">
-              <i class="fas fa-pencil-alt edit-btn"></i>
-            </button>
+              <button
+                (click)="setSubmission(i)"
+                [class.active]="currentSubmissionIndex === i"
+                [class.source-toggle-loggedin]="isLoggedIn$ | async"
+                [class.source-toggle-btn]="!(isLoggedIn$ | async)">
+                {{ submission.contributor }}
+              </button>
+              <button 
+                *ngIf="isLoggedIn$ | async"
+                class="edit-submission-btn"
+                (click)="showSubmissionEditModal($event, i)"
+                title="Edit Submission">
+                <i class="fas fa-pencil-alt edit-btn"></i>
+              </button>
             </div>
           </div>
           <div class="video-controls-right">
@@ -113,9 +113,9 @@ import { SongSyncService } from '../../services/song-sync.service'
             </button>
           </div>    
         </div>
-        <div class="video-container" *ngIf="currentSubmission?.youtubeUrl; else noVideo">
+        <div class="video-container" *ngIf="hasSubmissions && currentSubmission?.url; else noVideo">
           <iframe
-            [src]="getSafeUrl(currentSubmission.youtubeUrl)"
+            [src]="getSafeUrl(currentSubmission.url)"
             frameborder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowfullscreen>
@@ -131,22 +131,6 @@ import { SongSyncService } from '../../services/song-sync.service'
         </ng-template>
       </div>
     </div>
-
-    <app-submission-modal
-      *ngIf="showModal"
-      [song]="song"
-      (cancel)="hideSubmissionModal()"
-      (submit)="handleSubmissionAdd($event)">
-    </app-submission-modal>
-
-    <app-submission-edit-modal
-      *ngIf="showEditModal"
-      [song]="selectedSong"
-      [submissionIndex]="selectedIndex"
-      (delete)="handleSubmissionDelete()"
-      (cancel)="hideSubmissionEditModal()"
-      (submit)="handleSubmissionEdit($event)">
-    </app-submission-edit-modal>
   `,
   styles: [
     `
@@ -536,24 +520,21 @@ export class SongItemComponent {
   @Input() showFirstIndicator: boolean = false;
   @Output() expandToggle = new EventEmitter<void>();
 
-  get isFirstSubmission(): boolean {
-    return this.song.submissions.some(sub => sub.firstSub);
-  }
-
   currentSubmissionIndex: number = 0;
-  showModal: boolean = false;
-  showEditModal: boolean = false;
-  editSubmissionIndex: number = 0;
-  selectedSong!: SongWithSubmissions;
-  selectedIndex: number = 0;
+  selectedSubmissionIndex: number = -1;
   isLoggedIn$ = this.authService.isLoggedIn();
 
   constructor(
     private sanitizer: DomSanitizer,
     private submissionService: SubmissionService,
     private authService: AuthService,
-    private songSyncService: SongSyncService
+    private songSyncService: SongSyncService,
+    private modalService: ModalService
   ) {}
+
+  get isFirstSubmission(): boolean {
+    return this.song.submissions.some(sub => sub.firstSub);
+  }
 
   get hasSubmissions(): boolean {
     return this.song.submissions.length > 0;
@@ -577,14 +558,47 @@ export class SongItemComponent {
 
   showSubmissionModal(event: Event) {
     event.stopPropagation();
-    this.showModal = true;
+    const modalRef = this.modalService.open<SubmissionModalComponent>(SubmissionModalComponent, {
+      song: this.song,
+      cancel: new EventEmitter<void>(),
+      submit: new EventEmitter<Submission>()
+    });
+
+    modalRef.instance.cancel.subscribe(() => {
+      this.modalService.closeModal();
+    });
+
+    modalRef.instance.submit.subscribe(async (submission: Submission) => {
+      await this.handleSubmissionAdd(submission);
+      this.modalService.closeModal();
+    });
   }
 
   showSubmissionEditModal(event: Event, submissionIndex: number) {
     event.stopPropagation();
-    this.selectedSong = this.song;
-    this.selectedIndex = submissionIndex;
-    this.showEditModal = true;
+    this.selectedSubmissionIndex = submissionIndex;
+
+    const modalRef = this.modalService.open<SubmissionEditModalComponent>(SubmissionEditModalComponent, {
+      song: this.song,
+      submissionIndex: this.selectedSubmissionIndex,
+      cancel: new EventEmitter<void>(),
+      delete: new EventEmitter<void>(),
+      submit: new EventEmitter<Submission>()
+    });
+
+    modalRef.instance.cancel.subscribe(() => {
+      this.modalService.closeModal();
+    });
+
+    modalRef.instance.delete.subscribe(async () => {
+      await this.handleSubmissionDelete();
+      this.modalService.closeModal();
+    });
+
+    modalRef.instance.submit.subscribe(async (submission: Submission) => {
+      await this.handleSubmissionEdit(submission);
+      this.modalService.closeModal();
+    });
   }
 
   async resyncSongDetails(event: Event) {
@@ -594,14 +608,6 @@ export class SongItemComponent {
     } catch (error) {
       console.error('Error resyncing song:', error);
     }
-  }
-
-  hideSubmissionModal() {
-    this.showModal = false;
-  }
-
-  hideSubmissionEditModal() {
-    this.showEditModal = false;
   }
 
   async handleSubmissionAdd(submissionData: Omit<Submission, 'songId'>) {
@@ -614,7 +620,6 @@ export class SongItemComponent {
       await this.submissionService.addSubmission(this.song.id, newSubmission);
       this.song.submissions = [...this.song.submissions, newSubmission];
       this.currentSubmissionIndex = this.song.submissions.length - 1;
-      this.hideSubmissionModal();
     } catch (error) {
       console.error('Error adding submission:', error);
     }
@@ -623,8 +628,7 @@ export class SongItemComponent {
   async handleSubmissionEdit(submissionData: Submission) {
     try {
       await this.submissionService.updateSubmission(submissionData);
-      this.song.submissions[this.selectedIndex] = submissionData;
-      this.hideSubmissionEditModal();
+      this.song.submissions[this.selectedSubmissionIndex] = submissionData;
     } catch (error) {
       console.error('Error updating submission:', error);
     }
@@ -632,11 +636,10 @@ export class SongItemComponent {
 
   async handleSubmissionDelete() {
     try {
-      const submission = this.song.submissions[this.selectedIndex];
+      const submission = this.song.submissions[this.selectedSubmissionIndex];
       await this.submissionService.deleteSubmission(submission);
-      this.song.submissions.splice(this.selectedIndex, 1);
-      this.currentSubmissionIndex = this.song.submissions.length - 1;
-      this.hideSubmissionEditModal();
+      this.song.submissions = this.song.submissions.filter((_, index) => index !== this.selectedSubmissionIndex);
+      this.currentSubmissionIndex = Math.min(this.currentSubmissionIndex, this.song.submissions.length - 1);
     } catch (error) {
       console.error('Error deleting submission:', error);
     }

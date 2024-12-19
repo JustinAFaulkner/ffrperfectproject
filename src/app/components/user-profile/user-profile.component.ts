@@ -40,7 +40,7 @@ import { SongWithSubmissions } from '../../models/song-with-submissions.interfac
           </div>
           <div class="stat-item">
             <span class="stat-label">Average Difficulty</span>
-            <span class="stat-value">{{stats.avgDifficulty}}</span>
+            <span class="stat-value">{{ stats.avgDifficulty | number: '1.0-0' }}</span>
           </div>
           <div class="stat-item">
             <span class="stat-label">Lowest Difficulty</span>

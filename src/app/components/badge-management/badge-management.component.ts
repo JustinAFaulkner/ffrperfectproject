@@ -2,15 +2,18 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BadgeService } from '../../services/badge.service';
-import { ContributorBadges, UserBadges } from '../../models/user-badges.interface';
+import { ContributorBadges, BadgeKey } from '../../models/user-badges.interface';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { AccessDeniedComponent } from '../shared/access-denied.component';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-badge-management',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AccessDeniedComponent],
   template: `
+  <ng-container *ngIf="isLoggedIn$ | async; else accessDenied">
     <div class="container">
       <h1>Badge Management</h1>
       
@@ -29,12 +32,14 @@ import { map } from 'rxjs/operators';
             (change)="filterContributors()"
           />
           <span class="slider"></span>
-          <span class="switch-label">Show Owed Badges Only</span>
+          <span class="switch-label">Owed Badges Only</span>
         </label>
       </div>
 
       <div class="contributors-list">
-        <div *ngFor="let contributor of filteredContributors$ | async" class="contributor-item">
+        <div 
+          *ngFor="let contributor of filteredContributors$ | async" 
+          class="contributor-item">
           <div class="contributor-info">
             <span class="contributor-name">{{ contributor.username }}</span>
             <span class="submission-count">
@@ -49,7 +54,7 @@ import { map } from 'rxjs/operators';
                 <input
                   type="checkbox"
                   [checked]="contributor.badges.badge1"
-                  (change)="toggleBadge(contributor.username, 'badge1', $event)"
+                  (change)="toggleBadge(contributor.username, 'badge_one', $event)"
                 />
                 <span class="checkmark"></span>
                 <span class="badge-number">1</span>
@@ -58,7 +63,7 @@ import { map } from 'rxjs/operators';
                 <input
                   type="checkbox"
                   [checked]="contributor.badges.badge2"
-                  (change)="toggleBadge(contributor.username, 'badge2', $event)"
+                  (change)="toggleBadge(contributor.username, 'badge_two', $event)"
                 />
                 <span class="checkmark"></span>
                 <span class="badge-number">2</span>
@@ -67,7 +72,7 @@ import { map } from 'rxjs/operators';
                 <input
                   type="checkbox"
                   [checked]="contributor.badges.badge3"
-                  (change)="toggleBadge(contributor.username, 'badge3', $event)"
+                  (change)="toggleBadge(contributor.username, 'badge_three', $event)"
                 />
                 <span class="checkmark"></span>
                 <span class="badge-number">3</span>
@@ -77,6 +82,10 @@ import { map } from 'rxjs/operators';
         </div>
       </div>
     </div>
+  </ng-container>
+  <ng-template #accessDenied>
+    <app-access-denied></app-access-denied>
+  </ng-template>
   `,
   styles: [`
     .container {
@@ -95,87 +104,23 @@ import { map } from 'rxjs/operators';
     }
 
     .filters {
+      margin-bottom: 20px;
       display: flex;
-      gap: 1rem;
-      align-items: center;
-      margin-bottom: 1.5rem;
+      gap: 15px;
     }
 
     .search-input {
       flex: 1;
-      padding: 0.75rem;
+      padding: 8px;
       border: 1px solid #ddd;
       border-radius: 4px;
-      font-size: 1rem;
+      font-size: 14px;
     }
 
     :host-context(body.dark-mode) .search-input {
       background: #333;
       border-color: #444;
       color: #e0e0e0;
-    }
-
-    .first-count {
-      color: #28aad1;
-      margin-left: 0.25rem;
-    }
-
-    :host-context(body.dark-mode) .first-count {
-      color: #3dbde4;
-    }
-
-    /* Toggle Switch Styles */
-    .switch {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      cursor: pointer;
-      position: relative;
-    }
-
-    .switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-
-    .slider {
-      position: relative;
-      display: inline-block;
-      width: 48px;
-      height: 24px;
-      background-color: #ccc;
-      border-radius: 24px;
-      transition: .4s;
-    }
-
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 18px;
-      width: 18px;
-      left: 3px;
-      bottom: 3px;
-      background-color: white;
-      border-radius: 50%;
-      transition: .4s;
-    }
-
-    .switch input:checked + .slider {
-      background-color: #28aad1;
-    }
-
-    .switch input:checked + .slider:before {
-      transform: translateX(24px);
-    }
-
-    .switch-label {
-      color: #666;
-      font-size: 0.9rem;
-    }
-
-    :host-context(body.dark-mode) .switch-label {
-      color: #999;
     }
 
     .contributors-list {
@@ -222,6 +167,14 @@ import { map } from 'rxjs/operators';
       color: #999;
     }
 
+    .first-count {
+      color: #28aad1;
+    }
+
+    :host-context(body.dark-mode) .first-count {
+      color: #3dbde4;
+    }
+
     .badge-section {
       display: flex;
       align-items: center;
@@ -242,7 +195,6 @@ import { map } from 'rxjs/operators';
       gap: 1rem;
     }
 
-    /* Checkbox Styles */
     .checkbox-container {
       position: relative;
       padding-left: 35px;
@@ -316,6 +268,68 @@ import { map } from 'rxjs/operators';
       color: #999;
     }
 
+    /* Toggle Switch Styles */
+    .switch {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: relative;
+      display: inline-block;
+      width: 48px;
+      height: 24px;
+      background-color: #ccc;
+      border-radius: 24px;
+      transition: .4s;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      border-radius: 50%;
+      transition: .4s;
+    }
+
+    .switch input:checked + .slider {
+      background-color: #28aad1;
+    }
+
+    .switch input:checked + .slider:before {
+      transform: translateX(24px);
+    }
+
+    .switch-label {
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    :host-context(body.dark-mode) .switch-label {
+      color: #999;
+    }
+
+    :host-context(body.dark-mode) .slider {
+      background-color: #333;
+    }
+
+    :host-context(body.dark-mode) .slider:before {
+      background-color: #e0e0e0;
+    }
+
     @media (max-width: 768px) {
       .filters {
         flex-direction: column;
@@ -336,12 +350,16 @@ import { map } from 'rxjs/operators';
   `]
 })
 export class BadgeManagementComponent implements OnInit {
+  isLoggedIn$ = this.authService.isLoggedIn();
   private contributorsSubject = new BehaviorSubject<ContributorBadges[]>([]);
   filteredContributors$ = this.contributorsSubject.asObservable();
   searchTerm = '';
   showOwedOnly = false;
 
-  constructor(private badgeService: BadgeService) {}
+  constructor(
+    private authService: AuthService,
+    private badgeService: BadgeService
+  ) {}
 
   ngOnInit() {
     this.loadContributors();
@@ -367,8 +385,6 @@ export class BadgeManagementComponent implements OnInit {
         }
 
         if (this.showOwedOnly) {
-          // Implementation of "owed badges" logic will go here
-          // For now, just return all contributors
           filtered = filtered;
         }
 
@@ -379,16 +395,18 @@ export class BadgeManagementComponent implements OnInit {
 
   async toggleBadge(
     username: string, 
-    badgeKey: keyof UserBadges, 
+    badgeKey: BadgeKey, 
     event: Event
   ) {
     const checkbox = event.target as HTMLInputElement;
+    const checked = checkbox.checked;
+    
     try {
-      await this.badgeService.updateBadge(username, badgeKey, checkbox.checked);
-      this.loadContributors(); // Refresh the list
+      await this.badgeService.updateBadge(username, badgeKey, checked);
+      this.loadContributors();
     } catch (error) {
       console.error('Error updating badge:', error);
-      checkbox.checked = !checkbox.checked; // Revert the checkbox state
+      checkbox.checked = !checked;
     }
   }
 }

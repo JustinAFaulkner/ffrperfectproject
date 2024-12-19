@@ -14,17 +14,22 @@ import { UrlTransformerService } from '../../services/url-transformer.service';
   template: `
     <div class="modal-backdrop" (click)="onCancel()">
       <div class="modal-content" (click)="$event.stopPropagation()">
-        <h2>Edit Submission</h2>
+        <div class="modal-header">
+          <h2>Edit Submission</h2>
+          <button class="btn-delete" (click)="showDeleteConfirm = true">
+            <i class="fa fa-trash trash-icon"></i>
+          </button>
+        </div>
         <h3>{{ song.title }}</h3>
         <hr class="edit-hr"/>
         <div class="form-group">
-          <label for="youtubeUrl">YouTube URL</label>
+          <label for="url">YouTube URL</label>
           <input
             type="url"
-            id="youtubeUrl"
-            [(ngModel)]="submission.youtubeUrl"
+            id="url"
+            [(ngModel)]="submission.url"
             class="form-control"
-            value="{{ song.submissions[submissionIndex].youtubeUrl }}"
+            value="{{ song.submissions[submissionIndex].url }}"
           />
         </div>
 
@@ -66,15 +71,11 @@ import { UrlTransformerService } from '../../services/url-transformer.service';
         </div>
 
         <div class="button-group">
-          <button class="btn-delete" (click)="showDeleteConfirm = true">
-            <i class="fa fa-trash trash-icon"></i>
-            Delete
-          </button>
-          <div class="button-group-right">
-            <button class="btn-yt-info" (click)="showYtInfo = true">
+          <button class="btn-yt-info" (click)="showYtInfo = true">
               <i class="fab fa-youtube"></i>
               YT Info
-            </button>
+          </button>
+          <div class="button-group-right">
             <button class="btn-cancel" (click)="onCancel()">Cancel</button>
             <button 
               class="btn-submit" 
@@ -238,14 +239,19 @@ import { UrlTransformerService } from '../../services/url-transformer.service';
       margin-bottom: 8px;
     }
 
-    .btn-delete {
+    .modal-header {
       display: flex;
-      gap: 6px;
+      justify-content: space-between;
+    }
+
+    .btn-delete {
       background: #fff184;
       align-items: center;
-      justify-content: space-between;
+      display: flex;
       color: #866611;
       border: 1px solid #cc9b1a;
+      max-height: 30px;
+      margin-top: 6px;
     }
 
     .btn-delete:hover {
@@ -287,7 +293,7 @@ export class SubmissionEditModalComponent {
   submission: Submission = {
     id: '',
     songId: 0,
-    youtubeUrl: '',
+    url: '',
     contributor: '',
     songWikiUpdated: false,
     userWikiUpdated: false,
@@ -301,7 +307,7 @@ export class SubmissionEditModalComponent {
         this.submission = {
           id: currentSubmission.id,
           songId: Number(this.song.id),
-          youtubeUrl: currentSubmission.youtubeUrl,
+          url: currentSubmission.url,
           contributor: currentSubmission.contributor,
           songWikiUpdated: currentSubmission.songWikiUpdated,
           userWikiUpdated: currentSubmission.userWikiUpdated,
@@ -313,8 +319,8 @@ export class SubmissionEditModalComponent {
 
   get isValid(): boolean {
     return (
-      (this.submission.youtubeUrl.includes('/watch?v=') ||
-        this.submission.youtubeUrl.includes('/embed/')) &&
+      (this.submission.url.includes('/watch?v=') ||
+        this.submission.url.includes('/embed/')) &&
       this.submission.contributor.trim() !== ''
     );
   }
@@ -330,10 +336,10 @@ export class SubmissionEditModalComponent {
 
   onSubmit(): void {
     if (this.isValid) {
-      if (this.submission.youtubeUrl.includes('/watch?v=')) {
-        this.submission.youtubeUrl = this.urlTransformer.transformYoutubeUrl(this.submission.youtubeUrl as string);
+      if (this.submission.url.includes('/watch?v=')) {
+        this.submission.url = this.urlTransformer.transformYoutubeUrl(this.submission.url as string);
       }
-      
+
       this.submit.emit({ ...this.submission });
     }
   }

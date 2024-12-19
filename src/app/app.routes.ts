@@ -5,6 +5,7 @@ import { UserProfileComponent } from './components/user-profile/user-profile.com
 import { HomeComponent } from './components/home/home.component';
 import { WikiUpdatesComponent } from './components/wiki-updates/wiki-updates.component';
 import { BadgeManagementComponent } from './components/badge-management/badge-management.component';
+import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -14,15 +15,18 @@ export const routes: Routes = [
   { 
     path: 'user-wiki-updates', 
     component: WikiUpdatesComponent,
+    canActivate: [authGuard],
     data: { type: 'user' }
   },
   { 
     path: 'badge-management',
-    component: BadgeManagementComponent
+    component: BadgeManagementComponent,
+    canActivate: [authGuard]
   },
   { 
     path: 'song-wiki-updates', 
     component: WikiUpdatesComponent,
+    canActivate: [authGuard],
     data: { type: 'song' }
   }
 ];

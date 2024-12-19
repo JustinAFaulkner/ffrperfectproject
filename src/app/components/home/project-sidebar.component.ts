@@ -31,6 +31,11 @@ import { CommonModule } from '@angular/common';
         <div class="coordinator-links">
           <a href="https://www.flashflashrevolution.com/profile/justin" target="_blank">justin</a>
         </div>
+
+        <h3>Graphics:</h3>
+        <div class="coordinator-links">
+          <a href="https://www.flashflashrevolution.com/profile/Zyxel" target="_blank">Zyxel</a>
+        </div>
       </section>
 
       <section class="sidebar-section">

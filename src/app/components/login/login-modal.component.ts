@@ -78,6 +78,10 @@ import { AuthService } from '../../services/auth.service';
       color: #333;
     }
 
+    :host-context(body.dark-mode) .modal-header h2 {
+      color: #e0e0e0;
+    }
+
     .close-btn {
       background: none;
       border: none;

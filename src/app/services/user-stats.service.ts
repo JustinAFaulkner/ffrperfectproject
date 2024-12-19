@@ -33,7 +33,7 @@ export class UserStatsService {
 
         const difficulties = userSongs.map(song => song.difficulty);
         const highestDifficulty = Math.max(...difficulties, 0);
-        const lowestDifficulty = Math.min(...difficulties, 0);
+        const lowestDifficulty = Math.min(...difficulties, 100);
         const avgDifficulty = difficulties.length > 0 
           ? difficulties.reduce((a, b) => a + b, 0) / difficulties.length 
           : 0;
