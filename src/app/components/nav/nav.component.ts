@@ -127,6 +127,9 @@ import { ConfirmModalComponent } from '../shared/confirm-modal.component';
               <div class="nav-link" (click)="onBadgeManagement()">
                 Badge Management
               </div>
+              <div class="nav-link" (click)="onSyncLogs()">
+                Song Change Logs
+              </div>
               <div class="nav-link"
                 (click)="onSyncSongs()"
                 [class.disabled]="isSyncing">
@@ -469,6 +472,11 @@ export class NavComponent {
   onBadgeManagement() {
     this.router.navigate(['/badge-management']);
     this.showMobileMenu = false;
+  }
+
+
+  onSyncLogs() {
+    this.router.navigate(['/sync-log']);
   }
 
   async onSyncSongs() {

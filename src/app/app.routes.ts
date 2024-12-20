@@ -5,6 +5,8 @@ import { UserProfileComponent } from './components/user-profile/user-profile.com
 import { HomeComponent } from './components/home/home.component';
 import { WikiUpdatesComponent } from './components/wiki-updates/wiki-updates.component';
 import { BadgeManagementComponent } from './components/badge-management/badge-management.component';
+import { SyncLogsComponent } from './components/sync-logs/sync-logs.component';
+import { SyncLogDetailsComponent } from './components/sync-logs/sync-log-details.component';
 import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
@@ -28,5 +30,15 @@ export const routes: Routes = [
     component: WikiUpdatesComponent,
     canActivate: [authGuard],
     data: { type: 'song' }
+  },
+  {
+    path: 'sync-log',
+    component: SyncLogsComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'sync-log/:filename',
+    component: SyncLogDetailsComponent,
+    canActivate: [authGuard]
   }
 ];

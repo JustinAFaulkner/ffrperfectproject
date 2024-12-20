@@ -25,6 +25,9 @@ import { ConfirmModalComponent } from '../shared/confirm-modal.component';
         <button class="dropdown-item" (click)="onBadgeManagement()">
           Badge Management
         </button>
+        <button class="dropdown-item" (click)="onSyncLogs()">
+          Song Change Logs
+        </button>
         <button 
           class="dropdown-item" 
           (click)="onSyncSongs()"
@@ -154,6 +157,10 @@ export class AdminMenuComponent {
   
   onBadgeManagement() {
     this.router.navigate(['/badge-management']);
+  }
+
+  onSyncLogs() {
+    this.router.navigate(['/sync-log']);
   }
 
   async onSyncSongs() {
