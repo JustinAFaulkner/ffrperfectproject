@@ -6,6 +6,10 @@ import { SyncLogDetails } from '../../models/sync-log-details.interface';
 import { AccessDeniedComponent } from '../shared/access-denied.component';
 import { AuthService } from '../../services/auth.service';
 import { LoggingService } from '../../services/logging.service';
+import { SongService } from '../../services/song.service';
+import { FilterService } from '../../services/filter.service';
+import { SongWithSubmissions } from '../../models/song-with-submissions.interface';
+import { SongFilters, defaultFilters } from '../../models/song-filters.interface';
 
 @Component({
   selector: 'app-sync-log-details',
@@ -18,7 +22,12 @@ import { LoggingService } from '../../services/logging.service';
         
         <div class="changes-list">
           <div *ngFor="let change of logDetails.changes" class="change-item">
-            <h3>{{ change.currentTitle }} ({{ change.id }})</h3>
+            <div class="change-header">
+              <h3>{{ change.currentTitle }} ({{ change.id }})</h3>
+              <div class="submission-status" [class.has-submissions]="hasSubmissions(change.id)">
+                {{ hasSubmissions(change.id) ? 'Has Submissions' : 'No Submissions' }}
+              </div>
+            </div>
             <div class="changes">
               <div *ngIf="change.isNewSong" class="new-song">
                 New song added
@@ -73,10 +82,29 @@ import { LoggingService } from '../../services/logging.service';
       background: #2d2d2d;
     }
 
+    .change-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
     h3 {
-      margin: 0 0 0.5rem;
+      margin: 0;
       color: #28aad1;
       font-size: 1.1rem;
+    }
+
+    .submission-status {
+      font-size: 0.9rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      background: #dc3545;
+      color: white;
+    }
+
+    .submission-status.has-submissions {
+      background: #28a745;
     }
 
     .changes {
@@ -137,11 +165,15 @@ import { LoggingService } from '../../services/logging.service';
 export class SyncLogDetailsComponent implements OnInit {
   isLoggedIn$ = this.authService.isLoggedIn();
   logDetails: SyncLogDetails | null = null;
+  songs: SongWithSubmissions[] = [];
+  filters: SongFilters = { ...defaultFilters };
 
   constructor(
     private route: ActivatedRoute,
     private authService: AuthService,
     private syncLogService: SyncLogService,
+    private songService: SongService,
+    private filterService: FilterService,
     private logger: LoggingService
   ) {}
 
@@ -154,7 +186,7 @@ export class SyncLogDetailsComponent implements OnInit {
       return;
     }
 
-    this.logger.info('Loading sync log details', { filename });
+    this.logger.info('Loading sync log details', { filename });    
 
     this.syncLogService.getSyncLogDetails(filename).subscribe({
       next: (details) => {
@@ -168,5 +200,18 @@ export class SyncLogDetailsComponent implements OnInit {
         this.logger.error('Error loading sync log details', error);
       }
     });
+
+    this.filters.ids = this.logDetails?.changes.map(log => log.id);
+
+    this.songService.getSongs().subscribe((songs) => {
+      this.songs = this.filterService.filterSongs(songs, this.filters);
+    })
+  }
+
+  hasSubmissions(songId: string): boolean {
+    const song = this.songs.find(song => song.id == songId);
+    if (song) return song.submissions.length > 0;
+
+    return false;
   }
 }

@@ -11,6 +11,7 @@ export interface SongFilters {
   releaseDate: Date | null;
   sortBy: string;
   sortDirection: 'asc' | 'desc';
+  ids: string[] | undefined;
 }
 
 export const defaultFilters: SongFilters = {
@@ -25,5 +26,6 @@ export const defaultFilters: SongFilters = {
   maxLength: 999,
   releaseDate: null,
   sortBy: 'id',
-  sortDirection: 'asc'
+  sortDirection: 'asc',
+  ids: undefined
 };
