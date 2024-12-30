@@ -3,10 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BadgeService } from '../../services/badge.service';
 import { ContributorBadges, BadgeKey } from '../../models/user-badges.interface';
-import { Observable, BehaviorSubject } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { SongService } from '../../services/song.service';
 import { AccessDeniedComponent } from '../shared/access-denied.component';
 import { AuthService } from '../../services/auth.service';
+import { Observable, BehaviorSubject, combineLatest } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
+import { SongWithSubmissions } from '../../models/song-with-submissions.interface';
 
 @Component({
   selector: 'app-badge-management',
@@ -44,38 +46,42 @@ import { AuthService } from '../../services/auth.service';
             <span class="contributor-name">{{ contributor.username }}</span>
             <span class="submission-count">
               {{ contributor.submissionCount }} submissions 
-              <span class="first-count">({{ contributor.firstCount }} firsts)</span>
+              <span class="first-count">({{ contributor.firstCount }} 1sts)</span>
             </span>
           </div>
           <div class="badge-section">
-            <span class="badge-label">Badges:</span>
             <div class="badge-controls">
-              <label class="checkbox-container">
+              <label class="checkbox-container" [class.disabled]="!(canEarnBadge(contributor, 1) | async)">
                 <input
                   type="checkbox"
                   [checked]="contributor.badges.badge1"
+                  [disabled]="!(canEarnBadge(contributor, 1) | async)"
                   (change)="toggleBadge(contributor.username, 'badge_one', $event)"
                 />
                 <span class="checkmark"></span>
-                <span class="badge-number">1</span>
+                <span class="badge-number">Out Walkin'</span>
               </label>
-              <label class="checkbox-container">
+
+              <label class="checkbox-container" [class.disabled]="!(canEarnBadge(contributor, 2) | async)">
                 <input
                   type="checkbox"
                   [checked]="contributor.badges.badge2"
+                  [disabled]="!(canEarnBadge(contributor, 2) | async)"
                   (change)="toggleBadge(contributor.username, 'badge_two', $event)"
                 />
                 <span class="checkmark"></span>
-                <span class="badge-number">2</span>
+                <span class="badge-number">Budding Pioneer</span>
               </label>
-              <label class="checkbox-container">
+
+              <label class="checkbox-container" [class.disabled]="!(canEarnBadge(contributor, 3) | async)">
                 <input
                   type="checkbox"
                   [checked]="contributor.badges.badge3"
+                  [disabled]="!(canEarnBadge(contributor, 3) | async)"
                   (change)="toggleBadge(contributor.username, 'badge_three', $event)"
                 />
                 <span class="checkmark"></span>
-                <span class="badge-number">3</span>
+                <span class="badge-number">In A Pickle</span>
               </label>
             </div>
           </div>
@@ -181,15 +187,6 @@ import { AuthService } from '../../services/auth.service';
       gap: 1rem;
     }
 
-    .badge-label {
-      color: #666;
-      font-size: 0.9rem;
-    }
-
-    :host-context(body.dark-mode) .badge-label {
-      color: #999;
-    }
-
     .badge-controls {
       display: flex;
       gap: 1rem;
@@ -226,11 +223,11 @@ import { AuthService } from '../../services/auth.service';
       background-color: #444;
     }
 
-    .checkbox-container:hover input ~ .checkmark {
+    .checkbox-container:hover:not(.disabled) input ~ .checkmark {
       background-color: #ccc;
     }
 
-    :host-context(body.dark-mode) .checkbox-container:hover input ~ .checkmark {
+    :host-context(body.dark-mode) .checkbox-container:hover:not(.disabled) input ~ .checkmark {
       background-color: #555;
     }
 
@@ -258,8 +255,21 @@ import { AuthService } from '../../services/auth.service';
       transform: rotate(45deg);
     }
 
+    .checkbox-container.disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .checkbox-container.disabled input {
+      cursor: not-allowed;
+    }
+
+    .checkbox-container.disabled .checkmark {
+      cursor: not-allowed;
+    }
+
     .badge-number {
-      margin-left: 0.5rem;
+      margin-right: 0.5rem;
       color: #666;
       font-size: 0.9rem;
     }
@@ -352,14 +362,17 @@ import { AuthService } from '../../services/auth.service';
 export class BadgeManagementComponent implements OnInit {
   isLoggedIn$ = this.authService.isLoggedIn();
   private contributorsSubject = new BehaviorSubject<ContributorBadges[]>([]);
-  filteredContributors$ = this.contributorsSubject.asObservable();
+  filteredContributors$: Observable<ContributorBadges[]>;
   searchTerm = '';
-  showOwedOnly = false;
+  showOwedOnly = true;
 
   constructor(
     private authService: AuthService,
-    private badgeService: BadgeService
-  ) {}
+    private badgeService: BadgeService,
+    private songService: SongService
+  ) {
+    this.filteredContributors$ = this.contributorsSubject.asObservable();
+  }
 
   ngOnInit() {
     this.loadContributors();
@@ -373,22 +386,80 @@ export class BadgeManagementComponent implements OnInit {
   }
 
   filterContributors() {
-    this.filteredContributors$ = this.contributorsSubject.pipe(
-      map(contributors => {
-        let filtered = contributors;
-
-        if (this.searchTerm) {
-          const searchLower = this.searchTerm.toLowerCase();
-          filtered = filtered.filter(c => 
-            c.username.toLowerCase().includes(searchLower)
-          );
+    this.filteredContributors$ = this.contributorsSubject.asObservable().pipe(
+      switchMap((contributors: ContributorBadges[]): Observable<ContributorBadges[]> => {
+        if (!this.showOwedOnly) {
+          return new Observable<ContributorBadges[]>(observer => {
+            observer.next(this.filterBySearch(contributors));
+            observer.complete();
+          });
         }
 
-        if (this.showOwedOnly) {
-          filtered = filtered;
-        }
+        return this.songService.getSongs().pipe(
+          map(songs => {
+            const filtered = contributors.filter(contributor => {
+              const userSongs = songs.filter(song => 
+                song.submissions.some(sub => sub.contributor === contributor.username)
+              );
 
-        return filtered;
+              const needsBadge1 = !contributor.badges.badge1 && userSongs.length >= 5;
+              const needsBadge2 = !contributor.badges.badge2 && 
+                userSongs.some(song => 
+                  song.submissions.some(sub => 
+                    sub.contributor === contributor.username && sub.firstSub
+                  )
+                );
+              const needsBadge3 = !contributor.badges.badge3 && 
+                userSongs.filter(song => song.difficulty > 29).length >= 5;
+
+              return needsBadge1 || needsBadge2 || needsBadge3;
+            });
+
+            return this.filterBySearch(filtered);
+          })
+        );
+      })
+    );
+  }
+  
+  private filterBySearch(contributors: ContributorBadges[]): ContributorBadges[] {
+    if (!this.searchTerm) {
+      return this.sortContributors(contributors);
+    }
+  
+    const searchLower = this.searchTerm.toLowerCase();
+    return this.sortContributors(
+      contributors.filter(c => 
+        c.username.toLowerCase().includes(searchLower)
+      )
+    );
+  }
+  
+  private sortContributors(contributors: ContributorBadges[]): ContributorBadges[] {
+    return contributors.sort((a, b) => b.submissionCount - a.submissionCount);
+  }
+
+  canEarnBadge(contributor: ContributorBadges, badgeNumber: number): Observable<boolean> {
+    return this.songService.getSongs().pipe(
+      map((songs: SongWithSubmissions[]) => {
+        const userSongs = songs.filter(song => 
+          song.submissions.some(sub => sub.contributor === contributor.username)
+        );
+
+        switch(badgeNumber) {
+          case 1: // Out Walkin'
+            return userSongs.length >= 5;
+          case 2: // Budding Pioneer
+            return userSongs.some(song => 
+              song.submissions.some(sub => 
+                sub.contributor === contributor.username && sub.firstSub
+              )
+            );
+          case 3: // In A Pickle
+            return userSongs.filter(song => song.difficulty > 29).length >= 5;
+          default:
+            return false;
+        }
       })
     );
   }
