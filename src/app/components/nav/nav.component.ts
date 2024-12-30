@@ -487,7 +487,7 @@ export class NavComponent {
       this.isSyncing = true;
       const result = await this.songSyncService.syncNewSongs();
       alert(
-        `Sync complete!\nAdded: ${result.inserted} songs`
+        `Sync complete!\nAdded: ${result.data.inserted} songs`
       );
     } catch (error) {
       console.error('Error syncing songs:', error);

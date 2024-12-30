@@ -22,11 +22,11 @@ import { SongFilters, defaultFilters } from '../../models/song-filters.interface
         
         <div class="changes-list">
           <div *ngFor="let change of logDetails.changes" class="change-item">
+            <div class="corner-mark" [class.completed]="hasSubmissions(change.id)">
+              <i class="fas fa-check"></i>
+            </div>
             <div class="change-header">
               <h3>{{ change.currentTitle }} ({{ change.id }})</h3>
-              <div class="submission-status" [class.has-submissions]="hasSubmissions(change.id)">
-                {{ hasSubmissions(change.id) ? 'Has Submissions' : 'No Submissions' }}
-              </div>
             </div>
             <div class="changes">
               <div *ngIf="change.isNewSong" class="new-song">
@@ -65,6 +65,46 @@ import { SongFilters, defaultFilters } from '../../models/song-filters.interface
       color: #e0e0e0;
     }
 
+    .corner-mark {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-radius: 8px 0 0 0;
+      border-width: 2rem 2rem 0 0;
+      border-color: #e2e8f0 transparent transparent transparent;
+      transition: border-color 0.3s ease;
+      z-index: 1;
+    }
+
+    :host-context(body.dark-mode) .corner-mark {
+      border-color: #333 transparent transparent transparent;
+    }
+
+    .corner-mark.completed {
+      border-color: #48bb78 transparent transparent transparent;
+    }
+
+    :host-context(body.dark-mode) .corner-mark.completed {
+      border-color: #48bb78 transparent transparent transparent;
+    }
+
+    .corner-mark i {
+      position: absolute;
+      top: -1.8rem;
+      left: 0.4rem;
+      color: white;
+      font-size: 0.9rem;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .corner-mark.completed i {
+      opacity: 1;
+    }
+
     .changes-list {
       display: flex;
       flex-direction: column;
@@ -73,9 +113,10 @@ import { SongFilters, defaultFilters } from '../../models/song-filters.interface
 
     .change-item {
       background: white;
-      padding: 1rem;
+      padding: 1rem 1rem 1rem 2rem;
       border-radius: 8px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      position: relative;
     }
 
     :host-context(body.dark-mode) .change-item {

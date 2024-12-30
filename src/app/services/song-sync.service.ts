@@ -6,7 +6,9 @@ import { Song } from '../models/song.interface';
 import { LoggingService } from './logging.service';
 
 interface SyncResponse {
-  inserted: number;
+  data: {
+    inserted: number;
+  }
   msg: string;
 }
 

@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { animate, style, transition, trigger } from '@angular/animations';
@@ -68,32 +68,60 @@ import { ModalService } from '../../services/modal.service';
       <div class="song-content" *ngIf="isExpanded" [@expandCollapse]>
         <div class="video-controls">
           <div class="video-controls-left">
-            <button 
-              *ngIf="isLoggedIn$ | async"
-              class="add-submission-btn"
-              (click)="showSubmissionModal($event)"
-              title="Add New Submission">
-              <i class="fas fa-plus"></i>
-            </button>
-            <div 
-              *ngFor="let submission of song.submissions; let i = index"
-              class="submission-btn-group">
-              <button
-                (click)="setSubmission(i)"
-                [class.active]="currentSubmissionIndex === i"
-                [class.source-toggle-loggedin]="isLoggedIn$ | async"
-                [class.source-toggle-btn]="!(isLoggedIn$ | async)">
-                {{ submission.contributor }}
-              </button>
+            <div class="scroll-controls">
               <button 
                 *ngIf="isLoggedIn$ | async"
-                class="edit-submission-btn"
-                (click)="showSubmissionEditModal($event, i)"
-                title="Edit Submission">
-                <i class="fas fa-pencil-alt edit-btn"></i>
+                class="add-submission-btn"
+                (click)="showSubmissionModal($event)"
+                title="Add New Submission">
+                <i class="fas fa-plus"></i>
+              </button>
+              <button 
+                *ngIf="canScrollLeft"
+                class="scroll-btn"
+                (click)="scrollLeft()">
+                <i class="fas fa-chevron-left"></i>
+              </button>
+            </div>
+
+            <div class="submissions-container" 
+              #submissionsContainer
+              (scroll)="checkScrollButtons()"
+              (touchstart)="touchStart($event)"
+              (touchmove)="touchMove($event)"
+              (touchend)="touchEnd()">
+              <div class="submissions-wrapper">
+                <div 
+                  *ngFor="let submission of song.submissions; let i = index"
+                  class="submission-btn-group">
+                  <button
+                    (click)="setSubmission(i)"
+                    [class.active]="currentSubmissionIndex === i"
+                    [class.source-toggle-loggedin]="isLoggedIn$ | async"
+                    [class.source-toggle-btn]="!(isLoggedIn$ | async)">
+                    {{ submission.contributor }}
+                  </button>
+                  <button 
+                    *ngIf="isLoggedIn$ | async"
+                    class="edit-submission-btn"
+                    (click)="showSubmissionEditModal($event, i)"
+                    title="Edit Submission">
+                    <i class="fas fa-pencil-alt edit-btn"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="scroll-controls">
+              <button 
+                *ngIf="canScrollRight"
+                class="scroll-btn"
+                (click)="scrollRight()">
+                <i class="fas fa-chevron-right"></i>
               </button>
             </div>
           </div>
+
           <div class="video-controls-right">
             <button 
               *ngIf="isLoggedIn$ | async"
@@ -106,12 +134,9 @@ import { ModalService } from '../../services/modal.service';
               class="ffr-song-btn"
               (click)="openUrl(song.id)"
               title="View FFR song page">
-              <img 
-                src="assets/icons/FFR_Guy_Small.png"
-                class="ffr-btn"
-              />
+              <img src="assets/icons/FFR_Guy_Small.png" class="ffr-btn" />
             </button>
-          </div>    
+          </div>
         </div>
         <div class="video-container" *ngIf="hasSubmissions && currentSubmission?.url; else noVideo">
           <iframe
@@ -324,16 +349,76 @@ import { ModalService } from '../../services/modal.service';
       display: flex;
       gap: 8px;
       padding: 8px;
-      justify-content: space-between;
       background: #f5f5f5;
       align-items: center;
+      min-height: 46px; /* Ensure consistent height */
+    }
+
+    :host-context(body.dark-mode) .video-controls {
+      background: #222;
     }
 
     .video-controls-left {
       display: flex;
-      gap: 8px;
-      justify-content: flex-start;
       align-items: center;
+      gap: 8px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .add-submission-wrapper {
+      flex-shrink: 0; /* Prevent button from shrinking */
+    }
+
+    .scroll-controls {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .scroll-btn {
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      border: none;
+      background: #28aad1;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s;
+    }
+
+    .scroll-btn:hover {
+      background: #2391b2;
+    }
+
+    .submissions-container {
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      position: relative;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .submissions-container::-webkit-scrollbar {
+      display: none;
+    }
+
+    .submissions-wrapper {
+      display: flex;
+      gap: 8px;
+      padding: 4px 0;
+    }
+
+    .video-controls-right {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0; /* Prevent shrinking */
     }
 
     .add-submission-btn {
@@ -430,12 +515,6 @@ import { ModalService } from '../../services/modal.service';
       font-size: 14px;
     }
 
-    .video-controls-right {
-      align-items: center;
-      display: flex;
-      gap: 8px;
-    }
-
     .ffr-song-btn {
       width: 28px;
       height: 24px;
@@ -514,11 +593,31 @@ import { ModalService } from '../../services/modal.service';
   `,
   ],
 })
-export class SongItemComponent {
+export class SongItemComponent{
   @Input() song!: SongWithSubmissions;
-  @Input() isExpanded: boolean = false;
   @Input() showFirstIndicator: boolean = false;
+  @Input() set isExpanded(value: boolean) {
+    if (value !== this._isExpanded) {
+      this._isExpanded = value;
+      // Check scroll buttons on next tick if expanded
+      if (value) {
+        setTimeout(() => this.checkScrollButtons(), 0);
+      }
+    }
+  }
   @Output() expandToggle = new EventEmitter<void>();
+  @ViewChild('submissionsContainer') submissionsContainer!: ElementRef;
+  
+  private _isExpanded: boolean = false;
+  
+  get isExpanded(): boolean {
+    return this._isExpanded;
+  }
+
+  canScrollLeft = false;
+  canScrollRight = false;
+  touchStartX = 0;
+  touchScrollLeft = 0;
 
   currentSubmissionIndex: number = 0;
   selectedSubmissionIndex: number = -1;
@@ -531,6 +630,42 @@ export class SongItemComponent {
     private songSyncService: SongSyncService,
     private modalService: ModalService
   ) {}
+
+  checkScrollButtons() {
+    if (!this._isExpanded || !this.submissionsContainer) return;
+    
+    const container = this.submissionsContainer.nativeElement;
+    this.canScrollLeft = container.scrollLeft > 0;
+    this.canScrollRight = container.scrollLeft < (container.scrollWidth - container.clientWidth - 1);
+  }
+
+  scrollLeft() {
+    if (!this.submissionsContainer) return;
+    const container = this.submissionsContainer.nativeElement;
+    container.scrollBy({ left: -200, behavior: 'smooth' });
+  }
+
+  scrollRight() {
+    if (!this.submissionsContainer) return;
+    const container = this.submissionsContainer.nativeElement;
+    container.scrollBy({ left: 200, behavior: 'smooth' });
+  }
+
+  touchStart(e: TouchEvent) {
+    if (!this.submissionsContainer) return;
+    this.touchStartX = e.touches[0].clientX;
+    this.touchScrollLeft = this.submissionsContainer.nativeElement.scrollLeft;
+  }
+
+  touchMove(e: TouchEvent) {
+    if (!this.submissionsContainer) return;
+    const deltaX = this.touchStartX - e.touches[0].clientX;
+    this.submissionsContainer.nativeElement.scrollLeft = this.touchScrollLeft + deltaX;
+  }
+
+  touchEnd() {
+    this.checkScrollButtons();
+  }
 
   get isFirstSubmission(): boolean {
     return this.song.submissions.some(sub => sub.firstSub);
