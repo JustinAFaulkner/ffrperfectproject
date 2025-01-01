@@ -45,29 +45,49 @@ import { UrlTransformerService } from '../../services/url-transformer.service';
         </div>
 
         <div class="checkbox-group">
-          <label>
-            <input
-              type="checkbox"
-              [(ngModel)]="submission.songWikiUpdated"
-            />
-            Song Wiki Updated
-          </label>
+          <div class="checkbox-group-left">
+            <label>
+              <input
+                type="checkbox"
+                [(ngModel)]="submission.songWikiUpdated"
+              />
+              Song Wiki Updated
+            </label>
 
-          <label>
-            <input
-              type="checkbox"
-              [(ngModel)]="submission.userWikiUpdated"
-            />
-            User Wiki Updated
-          </label>
+            <label>
+              <input
+                type="checkbox"
+                [(ngModel)]="submission.userWikiUpdated"
+              />
+              User Wiki Updated
+            </label>
 
-          <label>
-            <input
-              type="checkbox"
-              [(ngModel)]="submission.firstSub"
-            />
-            First Submission
-          </label>
+            <label>
+              <input
+                type="checkbox"
+                [(ngModel)]="submission.firstSub"
+              />
+              First Submission
+            </label>
+          </div>
+          <div class="checkbox-group-right">
+            <label>
+              <input
+                type="checkbox"
+                [(ngModel)]="submission.userWikiUpdated"
+              />
+              Public
+            </label>
+           
+
+            <label>
+              <input
+                type="checkbox"
+                [(ngModel)]="submission.userWikiUpdated"
+              />
+              Multi
+            </label>
+          </div>
         </div>
 
         <div class="button-group">
@@ -173,9 +193,20 @@ import { UrlTransformerService } from '../../services/url-transformer.service';
 
     .checkbox-group {
       margin: 1rem 0;
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    .checkbox-group-left {
+      flex: 1 1 calc(70%);
+    }
+
+    .checkbox-group-right {
+      flex: 1 1 calc(30%);
     }
 
     .checkbox-group label {
+      flex: 1 1 calc(50% - 10px);
       display: flex;
       align-items: center;
       gap: 0.5rem;
@@ -275,6 +306,33 @@ import { UrlTransformerService } from '../../services/url-transformer.service';
     .btn-yt-info:hover {
       background: #cc0000;
     }
+
+    @media (max-width: 400px) {
+      .checkbox-group {
+        justify-content: space-between;
+      }
+
+      .checkbox-group div {
+        flex: 1 1 100%;
+      }
+
+      .button-group {
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .button-group-right {
+        display: flex;
+        align-items: flex-end;
+        gap: 1rem;
+      }
+
+      .btn-yt-info {
+        gap: 6px;
+        padding: 6px;
+        width: 92px;
+      }
+    }
   `]
 })
 export class SubmissionEditModalComponent {
@@ -297,7 +355,9 @@ export class SubmissionEditModalComponent {
     contributor: '',
     songWikiUpdated: false,
     userWikiUpdated: false,
-    firstSub: false
+    firstSub: false,
+    isPublic: false,
+    isMulti: false
   };
 
   ngOnInit(): void {
@@ -311,7 +371,9 @@ export class SubmissionEditModalComponent {
           contributor: currentSubmission.contributor,
           songWikiUpdated: currentSubmission.songWikiUpdated,
           userWikiUpdated: currentSubmission.userWikiUpdated,
-          firstSub: currentSubmission.firstSub
+          firstSub: currentSubmission.firstSub,
+          isPublic: currentSubmission.isPublic,
+          isMulti: currentSubmission.isMulti
         };
       }
     }

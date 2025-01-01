@@ -41,7 +41,9 @@ export class SubmissionService {
           contributor: sub.contributor || '',
           songWikiUpdated: Boolean(sub.songWikiUpdated),
           userWikiUpdated: Boolean(sub.userWikiUpdated),
-          firstSub: Boolean(sub.firstSub)
+          firstSub: Boolean(sub.firstSub),
+          isPublic: Boolean(sub.isPublic),
+          isMulti: Boolean(sub.isMulti)
         }));
 
         this.logger.info('Submissions processed', {

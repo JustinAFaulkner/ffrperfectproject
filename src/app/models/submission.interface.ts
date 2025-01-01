@@ -6,4 +6,6 @@ export interface Submission {
   songWikiUpdated: boolean;
   userWikiUpdated: boolean;
   firstSub: boolean;
+  isPublic: boolean;
+  isMulti: boolean;
 }

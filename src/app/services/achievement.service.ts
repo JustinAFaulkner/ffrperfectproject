@@ -1,7 +1,14 @@
 import { Injectable } from '@angular/core';
 import { UserStats } from '../models/user-stats.interface';
 import { UserAchievement } from '../models/user-achievement.interface';
-import { hasCompletedAlphabet } from '../utils/achievement-utils';
+import { hasCompletedAlphabet,
+          hasTripletNoteCount,
+          hasAllMonths,
+          countUniqueGenres,
+          getTotalNoteCount,
+          getTotalSeconds,
+          countStepArtistMatches
+        } from '../utils/achievement-utils';
 
 @Injectable({
   providedIn: 'root'
@@ -99,9 +106,97 @@ export class AchievementService {
       givesBadge: false
     },
     {
+      id: 'notes_five',
+      name: 'Note Worthy',
+      description: 'AAA over 5000 notes on video',
+      givesBadge: false
+    },
+    {
+      id: 'notes_fifteen',
+      name: 'Precision in Motion',
+      description: 'AAA over 15000 notes on video',
+      givesBadge: false
+    },
+    {
+      id: 'notes_twentyfive',
+      name: 'Unyielding Perfection',
+      description: 'AAA over 25000 notes on video',
+      givesBadge: false
+    },
+    {
       id: 'alphabet',
       name: 'Alphabet Soup',
       description: 'Submit AAAs for songs with titles that cover the entire alphabet',
+      givesBadge: false,
+      isSecret: true
+    },
+    {
+      id: 'triplets',
+      name: 'Perfect Triplets',
+      description: 'Submit a AAA of a song whose note count is 3 repeating digits',
+      givesBadge: false,
+      isSecret: true
+    },
+    {
+      id: 'yearly',
+      name: 'Timeless Talent',
+      description: 'Submit AAAs for songs whose release dates cover all 12 months',
+      givesBadge: false,
+      isSecret: true
+    },
+    {
+      id: 'genres',
+      name: 'Jack of All Tracks',
+      description: 'Submit AAAs on songs from 5+ different FFR genres',
+      givesBadge: false,
+      isSecret: true
+    },
+    {
+      id: 'public',
+      name: 'Street Cred',
+      description: 'Submit a AAA done in a public setting with others present (not stream)',
+      givesBadge: false,
+      isSecret: true
+    },
+    {
+      id: 'hour_one',
+      name: 'Clocked In',
+      description: 'Submit over 1 hour of AAAs',
+      givesBadge: false,
+      isSecret: true
+    },
+    {
+      id: 'hour_three',
+      name: 'Workaholic',
+      description: 'Submit over 3 hours of AAAs',
+      givesBadge: false,
+      isSecret: true
+    },
+    {
+      id: 'stepartist_hi19',
+      name: 'Hi Again, 19',
+      description: 'Submit 2 AAAs on files from hi19hi19',
+      givesBadge: false,
+      isSecret: true
+    },
+    {
+      id: 'stepartist_bmah',
+      name: 'bMahsterful',
+      description: 'Submit 2 AAAs on files from bmah',
+      givesBadge: false,
+      isSecret: true
+    },
+    {
+      id: 'stepartist_silvuh',
+      name: 'Sterling Steps',
+      description: 'Submit 2 AAAs on files from Silvuh',
+      givesBadge: false,
+      isSecret: true
+    },
+    {
+      id: 'stepartist_ztar',
+      name: 'Shooting Ztar',
+      description: 'Submit 2 AAAs on files from DarkZtar',
       givesBadge: false,
       isSecret: true
     }
@@ -129,6 +224,8 @@ export class AchievementService {
   }
 
   private checkAchievement(id: string, stats: UserStats): boolean {
+    const submittedSongs = stats.songs.filter(song => song.submissions.length > 0);
+    
     switch (id) {
       case 'submission_one':
         return stats.submissionCount > 0;
@@ -200,6 +297,36 @@ export class AchievementService {
           .filter(song => song.submissions.length > 0)
           .map(song => song.title)
       );
+
+      case 'triplets':
+        return submittedSongs.some(song => hasTripletNoteCount(song.arrows));
+
+      case 'yearly':
+        return hasAllMonths(submittedSongs.map(song => song.release));
+
+      case 'genres':
+        return countUniqueGenres(submittedSongs.map(song => song.genre)) >= 5;
+
+      case 'notecount':
+        return getTotalNoteCount(submittedSongs.map(song => song.arrows)) >= 15000;
+
+      case 'hour_one':
+        return getTotalSeconds(submittedSongs.map(song => song.seconds)) >= 3600;
+
+      case 'hour_three':
+        return getTotalSeconds(submittedSongs.map(song => song.seconds)) >= 10800;
+
+      case 'stepartist_hi19':
+        return countStepArtistMatches(submittedSongs.map(song => song.stepArtist), 'hi19hi19') >= 2;
+
+      case 'stepartist_bmah':
+        return countStepArtistMatches(submittedSongs.map(song => song.stepArtist), 'bmah') >= 2;
+
+      case 'stepartist_silvuh':
+        return countStepArtistMatches(submittedSongs.map(song => song.stepArtist), 'Silvuh') >= 2;
+
+      case 'stepartist_ztar':
+        return countStepArtistMatches(submittedSongs.map(song => song.stepArtist), 'DarkZtar') >= 2;
 
       default:
         return false;
