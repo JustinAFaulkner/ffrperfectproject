@@ -154,7 +154,14 @@ export class AchievementService {
     {
       id: 'public',
       name: 'Street Cred',
-      description: 'Submit a AAA done in a public setting with others present (not stream)',
+      description: 'Submit 1 AAA obtained in public with others present (not stream)',
+      givesBadge: false,
+      isSecret: true
+    },
+    {
+      id: 'multi',
+      name: 'Competitive Perfection',
+      description: 'Submit 1 AAA obtained while playing multiplayer',
       givesBadge: false,
       isSecret: true
     },
@@ -315,7 +322,13 @@ export class AchievementService {
 
       case 'hour_three':
         return getTotalSeconds(submittedSongs.map(song => song.seconds)) >= 10800;
-
+  
+      case 'public':
+        return submittedSongs.flatMap(song => song.submissions).some(sub => sub.isPublic);
+    
+      case 'multi':
+        return submittedSongs.flatMap(song => song.submissions).some(sub => sub.isMulti);
+      
       case 'stepartist_hi19':
         return countStepArtistMatches(submittedSongs.map(song => song.stepArtist), 'hi19hi19') >= 2;
 

@@ -86,7 +86,9 @@ export class SubmissionService {
           url: submission.url,
           firstSub: submission.firstSub,
           songWikiUpdated: type === 'song' ? true : submission.songWikiUpdated,
-          userWikiUpdated: type === 'user' ? true : submission.userWikiUpdated
+          userWikiUpdated: type === 'user' ? true : submission.userWikiUpdated,
+          isPublic: submission.isPublic,
+          isMulti: submission.isMulti
         }));
   
         this.loadSubmissions();
@@ -110,7 +112,9 @@ export class SubmissionService {
         url: submission.url,
         firstSub: submission.firstSub,
         songWikiUpdated: submission.songWikiUpdated,
-        userWikiUpdated: submission.userWikiUpdated
+        userWikiUpdated: submission.userWikiUpdated,
+        isPublic: submission.isPublic,
+        isMulti: submission.isMulti
       }).toPromise();
 
       this.loadSubmissions();
@@ -131,7 +135,9 @@ export class SubmissionService {
         url: submission.url,
         firstSub: submission.firstSub,
         songWikiUpdated: submission.songWikiUpdated,
-        userWikiUpdated: submission.userWikiUpdated
+        userWikiUpdated: submission.userWikiUpdated,
+        isPublic: submission.isPublic,
+        isMulti: submission.isMulti
       }).toPromise();
 
       this.loadSubmissions();

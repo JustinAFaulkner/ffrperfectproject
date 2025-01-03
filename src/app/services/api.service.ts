@@ -69,6 +69,8 @@ export class ApiService {
     firstSub?: boolean;
     songWikiUpdated?: boolean;
     userWikiUpdated?: boolean;
+    isPublic?: boolean;
+    isMulti?: boolean;
   }): Observable<Submission> {
     return this.http.post<ApiResponse<Submission>>(`${this.baseUrl}/submissions`, submission)
       .pipe(map(response => response.data));

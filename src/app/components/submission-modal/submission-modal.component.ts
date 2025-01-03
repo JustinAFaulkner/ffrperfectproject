@@ -59,7 +59,7 @@ import { UrlTransformerService } from '../../services/url-transformer.service';
             <label>
               <input
                 type="checkbox"
-                [(ngModel)]="submission.userWikiUpdated"
+                [(ngModel)]="submission.isPublic"
               />
               Public
             </label>
@@ -68,7 +68,7 @@ import { UrlTransformerService } from '../../services/url-transformer.service';
             <label>
               <input
                 type="checkbox"
-                [(ngModel)]="submission.userWikiUpdated"
+                [(ngModel)]="submission.isMulti"
               />
               Multi
             </label>
