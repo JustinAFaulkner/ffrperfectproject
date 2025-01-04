@@ -1,76 +1,57 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router, ActivatedRoute } from '@angular/router';
+import { Observable, map, switchMap, tap } from 'rxjs';
 import { SongItemComponent } from '../song-list/song-item.component';
 import { UserStatsService } from '../../services/user-stats.service';
 import { AchievementService } from '../../services/achievement.service';
-import { UserStatsGridComponent } from './user-stats-grid.component';
 import { UserAchievementsComponent } from './user-achievements.component';
-import { Observable, map, switchMap, tap } from 'rxjs';
+import { ProfileHeaderComponent } from './profile-header.component';
+import { StatsCardsComponent } from './stats-cards.component';
+import { ContentTabsComponent } from './content-tabs.component';
 import { UserStats } from '../../models/user-stats.interface';
 import { UserAchievement } from '../../models/user-achievement.interface';
 import { SongWithSubmissions } from '../../models/song-with-submissions.interface';
-import { Router, ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-user-profile',
   standalone: true,
   imports: [
-    CommonModule, 
-    SongItemComponent, 
-    UserStatsGridComponent,
-    UserAchievementsComponent
+    CommonModule,
+    SongItemComponent,
+    UserAchievementsComponent,
+    ProfileHeaderComponent,
+    StatsCardsComponent,
+    ContentTabsComponent
   ],
   template: `
     <div class="profile-container" *ngIf="userStats$ | async as stats">
-      <button class="back-btn" (click)="navigateBack()">
-        <i class="fas fa-arrow-left"></i>
-        Back to Leaderboard
-      </button>
+      <app-profile-header
+        [username]="stats.username"
+        [rank]="stats.rank"
+        [firstRank]="stats.firstRank"
+        [achievementRank]="stats.achievementRank"
+        [completedAchievements]="stats.achievements.total == stats.achievements.completed">
+      </app-profile-header>
 
-      <div class="profile-header">
-        <div class="profile-info">
-          <h1 class="username">{{stats.username}}</h1>
-          <div class="rank-badges">
-            <div class="rank-badge" [class]="getRankClass(stats.rank)">
-              Rank #{{stats.rank}}
-            </div>
-            <div class="rank-badge firsts" [class]="getRankClass(stats.firstRank)">
-              Firsts Rank #{{stats.firstRank}}
-            </div>
-            <div class="rank-badge achievements" [class]="getRankClass(stats.achievementRank)">
-              Achievement Rank #{{stats.achievementRank}}
-            </div>
-          </div>
-        </div>
-        
-        <app-user-stats-grid
-          [stats]="stats"
-          [completedAchievements]="getCompletedAchievements(achievements)"
-          [totalAchievements]="totalAchievements">
-        </app-user-stats-grid>
+      <app-stats-cards
+        [submissionCount]="stats.submissionCount"
+        [firstSubmissionCount]="stats.firstSubmissionCount"
+        [completedAchievements]="stats.achievements.completed"
+        [totalAchievements]="stats.achievements.total"
+        [secretAchievements]="stats.achievements.secret.completed"
+        [highestDifficulty]="stats.highestDifficulty"
+        [avgDifficulty]="stats.avgDifficulty"
+        [lowestDifficulty]="stats.lowestDifficulty">
+      </app-stats-cards>
 
-        <a 
-          [href]="'https://www.flashflashrevolution.com/profile/' + stats.username"
-          target="_blank"
-          class="ffr-profile-btn">
-          View FFR Profile
-          <i class="fas fa-external-link-alt"></i>
-        </a>
-      </div>
+      <app-content-tabs
+        [activeTab]="activeTab"
+        (tabChange)="activeTab = $event">
+      </app-content-tabs>
 
-      <div class="content-section">
-        <div class="section-header">
-          <h2>{{showAchievements ? 'Achievements' : 'Submissions'}}</h2>
-          <button class="toggle-btn" (click)="showAchievements = !showAchievements">
-            {{showAchievements ? 'Submissions' : 'Achievements'}}
-          </button>
-        </div>
-
-        <ng-container *ngIf="showAchievements; else submissionsList">
-          <app-user-achievements [achievements]="achievements"></app-user-achievements>
-        </ng-container>
-
-        <ng-template #submissionsList>
+      <div class="content-container" [class.fade]="true">
+        <ng-container *ngIf="activeTab === 'submissions'">
           <div class="submissions-list">
             <app-song-item
               *ngFor="let song of stats.songs"
@@ -80,7 +61,13 @@ import { Router, ActivatedRoute } from '@angular/router';
               (expandToggle)="toggleSong(song)">
             </app-song-item>
           </div>
-        </ng-template>
+        </ng-container>
+
+        <ng-container *ngIf="activeTab === 'achievements'">
+          <app-user-achievements 
+            [achievements]="achievements">
+          </app-user-achievements>
+        </ng-container>
       </div>
     </div>
   `,
@@ -91,183 +78,38 @@ import { Router, ActivatedRoute } from '@angular/router';
       padding: 20px;
     }
 
-    .back-btn {
-      margin-bottom: 1rem;
-      padding: 0.5rem 1rem;
-      background: none;
-      border: none;
-      color: #28aad1;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.9rem;
-      transition: transform 0.2s;
+    .content-container {
+      opacity: 0;
+      transform: translateY(10px);
+      animation: fadeIn 0.3s ease forwards;
     }
 
-    .back-btn:hover {
-      transform: translateX(-5px);
-    }
-
-    :host-context(body.dark-mode) .back-btn {
-      color: #3dbde4;
-    }
-
-    .profile-header {
-      background: white;
-      border-radius: 8px;
-      padding: 20px;
-      margin-bottom: 20px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-
-    :host-context(body.dark-mode) .profile-header {
-      background: #2d2d2d;
-    }
-
-    .profile-info {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      margin-bottom: 20px;
-    }
-
-    .username {
-      margin: 0;
-      font-size: 2rem;
-      color: #333;
-    }
-
-    :host-context(body.dark-mode) .username {
-      color: #e0e0e0;
-    }
-
-    .rank-badges {
-      display: flex;
-      gap: 10px;
-    }
-
-    .rank-badge {
-      padding: 5px 10px;
-      border-radius: 20px;
-      font-weight: 500;
-      font-size: 0.9rem;
-    }
-
-    .rank-badge.firsts {
-      background: linear-gradient(135deg, #28aad1 0%, #3dbde4 100%);
-      color: white;
-    }
-
-    .rank-badge.gold {
-      background: linear-gradient(135deg, #ffd700 0%, #ffed4a 100%);
-      color: #856404;
-    }
-
-    .rank-badge.silver {
-      background: linear-gradient(135deg, #c0c0c0 0%, #e5e5e5 100%);
-      color: #666;
-    }
-
-    .rank-badge.bronze {
-      background: linear-gradient(135deg, #cd7f32 0%, #dda15e 100%);
-      color: #7c4a03;
-    }
-
-    .rank-badge.default {
-      background: #f0f0f0;
-      color: #666;
-    }
-
-    .ffr-profile-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 16px;
-      background: #28aad1;
-      color: white;
-      text-decoration: none;
-      border-radius: 4px;
-      font-size: 0.9rem;
-      transition: background-color 0.2s;
-    }
-
-    .ffr-profile-btn:hover {
-      background: #2391b2;
-    }
-
-    .content-section {
-      background: #f5f5f5;
-      border-radius: 8px;
-      padding: 20px;
-    }
-
-    :host-context(body.dark-mode) .content-section {
-      background: #141414;
-    }
-
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1rem;
-    }
-
-    .section-header h2 {
-      margin: 0;
-      color: #333;
-      font-size: 1.5rem;
-    }
-
-    :host-context(body.dark-mode) .section-header h2 {
-      color: #e0e0e0;
-    }
-
-    .toggle-btn {
-      padding: 0.5rem 1rem;
-      background: #28aad1;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 0.9rem;
-      transition: background-color 0.2s;
-    }
-
-    .toggle-btn:hover {
-      background: #2391b2;
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .submissions-list {
       display: flex;
       flex-direction: column;
-      gap: 10px;
-    }
-
-    @media (max-width: 600px) {
-      .profile-info {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-      }
+      gap: 1rem;
     }
   `]
 })
 export class UserProfileComponent implements OnInit {
   userStats$!: Observable<UserStats>;
   expandedSong: string | null = null;
-  showAchievements = false;
   achievements: UserAchievement[] = [];
-  totalAchievements: number;
+  activeTab: 'submissions' | 'achievements' = 'submissions';
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private userStatsService: UserStatsService,
     private achievementService: AchievementService
-  ) {
-    this.totalAchievements = this.achievementService.getTotalAchievements();
-  }
+  ) {}
 
   ngOnInit() {
     window.scrollTo(0, 0);
@@ -283,17 +125,6 @@ export class UserProfileComponent implements OnInit {
     );
   }
 
-  navigateBack(): void {
-    this.router.navigate(['/leaderboard']);
-  }
-
-  getRankClass(rank: number): string {
-    if (rank === 1) return 'gold';
-    if (rank === 2) return 'silver';
-    if (rank === 3) return 'bronze';
-    return 'default';
-  }
-
   filterSubmissionsForUser(song: SongWithSubmissions, username: string): SongWithSubmissions {
     return {
       ...song,
@@ -303,9 +134,5 @@ export class UserProfileComponent implements OnInit {
   
   toggleSong(song: SongWithSubmissions) {
     this.expandedSong = this.expandedSong === song.id ? null : song.id;
-  }
-
-  getCompletedAchievements(achievements: UserAchievement[]): number {
-    return achievements.filter(a => a.isCompleted).length;
   }
 }
