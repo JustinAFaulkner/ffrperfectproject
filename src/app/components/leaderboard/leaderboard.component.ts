@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { LeaderboardService } from '../../services/leaderboard.service';
 import { ContributorStats } from '../../models/contributor-stats.interface';
+import { LeaderboardStateService, LeaderboardView } from '../../services/leaderboard-state.service';
 
 @Component({
   selector: 'app-leaderboard',
@@ -12,6 +13,38 @@ import { ContributorStats } from '../../models/contributor-stats.interface';
   template: `
     <div class="leaderboard-container">
       <div class="filters">
+        <span class="leaderboard-title">
+          <i class="title-icon fa-solid" 
+             title="Achievements"
+             [class.fa-file-arrow-up]="currentView === 'submissions'"
+             [class.fa-ranking-star]="currentView === 'firsts'"
+             [class.fa-award]="currentView === 'achievements'"></i> {{getViewTitle()}}
+        </span>
+        <div class="view-toggle">
+          <button 
+            [class.active]="currentView === 'submissions'"
+            (click)="setView('submissions')"
+            class="view-btn"
+            title="Total Submissions">
+            <i class="fa-solid fa-file-arrow-up"></i>
+          </button>
+          <button 
+            [class.active]="currentView === 'firsts'"
+            (click)="setView('firsts')"
+            class="view-btn"
+            title="First Submissions">
+            <i class="fa-solid fa-ranking-star"></i>
+          </button>
+          <button 
+            [class.active]="currentView === 'achievements'"
+            (click)="setView('achievements')"
+            class="view-btn"
+            title="Achievements">
+            <i class="fas fa-award"></i>
+          </button>
+        </div>
+      </div>
+      <div class="filters">
         <input
           type="text"
           [(ngModel)]="nameFilter"
@@ -19,27 +52,48 @@ import { ContributorStats } from '../../models/contributor-stats.interface';
           placeholder="Search contributors..."
           class="search-input"
         />
-        <div class="min-contributions">
-          <label>
-            Minimum Contributions:
-            <input
-              type="number"
-              [(ngModel)]="minContributions"
-              (input)="applyFilters()"
-              min="0"
-              class="number-input"
-            />
-          </label>
+        <div class="number-filters">
+          <div class="min-contributions">
+            <label>
+              <i class="fa-solid fa-file-arrow-up filter-icon" title="Total Submissions"></i>
+              <input
+                type="number"
+                [(ngModel)]="minContributions"
+                (input)="applyFilters()"
+                min="0"
+                class="number-input"
+              />
+              to
+              <input
+                type="number"
+                [(ngModel)]="maxContributions"
+                (input)="applyFilters()"
+                max="999"
+                class="number-input"
+              />
+            </label>
+          </div>
+          <div class="min-contributions">
+            <label>
+              <i class="fas fa-award filter-icon" title="Achievements"></i>
+              <input
+                type="number"
+                [(ngModel)]="minAchievements"
+                (input)="applyFilters()"
+                min="0"
+                class="number-input"
+              />
+              to
+              <input
+                type="number"
+                [(ngModel)]="maxAchievements"
+                (input)="applyFilters()"
+                max="30"
+                class="number-input"
+              />
+            </label>
+          </div>
         </div>
-        <label class="switch">
-          <input
-            type="checkbox"
-            [(ngModel)]="showFirstsLeaderboard"
-            (change)="applyFilters()"
-          />
-          <span class="slider"></span>
-          <span class="switch-label">Show Firsts Leaderboard</span>
-        </label>
       </div>
 
       <div class="contributors-list">
@@ -47,15 +101,27 @@ import { ContributorStats } from '../../models/contributor-stats.interface';
           *ngFor="let contributor of filteredContributors" 
           class="contributor-card"
           [routerLink]="['/user', contributor.name]"
-          [class.gold]="showFirstsLeaderboard ? contributor.firstRank === 1 : contributor.rank === 1"
-          [class.silver]="showFirstsLeaderboard ? contributor.firstRank === 2 : contributor.rank === 2"
-          [class.bronze]="showFirstsLeaderboard ? contributor.firstRank === 3 : contributor.rank === 3">
-          <div class="rank">{{showFirstsLeaderboard ? contributor.firstRank : contributor.rank}}</div>
+          [class.gold]="getRank(contributor) === 1"
+          [class.silver]="getRank(contributor) === 2"
+          [class.bronze]="getRank(contributor) === 3">
+          <div class="rank">{{getRank(contributor)}}</div>
           <div class="contributor-info">
             <span class="name">{{contributor.name}}</span>
             <span class="count">
-              {{contributor.count}} submissions
-              <span class="first-count">({{contributor.firstCount}} firsts)</span>
+              <div class="stat-icons">
+                <div class="stat-item" title="Total submissions">
+                  <i class="fa-solid fa-file-arrow-up"></i>
+                  <span>{{contributor.count}}</span>
+                </div>
+                <div class="stat-item" title="First submissions">
+                  <i class="fa-solid fa-ranking-star"></i>
+                  <span>{{contributor.firstCount}}</span>
+                </div>
+                <div class="stat-item" title="Achievements">
+                  <i class="fa-solid fa-award"></i>
+                  <span>{{contributor.achievementCount}}</span>
+                </div>
+              </div>
             </span>
           </div>
         </a>
@@ -69,11 +135,42 @@ import { ContributorStats } from '../../models/contributor-stats.interface';
       margin: 0 auto;
     }
 
+    .leaderboard-title {
+      font-size: 1.75rem;
+      color: #28aad1;
+      font-weight: bold;
+    }
+
     .filters {
       margin-bottom: 20px;
       display: flex;
       gap: 20px;
       align-items: center;
+      text-align: center;
+    }
+
+    .min-contributions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .min-contributions label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .filter-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      color: #666;
+    }
+
+    :host-context(body.dark-mode) .filter-icon {
+      color: #999;
     }
 
     .search-input {
@@ -91,11 +188,18 @@ import { ContributorStats } from '../../models/contributor-stats.interface';
     }
 
     .number-input {
-      width: 80px;
+      width: 45px;
       padding: 8px;
       border: 1px solid #ddd;
       border-radius: 4px;
       font-size: 14px;
+      -moz-appearance: textfield;
+    }
+
+    .number-input::-webkit-outer-spin-button,
+    .number-input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
     }
 
     :host-context(body.dark-mode) .number-input {
@@ -245,20 +349,124 @@ import { ContributorStats } from '../../models/contributor-stats.interface';
       font-size: 0.9rem;
     }
 
-    .first-count {
+    .view-toggle {
+      display: flex;
+      gap: 0.5rem;
+      margin-left: auto;
+    }
+
+    .view-btn {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      background: #f0f0f0;
+      color: #666;
+      transition: all 0.2s;
+    }
+
+    :host-context(body.dark-mode) .view-btn {
+      background: #333;
+      color: #999;
+    }
+
+    .view-btn.active {
+      background: #28aad1;
+      color: white;
+    }
+
+    :host-context(body.dark-mode) .view-btn.active {
+      background: #28aad1;
+      color: white;
+    }
+
+    .view-btn:hover:not(.active) {
+      background: #e0e0e0;
+    }
+
+    :host-context(body.dark-mode) .view-btn:hover:not(.active) {
+      background: #444;
+    }
+
+    .stat-icons {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      background-color: #eeeeee70;
+      padding: 1rem 1.5rem;
+      border-radius: 4px;
+    }
+
+    :host-context(body.dark-mode) .stat-icons {
+      background-color: #1a1a1a70;
+    }
+
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: #333;
+      font-size: 0.9rem;
+    }
+
+    :host-context(body.dark-mode) .stat-item {
+      color: #e0e0e0;
+    }
+
+    .stat-item i {
+      font-size: 1rem;
+    }
+
+    .stat-item i {
       color: #28aad1;
     }
 
-    @media (max-width: 600px) {
+    .number-filters {
+      display: flex;
+      gap: 1rem;
+    }
+
+    @media (max-width: 768px) {
       .filters {
         flex-direction: column;
         align-items: stretch;
+      }
+
+      .view-toggle {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .view-btn {
+        flex: 1;
+        text-align: center;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .stat-icons {
+        padding: 0.4rem;
+      }
+
+      .stat-item {
+        font-size: 0.8rem;
+      }
+
+      .stat-item i {
+        font-size: 0.9rem;
       }
 
       .contributor-info {
         flex-direction: column;
         align-items: flex-start;
         gap: 5px;
+      }
+    }
+
+    @media (max-width: 389px) {
+      .number-filters {
+        flex-direction: column;
       }
     }
   `]
@@ -268,9 +476,17 @@ export class LeaderboardComponent implements OnInit {
   filteredContributors: ContributorStats[] = [];
   nameFilter: string = '';
   minContributions: number = 0;
-  showFirstsLeaderboard: boolean = false;
+  maxContributions: number = 999;
+  minAchievements: number = 0;
+  maxAchievements: number = 30;
+  currentView: LeaderboardView = 'submissions';
 
-  constructor(private leaderboardService: LeaderboardService) {}
+  constructor(
+    private leaderboardService: LeaderboardService,
+    private leaderboardState: LeaderboardStateService
+  ) {
+    this.currentView = this.leaderboardState.getCurrentView();
+  }
 
   ngOnInit() {
     this.leaderboardService.getContributorStats().subscribe((stats) => {
@@ -279,21 +495,57 @@ export class LeaderboardComponent implements OnInit {
     });
   }
 
+  setView(view: LeaderboardView) {
+    this.currentView = view;
+    this.leaderboardState.setView(view);
+    this.applyFilters();
+  }
+
+  getRank(contributor: ContributorStats): number {
+    switch (this.currentView) {
+      case 'submissions':
+        return contributor.rank;
+      case 'firsts':
+        return contributor.firstRank;
+      case 'achievements':
+        return contributor.achievementRank;
+    }
+  }
+
+  getViewTitle(): string {
+    switch (this.currentView) {
+      case 'submissions':
+        return 'Top Total Submissions';
+      case 'firsts':
+        return 'Top First Submissions';
+      case 'achievements':
+        return 'Top Achievements';
+    }
+  }
+
   applyFilters() {
     this.filteredContributors = this.contributors.filter((contributor) => {
       const matchesName = contributor.name
         .toLowerCase()
         .includes(this.nameFilter.toLowerCase());
-      const matchesMin = contributor.count >= this.minContributions;
-      return matchesName && matchesMin;
+
+      const withinSubmissions = (contributor.count >= this.minContributions && contributor.count <= this.maxContributions);
+      
+      const withinAchievements = (contributor.achievementCount >= this.minAchievements && contributor.achievementCount <= this.maxAchievements);
+
+      return matchesName && withinSubmissions && withinAchievements;
     });
 
-    // Sort based on selected leaderboard type
+    // Sort based on current view
     this.filteredContributors.sort((a, b) => {
-      if (this.showFirstsLeaderboard) {
-        return b.firstCount - a.firstCount;
+      switch (this.currentView) {
+        case 'submissions':
+          return b.count - a.count;
+        case 'firsts':
+          return b.firstCount - a.firstCount;
+        case 'achievements':
+          return b.achievementCount - a.achievementCount;
       }
-      return b.count - a.count;
     });
   }
 }

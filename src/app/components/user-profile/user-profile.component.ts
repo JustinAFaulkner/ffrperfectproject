@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
 import { SongItemComponent } from '../song-list/song-item.component';
 import { UserStatsService } from '../../services/user-stats.service';
 import { AchievementService } from '../../services/achievement.service';
@@ -10,6 +9,7 @@ import { Observable, map, switchMap, tap } from 'rxjs';
 import { UserStats } from '../../models/user-stats.interface';
 import { UserAchievement } from '../../models/user-achievement.interface';
 import { SongWithSubmissions } from '../../models/song-with-submissions.interface';
+import { Router, ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-user-profile',
@@ -22,6 +22,11 @@ import { SongWithSubmissions } from '../../models/song-with-submissions.interfac
   ],
   template: `
     <div class="profile-container" *ngIf="userStats$ | async as stats">
+      <button class="back-btn" (click)="navigateBack()">
+        <i class="fas fa-arrow-left"></i>
+        Back to Leaderboard
+      </button>
+
       <div class="profile-header">
         <div class="profile-info">
           <h1 class="username">{{stats.username}}</h1>
@@ -31,6 +36,9 @@ import { SongWithSubmissions } from '../../models/song-with-submissions.interfac
             </div>
             <div class="rank-badge firsts" [class]="getRankClass(stats.firstRank)">
               Firsts Rank #{{stats.firstRank}}
+            </div>
+            <div class="rank-badge achievements" [class]="getRankClass(stats.achievementRank)">
+              Achievement Rank #{{stats.achievementRank}}
             </div>
           </div>
         </div>
@@ -81,6 +89,28 @@ import { SongWithSubmissions } from '../../models/song-with-submissions.interfac
       max-width: 800px;
       margin: 0 auto;
       padding: 20px;
+    }
+
+    .back-btn {
+      margin-bottom: 1rem;
+      padding: 0.5rem 1rem;
+      background: none;
+      border: none;
+      color: #28aad1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      transition: transform 0.2s;
+    }
+
+    .back-btn:hover {
+      transform: translateX(-5px);
+    }
+
+    :host-context(body.dark-mode) .back-btn {
+      color: #3dbde4;
     }
 
     .profile-header {
@@ -232,6 +262,7 @@ export class UserProfileComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private userStatsService: UserStatsService,
     private achievementService: AchievementService
   ) {
@@ -239,15 +270,21 @@ export class UserProfileComponent implements OnInit {
   }
 
   ngOnInit() {
+    window.scrollTo(0, 0);
+    
     this.userStats$ = this.route.params.pipe(
       switchMap(params => 
         this.userStatsService.getUserStats(params['username']).pipe(
           tap(stats => {
-            this.achievements = this.achievementService.calculateAchievements(stats);
+            this.achievements = stats.achievements.list;
           })
         )
       )
     );
+  }
+
+  navigateBack(): void {
+    this.router.navigate(['/leaderboard']);
   }
 
   getRankClass(rank: number): string {

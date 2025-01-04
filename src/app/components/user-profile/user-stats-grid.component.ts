@@ -30,7 +30,12 @@ import { UserStats } from '../../models/user-stats.interface';
       </div>
       <div class="stat-item">
         <span class="stat-label">Achievements</span>
-        <span class="stat-value" [class.achievements-completed]="completedAchievements == totalAchievements">{{completedAchievements}} / {{totalAchievements}}</span>
+        <span class="stat-value" [class.achievements-completed]="stats.achievements.completed === stats.achievements.total">
+          {{stats.achievements.completed}} / {{stats.achievements.total}}
+          <span class="secret-achievements" *ngIf="stats.achievements.secret.completed > 0">
+            ({{stats.achievements.secret.completed}} secret)
+          </span>
+        </span>
       </div>
     </div>
   `,
