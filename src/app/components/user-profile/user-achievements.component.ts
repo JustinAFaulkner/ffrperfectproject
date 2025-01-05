@@ -14,9 +14,10 @@ import { PopupService } from '../../services/popup.service';
         class="achievement-card"
         [class.completed]="achievement.isCompleted"
         [class.secret]="achievement.isSecret && !achievement.isCompleted"
+        [class.revealed]="revealedSecrets[achievement.id]"
         [class.help-cursor]="achievement.givesBadge"
         [title]="achievement.givesBadge ? 'This achievement also grants an FFR profile badge!' : ''"
-        (click)="showBadgeExplainer(achievement.givesBadge)">
+        (click)="showBadgeExplainer(achievement.givesBadge); toggleReveal(achievement)">
         <div class="achievement-icon">
           <i class="fas" [class]="getIconClass(achievement)"></i>
         </div>
@@ -24,7 +25,9 @@ import { PopupService } from '../../services/popup.service';
           <div class="achievement-header">
             <h3>{{achievement.name}}</h3>
           </div>
-          <p>{{achievement.description}}</p>
+          <p [class.blur]="achievement.isSecret && achievement.isCompleted && !revealedSecrets[achievement.id]">
+            {{achievement.description}}
+          </p>
         </div>
         <i *ngIf="achievement.givesBadge" class="fas fa-award badge-icon"></i>
         <div class="achievement-status">
@@ -151,6 +154,12 @@ import { PopupService } from '../../services/popup.service';
       font-size: 0.875rem;
       color: #718096;
       line-height: 1.4;
+      transition: filter 0.3s ease;
+    }
+
+    .achievement-content p.blur {
+      filter: blur(5px);
+      user-select: none;
     }
 
     :host-context(body.dark-mode) .achievement-content p {
@@ -185,8 +194,15 @@ import { PopupService } from '../../services/popup.service';
 })
 export class UserAchievementsComponent {
   @Input() achievements: UserAchievement[] = [];
+  revealedSecrets: { [key: string]: boolean } = {};
 
   constructor(private popup: PopupService) {}
+
+  toggleReveal(achievement: UserAchievement) {
+    if (achievement.isSecret && achievement.isCompleted) {
+      this.revealedSecrets[achievement.id] = !this.revealedSecrets[achievement.id];
+    }
+  }
 
   getIconClass(achievement: UserAchievement): string {
     if (achievement.isSecret && !achievement.isCompleted) {
@@ -220,8 +236,8 @@ export class UserAchievementsComponent {
   }
 
   showBadgeExplainer(givesBadge: boolean) {
-    if(!givesBadge) return;
-
-    this.popup.show('This achievement grants an FFR profile badge!');
+    if(givesBadge) {
+      this.popup.show('This achievement grants an FFR profile badge!');
+    }
   }
 }

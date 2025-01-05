@@ -90,69 +90,17 @@ import { ConfirmModalComponent } from '../shared/confirm-modal.component';
     <!-- Mobile Navigation Drawer -->
     <div class="mobile-nav" [class.open]="showMobileMenu">
       <div class="mobile-nav-content">
-        <div class="mobile-nav-links">
-          <a 
-            routerLink="/" 
-            routerLinkActive="active" 
-            [routerLinkActiveOptions]="{exact: true}"
-            class="nav-link"
-            (click)="showMobileMenu = false">
-            Home
-          </a>
-          <a 
-            routerLink="/songs" 
-            routerLinkActive="active"
-            class="nav-link"
-            (click)="showMobileMenu = false">
-            Songs
-          </a>
-          <a 
-            routerLink="/leaderboard" 
-            routerLinkActive="active"
-            class="nav-link"
-            (click)="showMobileMenu = false">
-            Leaderboard
-          </a>
-
-          <ng-container *ngIf="isLoggedIn$ | async">
-            <hr class="nav-divider" />
-            <h3 class="admin-header">FFRPP Administration</h3>
-            <div class="admin-actions">
-              <div class="nav-link" (click)="onUserWikiList()">
-                User Wiki Update List
-              </div>
-              <div class="nav-link" (click)="onSongWikiList()">
-                Song Wiki Update List
-              </div>
-              <div class="nav-link" (click)="onBadgeManagement()">
-                Badge Management
-              </div>
-              <div class="nav-link" (click)="onSyncLogs()">
-                Song Change Logs
-              </div>
-              <div class="nav-link"
-                (click)="onSyncSongs()"
-                [class.disabled]="isSyncing">
-                {{ isSyncing ? 'Syncing...' : 'Sync New Songs' }}
-              </div>
-              <div class="nav-link"
-                (click)="showResyncConfirm = true"
-                [class.disabled]="isSyncing">
-                {{ isSyncing ? 'Syncing...' : 'Re-Sync All Songs' }}
-              </div>
-            </div>
-          </ng-container>
-        </div>
-
-        <div class="mobile-nav-footer">
+        <div class="mobile-nav-header">
           <div class="mobile-nav-actions">
             <ng-container *ngIf="isLoggedIn$ | async; else mobileLoginButton">
               <button class="nav-btn logout-btn" (click)="logout()">
+                <i class="fas fa-sign-out-alt"></i>
                 Logout
               </button>
             </ng-container>
             <ng-template #mobileLoginButton>
               <button class="nav-btn login-btn" (click)="showLoginModal()">
+                <i class="fas fa-sign-in-alt"></i>
                 Login
               </button>
             </ng-template>
@@ -163,6 +111,70 @@ import { ConfirmModalComponent } from '../shared/confirm-modal.component';
               <i class="fas" [class.fa-moon]="!(isDarkMode$ | async)" [class.fa-sun]="isDarkMode$ | async"></i>
             </button>
           </div>
+        </div>
+
+        <div class="mobile-nav-links">
+          <a 
+            routerLink="/" 
+            routerLinkActive="active" 
+            [routerLinkActiveOptions]="{exact: true}"
+            class="nav-link"
+            (click)="showMobileMenu = false">
+            <i class="fas fa-home"></i>
+            Home
+          </a>
+          <a 
+            routerLink="/songs" 
+            routerLinkActive="active"
+            class="nav-link"
+            (click)="showMobileMenu = false">
+            <i class="fas fa-music"></i>
+            Songs
+          </a>
+          <a 
+            routerLink="/leaderboard" 
+            routerLinkActive="active"
+            class="nav-link"
+            (click)="showMobileMenu = false">
+            <i class="fas fa-trophy"></i>
+            Leaderboard
+          </a>
+
+          <ng-container *ngIf="isLoggedIn$ | async">
+            <div class="nav-divider">
+              <span>Administration</span>
+            </div>
+            <div class="admin-actions">
+              <div class="nav-link" (click)="onUserWikiList()">
+                <i class="fas fa-users"></i>
+                User Wiki Updates
+              </div>
+              <div class="nav-link" (click)="onSongWikiList()">
+                <i class="fas fa-music"></i>
+                Song Wiki Updates
+              </div>
+              <div class="nav-link" (click)="onBadgeManagement()">
+                <i class="fas fa-award"></i>
+                Badge Management
+              </div>
+              <div class="nav-link" (click)="onSyncLogs()">
+                <i class="fas fa-history"></i>
+                Song Change Logs
+              </div>
+              <div class="nav-link"
+                (click)="onSyncSongs()"
+                [class.disabled]="isSyncing">
+                <i class="fas fa-sync"></i>
+                {{ isSyncing ? 'Syncing...' : 'Sync New Songs' }}
+              </div>
+              <div class="nav-link"
+                (click)="showResyncConfirm = true"
+                [class.disabled]="isSyncing">
+                <i class="fas fa-sync-alt"></i>
+                {{ isSyncing ? 'Syncing...' : 'Re-Sync All Songs' }}
+              </div>
+            </div>
+          </ng-container>
         </div>
       </div>
     </div>
@@ -323,13 +335,14 @@ import { ConfirmModalComponent } from '../shared/confirm-modal.component';
       position: fixed;
       top: 57px;
       right: -400px;
-      width: 66.666%;
+      width: 85%;
       max-width: 400px;
       height: calc(100vh - 57px);
-      background: #28aad1;
-      box-shadow: -2px 0 8px rgba(0,0,0,0.1);
+      background: linear-gradient(135deg, #28aad1 0%, #1a7a9c 100%);
+      box-shadow: -2px 0 8px rgba(0,0,0,0.2);
       transition: right 0.3s;
       z-index: 999;
+      overflow-y: auto;
     }
 
     .mobile-nav.open {
@@ -337,49 +350,96 @@ import { ConfirmModalComponent } from '../shared/confirm-modal.component';
     }
 
     .mobile-nav-content {
-      height: 100%;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
-      margin-top: 1rem;
+      min-height: 100%;
     }
 
+    .mobile-nav-header {
+      padding: 1.5rem 0.75rem 0.75rem 0.75rem;
+      background: rgba(0, 0, 0, 0.1);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .mobile-nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .mobile-nav-actions .nav-btn {
+      flex: 1;
+      padding: 0.75rem 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+
+    .mobile-nav-actions .nav-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .mobile-nav-actions .theme-toggle-btn {
+      padding: 0.75rem;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      color: white;
+    }
+
+    .mobile-nav-actions .theme-toggle-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    
     .mobile-nav-links {
-      padding: 0.5rem;
+      padding: 1rem;
       display: flex;
       flex-direction: column;
+      gap: 0.5rem;
     }
 
     .mobile-nav .nav-link {
+      padding: 0.75rem 1rem;
       color: white;
-      padding: 0.5rem;
-      width: 100%;
-      text-align: left;
-      border-radius: 8px;
-      margin-bottom: 0.5rem;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      transition: all 0.2s;
+      text-decoration: none;
+      font-size: 0.95rem;
+    }
+
+    .mobile-nav .nav-link i {
+      width: 20px;
+      text-align: center;
+      font-size: 1rem;
+      opacity: 0.9;
     }
 
     .mobile-nav .nav-link:hover {
       background: rgba(255, 255, 255, 0.1);
+      transform: translateX(4px);
     }
 
     .mobile-nav .nav-link.active {
-      background: rgba(255, 255, 255, 0.2);
-      color: white;
-      font-weight: bold;
+      background: rgba(255, 255, 255, 0.15);
+      font-weight: 500;
     }
 
     .nav-divider {
-      margin: 1rem 0;
-      border: none;
-      border-top: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .admin-header {
-      color: white;
-      font-size: 0.9rem;
-      font-weight: bold;
-      margin: 0.5rem 1rem;
+      margin: 1rem 0 0.5rem;
+      padding: 0 1rem;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.85rem;
+      font-weight: 500;
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
@@ -387,21 +447,16 @@ import { ConfirmModalComponent } from '../shared/confirm-modal.component';
     .admin-actions {
       display: flex;
       flex-direction: column;
-    }
-
-    .mobile-nav-footer {
-      padding: 1rem;
-      border-top: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .mobile-nav-actions {
-      display: flex;
-      align-items: center;
       gap: 0.5rem;
     }
 
-    .mobile-nav-actions .nav-btn {
-      max-width: 100px;
+    .admin-actions .nav-link {
+      opacity: 0.9;
+    }
+
+    .admin-actions .nav-link.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
 
     @media (max-width: 768px) {
