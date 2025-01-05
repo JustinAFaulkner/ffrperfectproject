@@ -28,30 +28,30 @@ import { CommonModule } from '@angular/common';
         <div class="stat-info">
           <span class="stat-value">{{completedAchievements}} / {{totalAchievements}}</span>
           <span class="stat-label">Achievements</span>
-          <span class="secret-count" *ngIf="secretAchievements > 0">
-            ({{secretAchievements}} secret)
-          </span>
         </div>
       </div>
 
       <div class="stat-card difficulty">
-        <i class="fas fa-chart-line"></i>
+        <i class="fas fa-align-left fa-rotate-90"></i>
         <div class="stat-info">
-          <div class="difficulty-stats">
-            <div class="diff-item">
-              <span class="diff-value">{{highestDifficulty}}</span>
-              <span class="diff-label">Highest</span>
-            </div>
-            <div class="diff-item">
-              <span class="diff-value">{{avgDifficulty | number:'1.0-0'}}</span>
-              <span class="diff-label">Average</span>
-            </div>
-            <div class="diff-item">
-              <span class="diff-value">{{lowestDifficulty}}</span>
-              <span class="diff-label">Lowest</span>
-            </div>
-          </div>
-          <span class="stat-label">Difficulty Range</span>
+          <span class="stat-value">{{highestDifficulty}}</span>
+          <span class="stat-label">Highest Difficulty</span>
+        </div>
+      </div>
+
+      <div class="stat-card difficulty">
+        <i class="fas fa-align-center fa-rotate-90"></i>
+        <div class="stat-info">
+          <span class="stat-value">{{avgDifficulty | number:'1.0-0'}}</span>
+          <span class="stat-label">Average Difficulty</span>
+        </div>
+      </div>
+
+      <div class="stat-card difficulty">
+        <i class="fas fa-align-right fa-rotate-90"></i>
+        <div class="stat-info">
+          <span class="stat-value">{{lowestDifficulty}}</span>
+          <span class="stat-label">Lowest Difficulty</span>
         </div>
       </div>
     </div>
