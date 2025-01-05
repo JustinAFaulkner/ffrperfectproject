@@ -1,113 +1,221 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { SongService } from '../../services/song.service';
-import { map } from 'rxjs/operators';
+import { StatsService, ProjectStats } from '../../services/stats.service';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-stats-panel',
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="stats-panel">
-      <div class="stat-group">
+    <div class="stats-panel" *ngIf="stats$ | async as stats">
+      <div class="stats-grid">
         <div class="stat-item">
-          <span class="stat-label">Songs</span>
-          <span class="stat-value">{{totalSongs$ | async}}</span>
+          <i class="fas fa-music"></i>
+          <div class="stat-content">
+            <span class="stat-value">{{stats.totalSongs | number}}</span>
+            <span class="stat-label">Songs</span>
+          </div>
         </div>
+        
         <div class="stat-item">
-          <span class="stat-label">Artists</span>
-          <span class="stat-value">{{uniqueArtists$ | async}}</span>
+          <i class="fas fa-circle-user"></i>
+          <div class="stat-content">
+            <span class="stat-value">{{stats.totalArtists | number}}</span>
+            <span class="stat-label">Artists</span>
+          </div>
         </div>
+
         <div class="stat-item">
-          <span class="stat-label">Genres</span>
-          <span class="stat-value">{{uniqueGenres$ | async}}</span>
+          <i class="fas fa-file-arrow-up"></i>
+          <div class="stat-content">
+            <span class="stat-value">{{stats.totalSubmissions | number}}</span>
+            <span class="stat-label">Submissions</span>
+          </div>
         </div>
-      </div>
-      <div class="stat-group">
+
         <div class="stat-item">
-          <span class="stat-label">Submissions</span>
-          <span class="stat-value">{{totalSongs$ | async}}</span>
+          <i class="fas fa-arrow-up"></i>
+          <div class="stat-content">
+            <span class="stat-value">{{stats.totalArrows | number}}</span>
+            <span class="stat-label">Total Notes</span>
+          </div>
         </div>
+
         <div class="stat-item">
-          <span class="stat-label">Missing</span>
-          <span class="stat-value">{{uniqueArtists$ | async}}</span>
+          <i class="fas fa-award"></i>
+          <div class="stat-content">
+            <span class="stat-value">{{stats.totalAchievements | number}}</span>
+            <span class="stat-label">Achievements</span>
+          </div>
         </div>
+
         <div class="stat-item">
-          <span class="stat-label">Total Arrows</span>
-          <span class="stat-value">{{totalArrows$ | async}}</span>
+          <i class="fas fa-star"></i>
+          <div class="stat-content">
+            <span class="stat-value">{{stats.level}}</span>
+            <span class="stat-label">Level</span>
+          </div>
+        </div>
+
+        <div class="stat-item">
+          <i class="fas fa-users"></i>
+          <div class="stat-content">
+            <span class="stat-value">{{stats.subscribers | number}}</span>
+            <span class="stat-label">Subscribers</span>
+          </div>
+        </div>
+
+        <div class="stat-item">
+          <i class="fas fa-eye"></i>
+          <div class="stat-content">
+            <span class="stat-value">{{stats.views | number}}</span>
+            <span class="stat-label">Total Views</span>
+          </div>
+        </div>
+
+        <div class="stat-item">
+          <i class="fas fa-coins"></i>
+          <div class="stat-content">
+            <span class="stat-value">{{stats.credits | number}}</span>
+            <span class="stat-label">Credits</span>
+          </div>
+        </div>
+
+        <div class="stat-item">
+          <i class="fas fa-calculator"></i>
+          <div class="stat-content">
+            <span class="stat-value total">{{stats.grandTotal | number}}</span>
+            <span class="stat-label">Grand Total</span>
+          </div>
         </div>
       </div>
     </div>
   `,
-  styles: [
-    `
+  styles: [`
     .stats-panel {
       background: white;
-      border-radius: 8px;
-      padding: 1rem;
-      margin-bottom: 1rem;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      display: flex;
-      gap: 2rem;
-      justify-content: center;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
-    .stat-group {
-      display: flex;
-      gap: 2rem;
+    :host-context(body.dark-mode) .stats-panel {
+      background: #2d2d2d;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
     }
 
     .stat-item {
-      text-align: center;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+      background: #f8f9fa;
+      border-radius: 8px;
+      transition: transform 0.2s;
     }
 
-    .stat-label {
-      display: block;
-      color: #666;
-      font-size: 0.9rem;
-      margin-bottom: 0.25rem;
+    :host-context(body.dark-mode) .stat-item {
+      background: #333;
+    }
+
+    .stat-item:hover {
+      transform: translateY(-2px);
+    }
+
+    .stat-item i {
+      font-size: 1.5rem;
+      color: #28aad1;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(40, 170, 209, 0.1);
+      border-radius: 8px;
+    }
+
+    .stat-content {
+      display: flex;
+      flex-direction: column;
     }
 
     .stat-value {
-      display: block;
-      font-size: 1.25rem;
-      font-weight: 500;
+      font-size: 1.5rem;
+      font-weight: 600;
       color: #333;
+      line-height: 1.2;
+    }
+
+    :host-context(body.dark-mode) .stat-value {
+      color: #e0e0e0;
+    }
+
+    .total {
+      font-size: 1rem;
+    }
+
+    .stat-label {
+      font-size: 0.875rem;
+      color: #666;
+    }
+
+    :host-context(body.dark-mode) .stat-label {
+      color: #999;
     }
 
     @media (max-width: 768px) {
       .stats-panel {
-        flex-direction: column;
-        gap: 1rem;
+        padding: 0.75rem;
+        margin-bottom: 1rem;
       }
 
-      .stat-group {
-        justify-content: space-around;
+      .stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.5rem;
+      }
+
+      .stat-item {
+        padding: 0.5rem;
+        gap: 0.5rem;
+      }
+
+      .stat-item i {
+        font-size: 1rem;
+        width: 32px;
+        height: 32px;
+      }
+
+      .stat-value {
+        font-size: 1rem;
+      }
+
+      .stat-label {
+        font-size: 0.75rem;
       }
     }
-  `,
-  ],
+
+    @media (max-width: 480px) {
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .stat-item {
+        min-height: 70px;
+      }
+    }
+  `]
 })
 export class StatsPanelComponent {
-  songlist = this.songService.getSongs();
+  stats$: Observable<ProjectStats>;
 
-  totalSongs$ = this.songlist.pipe(map((songs) => songs.length));
-
-  uniqueArtists$ = this.songlist.pipe(
-    map((songs) => new Set(songs.map((song) => song.artist)).size)
-  );
-
-  uniqueGenres$ = this.songlist.pipe(
-    map((songs) => new Set(songs.map((song) => song.genre)).size)
-  );
-
-  totalArrows$ = this.songlist.pipe(
-    map((songs) =>
-      songs.reduce((accumulator, currentValue) => {
-        return accumulator + currentValue.arrows;
-      }, 0)
-    )
-  );
-
-  constructor(private songService: SongService) {}
+  constructor(private statsService: StatsService) {
+    this.stats$ = this.statsService.getProjectStats();
+  }
 }

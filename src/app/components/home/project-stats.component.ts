@@ -10,54 +10,80 @@ import { map } from 'rxjs/operators';
   template: `
     <div class="stats-container">
       <div class="stat-card">
-        <div class="stat-label">Featuring</div>
-        <div class="stat-value">{{ totalSubmissions$ | async }}</div>
-        <div class="stat-label">Total Submissions</div>
+        <div class="stat-info">
+          <div class="stat-label">FFR Perfect Project is</div>
+          <div class="stat-value">{{ completionPercentage$ | async }}%</div>
+          <div class="stat-label">Complete</div>
+        </div>
       </div>
+      
       <div class="stat-card">
-        <div class="stat-label">Across</div>
-        <div class="stat-value">{{ songsWithSubmissions$ | async }}</div>
-        <div class="stat-label">Unique Songs</div>
+        <div class="stat-info">
+          <div class="stat-label">Featuring</div>
+          <div class="stat-value">{{ totalSubmissions$ | async }}</div>
+          <div class="stat-label">Total Submissions</div>
+        </div>
       </div>
+
       <div class="stat-card">
-        <div class="stat-label">From</div>
-        <div class="stat-value">{{ uniqueContributors$ | async }}</div>
-        <div class="stat-label">Contributors</div>
+        <div class="stat-info">
+          <div class="stat-label">Across</div>
+          <div class="stat-value">{{ songsWithSubmissions$ | async }}</div>
+          <div class="stat-label">Unique Songs</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-info">
+          <div class="stat-label">From</div>
+          <div class="stat-value">{{ uniqueContributors$ | async }}</div>
+          <div class="stat-label">Contributors</div>
+        </div>
       </div>
     </div>
   `,
   styles: [`
     .stats-container {
-      display: flex;
-      gap: 2rem;
-      justify-content: center;
-      margin: 2rem 0;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      padding: 0 2rem;
     }
 
     .stat-card {
       background: white;
-      padding: 1.5rem;
+      padding: 0.5rem;
       border-radius: 8px;
-      text-align: center;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      min-width: 200px;
-      transition: background-color 0.3s;
     }
 
     :host-context(body.dark-mode) .stat-card {
       background: #2d2d2d;
     }
 
+    .stat-info {
+      flex: 1;
+      align-items: center;
+      text-align: center;
+    }
+
     .stat-value {
-      font-size: 2.5rem;
+      font-size: 1.75rem;
       font-weight: bold;
-      color: #28aad1;
-      margin-bottom: 0.5rem;
+      color: #333;
+      line-height: 1.2;
+    }
+
+    :host-context(body.dark-mode) .stat-value {
+      color: #e0e0e0;
     }
 
     .stat-label {
       color: #666;
-      font-size: 1rem;
+      font-size: 0.9rem;
     }
 
     :host-context(body.dark-mode) .stat-label {
@@ -66,25 +92,47 @@ import { map } from 'rxjs/operators';
 
     @media (max-width: 768px) {
       .stats-container {
-        flex-direction: column;
-        align-items: center;
-        gap: 1rem;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+        padding: 0;
       }
 
       .stat-card {
-        width: 100%;
-        max-width: 300px;
+        padding: 1rem;
+      }
+
+      .stat-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.25rem;
+      }
+
+      .stat-value {
+        font-size: 1.5rem;
+      }
+
+      .stat-label {
+        font-size: 0.8rem;
       }
     }
   `]
 })
 export class ProjectStatsComponent {
-  totalSubmissions$ = this.songService.getSongs().pipe(
-    map(songs => songs.reduce((total, song) => total + song.submissions.length, 0))
-  );
-
   songsWithSubmissions$ = this.songService.getSongs().pipe(
     map(songs => songs.filter(song => song.submissions.length > 0).length)
+  );
+
+  totalSubmissions$ = this.songService.getSongs().pipe(
+    map(songs => songs.reduce((sum, song) => 
+      sum + song.submissions.length, 0)
+  ));
+
+  completionPercentage$ = this.songService.getSongs().pipe(
+    map(songs => {
+      const total = songs.length;
+      const completed = songs.filter(song => song.submissions.length > 0).length;
+      return Math.round((completed / total) * 100);
+    })
   );
 
   uniqueContributors$ = this.songService.getSongs().pipe(
