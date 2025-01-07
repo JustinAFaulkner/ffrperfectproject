@@ -63,7 +63,7 @@ import { ConfirmModalComponent } from '../shared/confirm-modal.component';
         </ng-container>
         <ng-template #loginButton>
           <button class="nav-btn login-btn" (click)="showLoginModal()">
-            Login
+            Admin Login
           </button>
         </ng-template>
         <button 
@@ -101,7 +101,7 @@ import { ConfirmModalComponent } from '../shared/confirm-modal.component';
             <ng-template #mobileLoginButton>
               <button class="nav-btn login-btn" (click)="showLoginModal()">
                 <i class="fas fa-sign-in-alt"></i>
-                Login
+                Admin Login
               </button>
             </ng-template>
             <button 
