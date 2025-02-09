@@ -22,56 +22,58 @@ import { ConfirmModalComponent } from '../shared/confirm-modal.component';
     <nav class="navbar">
       <div class="nav-brand">
         <img 
-          src="https://i.imgur.com/169pgWP.png" 
+          src="https://ffrperfectproject.com/assets/icons/BN_flat.png" 
           crossorigin="anonymous" alt="FFR Perfect Project"
           class="nav-logo"
         />
       </div>
 
       <!-- Desktop Navigation -->
-      <div class="nav-links desktop-nav">
-        <a 
-          routerLink="/" 
-          routerLinkActive="active" 
-          [routerLinkActiveOptions]="{exact: true}"
-          class="nav-link">
-          Home
-        </a>
-        <a 
-          routerLink="/songs" 
-          routerLinkActive="active"
-          class="nav-link">
-          Songs
-        </a>
-        <a 
-          routerLink="/leaderboard" 
-          routerLinkActive="active"
-          class="nav-link">
-          Leaderboard
-        </a>
-      </div>
+      <div class="nav-links-desktop-group">
+        <div class="nav-links desktop-nav">
+          <a 
+            routerLink="/" 
+            routerLinkActive="active" 
+            [routerLinkActiveOptions]="{exact: true}"
+            class="nav-link">
+            Home
+          </a>
+          <a 
+            routerLink="/songs" 
+            routerLinkActive="active"
+            class="nav-link">
+            Songs
+          </a>
+          <a 
+            routerLink="/leaderboard" 
+            routerLinkActive="active"
+            class="nav-link">
+            Leaderboard
+          </a>
+        </div>
 
-      <!-- Desktop Auth -->
-      <div class="nav-auth desktop-nav">
-        <ng-container *ngIf="isLoggedIn$ | async">
-          <app-admin-menu></app-admin-menu>
-        </ng-container>
-        <ng-container *ngIf="isLoggedIn$ | async; else loginButton">
-          <button class="nav-btn logout-btn" (click)="logout()">
-            Logout
+        <!-- Desktop Auth -->
+        <div class="nav-auth desktop-nav">
+          <ng-container *ngIf="isLoggedIn$ | async">
+            <app-admin-menu></app-admin-menu>
+          </ng-container>
+          <ng-container *ngIf="isLoggedIn$ | async; else loginButton">
+            <button class="nav-btn logout-btn" (click)="logout()">
+              Logout
+            </button>
+          </ng-container>
+          <ng-template #loginButton>
+            <button class="nav-btn login-btn" (click)="showLoginModal()">
+              Admin Login
+            </button>
+          </ng-template>
+          <button 
+            class="theme-toggle-btn" 
+            (click)="toggleTheme()"
+            [attr.aria-label]="(isDarkMode$ | async) ? 'Switch to light mode' : 'Switch to dark mode'">
+            <i class="fas" [class.fa-moon]="!(isDarkMode$ | async)" [class.fa-sun]="isDarkMode$ | async"></i>
           </button>
-        </ng-container>
-        <ng-template #loginButton>
-          <button class="nav-btn login-btn" (click)="showLoginModal()">
-            Admin Login
-          </button>
-        </ng-template>
-        <button 
-          class="theme-toggle-btn" 
-          (click)="toggleTheme()"
-          [attr.aria-label]="(isDarkMode$ | async) ? 'Switch to light mode' : 'Switch to dark mode'">
-          <i class="fas" [class.fa-moon]="!(isDarkMode$ | async)" [class.fa-sun]="isDarkMode$ | async"></i>
-        </button>
+        </div>
       </div>
 
       <!-- Mobile Menu Button -->
@@ -212,12 +214,19 @@ import { ConfirmModalComponent } from '../shared/confirm-modal.component';
     }
 
     .nav-logo {
-      height: 70px;
-      margin-left: -1rem;
+      height: 80px;
       width: auto;
+      padding-top: 0.2rem;
+      padding-bottom: 0.2rem;
     }
 
     .nav-links {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .nav-links-desktop-group {
       display: flex;
       gap: 0.5rem;
       align-items: center;
