@@ -2,4 +2,4 @@
 dist
 node_modules
 .bolt
-src/environments
+src/environments/environment.ts

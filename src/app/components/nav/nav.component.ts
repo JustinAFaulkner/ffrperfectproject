@@ -21,11 +21,13 @@ import { ConfirmModalComponent } from '../shared/confirm-modal.component';
   template: `
     <nav class="navbar">
       <div class="nav-brand">
-        <img 
-          src="https://ffrperfectproject.com/assets/icons/BN_flat.png" 
-          crossorigin="anonymous" alt="FFR Perfect Project"
-          class="nav-logo"
-        />
+        <a routerLink="/">
+          <img 
+            src="https://ffrperfectproject.com/assets/icons/BN_flat.png" 
+            crossorigin="anonymous" alt="FFR Perfect Project"
+            class="nav-logo"
+          />
+        </a>
       </div>
 
       <!-- Desktop Navigation -->
@@ -468,7 +470,7 @@ import { ConfirmModalComponent } from '../shared/confirm-modal.component';
       cursor: not-allowed;
     }
 
-    @media (max-width: 768px) {
+    @media (max-width: 1024px) {
       .desktop-nav {
         display: none;
       }
@@ -477,6 +479,13 @@ import { ConfirmModalComponent } from '../shared/confirm-modal.component';
       .mobile-nav,
       .mobile-nav-backdrop {
         display: block;
+      }
+    }
+
+    @media (max-width: 524px) {
+      .nav-logo {
+        width: 300px;
+        height: auto;
       }
     }
   `],

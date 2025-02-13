@@ -29,7 +29,7 @@ import { PopupService } from '../../services/popup.service';
             {{achievement.description}}
           </p>
         </div>
-        <i *ngIf="achievement.givesBadge" class="fas fa-award badge-icon"></i>
+        <img *ngIf="achievement.givesBadge" [src]="getBadgeIcon(achievement)" alt="Badge" />
         <div class="achievement-status">
           <i class="fas" [class]="getStatusIconClass(achievement)"></i>
         </div>
@@ -233,6 +233,17 @@ export class UserAchievementsComponent {
     if (achievement.isCompleted) return 'fa-check-circle';
     if (achievement.isSecret) return 'fa-lock';
     return 'fa-circle';
+  }
+
+  getBadgeIcon(achievement: UserAchievement): string {
+    switch(achievement.name) {
+      case 'In A Pickle':
+        return "assets/icons/InAPickle.png";
+
+      case 'Budding Pioneer':
+        return "assets/icons/BuddingPioneer.png";
+    }
+    return "assets/icons/OutWalkin.png";
   }
 
   showBadgeExplainer(givesBadge: boolean) {

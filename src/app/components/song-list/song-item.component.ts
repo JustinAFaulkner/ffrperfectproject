@@ -149,8 +149,8 @@ import { ModalService } from '../../services/modal.service';
         <ng-template #noVideo>
           <div class="missing-video">
             <img 
-              src="https://placehold.co/600x400?text=Video+Not+Available"
-              alt="Video not available"
+              src="https://placehold.co/600x50/transparent/Ff0000?text=No%20Submissions"
+              alt="No Submissions"
             />
           </div>
         </ng-template>
