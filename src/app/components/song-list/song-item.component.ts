@@ -10,6 +10,8 @@ import { SubmissionEditModalComponent } from '../submission-modal/submission-edi
 import { AuthService } from '../../services/auth.service';
 import { SongSyncService } from '../../services/song-sync.service';
 import { ModalService } from '../../services/modal.service';
+import { SongService } from '../../services/song.service';
+import { PopupService } from '../../services/popup.service';
 
 @Component({
   selector: 'app-song-item',
@@ -124,6 +126,19 @@ import { ModalService } from '../../services/modal.service';
           </div>
 
           <div class="video-controls-right">
+            <label 
+              class="pending-toggle"
+              *ngIf="(isLoggedIn$ | async) && !hasSubmissions"
+              [title]="submissionPending ? 'Remove pending status' : 'Mark as pending'">
+              <input
+                type="checkbox"
+                [checked]="submissionPending"
+                (change)="togglePending($event)"
+              />
+              <span class="toggle-slider">
+                <i class="fas fa-clock"></i>
+              </span>
+            </label>
             <button 
               *ngIf="isLoggedIn$ | async"
               class="resync-song-btn"
@@ -148,18 +163,23 @@ import { ModalService } from '../../services/modal.service';
           </iframe>
         </div>
         <ng-template #noVideo>
-          <div class="missing-video">
+          <div class="missing-video" *ngIf="!submissionPending">
             <img 
               src="https://placehold.co/600x50/transparent/Ff0000?text=No%20Submissions"
               alt="No Submissions"
+            />
+          </div>
+          <div class="missing-video" *ngIf="submissionPending">
+            <img 
+              src="https://placehold.co/600x50/transparent/428bca?text=Submission%20Pending"
+              alt="Submission Pending"
             />
           </div>
         </ng-template>
       </div>
     </div>
   `,
-  styles: [
-    `
+  styles: [`
     .song-item {
       background: white;
       border-radius: 8px;
@@ -168,11 +188,31 @@ import { ModalService } from '../../services/modal.service';
       position: relative;
     }
 
+    .song-item.has-video {
+      background: linear-gradient(135deg, 
+        white 0%, 
+        white 60%, 
+        rgba(144, 238, 144, 0.3) 100%
+      );
+    }
+
     .song-item.pending-video {
       background: linear-gradient(135deg, 
         white 0%, 
         white 60%, 
         rgba(66, 139, 202, 0.3) 100%
+      );
+    }
+
+    :host-context(body.dark-mode) .song-item {
+      background: #2d2d2d;
+    }
+
+    :host-context(body.dark-mode) .song-item.has-video {
+      background: linear-gradient(135deg, 
+        #2d2d2d 0%, 
+        #2d2d2d 60%, 
+        rgba(144, 238, 144, 0.15) 100%
       );
     }
 
@@ -203,6 +243,14 @@ import { ModalService } from '../../services/modal.service';
 
     .corner-mark.pending {
       border-color: #428bca transparent transparent transparent;
+    }
+
+    :host-context(body.dark-mode) .corner-mark {
+      border-color: #404040 transparent transparent transparent;
+    }
+
+    :host-context(body.dark-mode) .corner-mark.completed {
+      border-color: #48bb78 transparent transparent transparent;
     }
 
     :host-context(body.dark-mode) .corner-mark.pending {
@@ -249,50 +297,6 @@ import { ModalService } from '../../services/modal.service';
       color: white;
       font-size: 0.7rem;
       font-weight: bold;
-    }
-
-    .song-item.has-video {
-      background: linear-gradient(135deg, 
-        white 0%, 
-        white 60%, 
-        rgba(144, 238, 144, 0.3) 100%
-      );
-    }
-
-    .song-item.no-video {
-      background: linear-gradient(135deg, 
-        white 0%, 
-        white 60%, 
-        rgba(255, 99, 71, 0.2) 100%
-      );
-    }
-
-    :host-context(body.dark-mode) .song-item {
-      background: #2d2d2d;
-    }
-
-    :host-context(body.dark-mode) .song-item.has-video {
-      background: linear-gradient(135deg, 
-        #2d2d2d 0%, 
-        #2d2d2d 60%, 
-        rgba(144, 238, 144, 0.15) 100%
-      );
-    }
-
-    :host-context(body.dark-mode) .song-item.no-video {
-      background: linear-gradient(135deg, 
-        #2d2d2d 0%, 
-        #2d2d2d 60%, 
-        rgba(255, 99, 71, 0.1) 100%
-      );
-    }
-
-    :host-context(body.dark-mode) .corner-mark {
-      border-color: #404040 transparent transparent transparent;
-    }
-
-    :host-context(body.dark-mode) .corner-mark.completed {
-      border-color: #48bb78 transparent transparent transparent;
     }
 
     .song-status {
@@ -598,6 +602,65 @@ import { ModalService } from '../../services/modal.service';
       font-size: 16px;
     }
 
+    .pending-toggle {
+      position: relative;
+      display: inline-block;
+      width: 28px;
+      height: 24px;
+      margin: 0;
+    }
+
+    .pending-toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .toggle-slider i {
+      color: #666;
+      font-size: 0.9rem;
+      transition: .4s;
+    }
+
+    .pending-toggle input:checked + .toggle-slider {
+      background-color: #428bca;
+    }
+
+    .pending-toggle input:checked + .toggle-slider i {
+      color: white;
+    }
+
+    :host-context(body.dark-mode) .toggle-slider {
+      background-color: #444;
+    }
+
+    :host-context(body.dark-mode) .toggle-slider i {
+      color: #999;
+    }
+
+    :host-context(body.dark-mode) .pending-toggle input:checked + .toggle-slider {
+      background-color: #428bca;
+    }
+
+    :host-context(body.dark-mode) .pending-toggle input:checked + .toggle-slider i {
+      color: white;
+    }
+
     .video-container {
       position: relative;
       padding-bottom: 56.25%;
@@ -622,8 +685,7 @@ import { ModalService } from '../../services/modal.service';
       max-width: 100%;
       height: auto;
     }
-  `,
-  ],
+  `]
 })
 export class SongItemComponent {
   @Input() song!: SongWithSubmissions;
@@ -663,7 +725,9 @@ export class SongItemComponent {
     private submissionService: SubmissionService,
     private authService: AuthService,
     private songSyncService: SongSyncService,
-    private modalService: ModalService
+    private modalService: ModalService,
+    private songService: SongService,
+    private popup: PopupService
   ) {}
 
   checkScrollButtons() {
@@ -724,6 +788,17 @@ export class SongItemComponent {
 
   getSafeUrl(url: string): SafeResourceUrl {
     return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  }
+
+  async togglePending(event: Event) {
+    const checkbox = event.target as HTMLInputElement;
+    try {
+      await this.songService.updateSongPending(this.song.id, checkbox.checked);
+      this.popup.show('Song updated successfully', 'success');
+    } catch (error) {
+      checkbox.checked = !checkbox.checked; // Revert the checkbox
+      this.popup.show('Failed to update song', 'error');
+    }
   }
 
   showSubmissionModal(event: Event) {

@@ -12,19 +12,37 @@ body {
   transition: background-color 0.3s, color 0.3s;
 }
 
-/* Virtual Scrolling Styles */
-.cdk-virtual-scroll-viewport {
-  overflow-x: hidden !important;
-}
-
+/* Make scrollbar background transparent */
 .cdk-virtual-scroll-viewport::-webkit-scrollbar {
-  width: 0 !important;
-  display: none;
+  width: 10px; /* Adjust the width */
+  height: 10px;
 }
 
+/* Scrollbar track (background) */
+.cdk-virtual-scroll-viewport::-webkit-scrollbar-track {
+  background: #141414;
+}
+
+/* Scrollbar handle */
+.cdk-virtual-scroll-viewport::-webkit-scrollbar-thumb {
+  background-color: #28aad1; /* Orange with transparency */
+  border-radius: 4px;
+}
+
+/* Scrollbar handle on hover */
+.cdk-virtual-scroll-viewport::-webkit-scrollbar-thumb:hover {
+  background-color: #28aad1;
+}
+
+/* Firefox scrollbar */
 .cdk-virtual-scroll-viewport {
-  -ms-overflow-style: none !important;
-  scrollbar-width: none !important;
+  scrollbar-color: #28aad1 #f5f5f5;
+  scrollbar-width: 10px;
+}
+
+body.dark-mode .cdk-virtual-scroll-viewport {
+  scrollbar-color: #28aad1 #141414;
+  scrollbar-width: 10px;
 }
 
 .cdk-virtual-scroll-content-wrapper {
