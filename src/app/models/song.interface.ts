@@ -9,4 +9,5 @@ export interface Song {
   stepArtist: string;
   style?: string;
   release: Date;
+  subPending: boolean;
 }

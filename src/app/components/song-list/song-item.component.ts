@@ -14,9 +14,7 @@ import { ModalService } from '../../services/modal.service';
 @Component({
   selector: 'app-song-item',
   standalone: true,
-  imports: [
-    CommonModule,
-  ],
+  imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   animations: [
     trigger('expandCollapse', [
@@ -33,9 +31,12 @@ import { ModalService } from '../../services/modal.service';
     <div 
       class="song-item"
       [class.has-video]="hasSubmissions"
-      [class.no-video]="!hasSubmissions">
-      <div class="corner-mark" [class.completed]="hasSubmissions">
-        <i class="fas fa-check"></i>
+      [class.no-video]="!hasSubmissions && !submissionPending"
+      [class.pending-video]="submissionPending">
+      <div class="corner-mark" 
+        [class.completed]="hasSubmissions"
+        [class.pending]="submissionPending">
+        <i class="fas" [class.fa-check]="hasSubmissions" [class.fa-clock]="submissionPending"></i>
       </div>
       <div class="first-mark" *ngIf="showFirstIndicator && isFirstSubmission">
         <span>1st</span>
@@ -167,6 +168,22 @@ import { ModalService } from '../../services/modal.service';
       position: relative;
     }
 
+    .song-item.pending-video {
+      background: linear-gradient(135deg, 
+        white 0%, 
+        white 60%, 
+        rgba(66, 139, 202, 0.3) 100%
+      );
+    }
+
+    :host-context(body.dark-mode) .song-item.pending-video {
+      background: linear-gradient(135deg, 
+        #2d2d2d 0%, 
+        #2d2d2d 60%, 
+        rgba(66, 139, 202, 0.15) 100%
+      );
+    }
+
     .corner-mark {
       position: absolute;
       top: 0;
@@ -184,6 +201,14 @@ import { ModalService } from '../../services/modal.service';
       border-color: #48bb78 transparent transparent transparent;
     }
 
+    .corner-mark.pending {
+      border-color: #428bca transparent transparent transparent;
+    }
+
+    :host-context(body.dark-mode) .corner-mark.pending {
+      border-color: #428bca transparent transparent transparent;
+    }
+
     .corner-mark i {
       position: absolute;
       top: -1.8rem;
@@ -196,6 +221,13 @@ import { ModalService } from '../../services/modal.service';
 
     .corner-mark.completed i {
       opacity: 1;
+    }
+
+    .corner-mark.pending i {
+      opacity: 1;
+      top: -1.7rem;
+      left: 0.2rem;
+      font-size: 0.8rem;
     }
 
     .first-mark {
@@ -351,7 +383,7 @@ import { ModalService } from '../../services/modal.service';
       padding: 8px;
       background: #f5f5f5;
       align-items: center;
-      min-height: 46px; /* Ensure consistent height */
+      min-height: 46px;
     }
 
     :host-context(body.dark-mode) .video-controls {
@@ -367,7 +399,7 @@ import { ModalService } from '../../services/modal.service';
     }
 
     .add-submission-wrapper {
-      flex-shrink: 0; /* Prevent button from shrinking */
+      flex-shrink: 0;
     }
 
     .scroll-controls {
@@ -418,7 +450,7 @@ import { ModalService } from '../../services/modal.service';
     .video-controls-right {
       display: flex;
       gap: 8px;
-      flex-shrink: 0; /* Prevent shrinking */
+      flex-shrink: 0;
     }
 
     .add-submission-btn {
@@ -593,13 +625,12 @@ import { ModalService } from '../../services/modal.service';
   `,
   ],
 })
-export class SongItemComponent{
+export class SongItemComponent {
   @Input() song!: SongWithSubmissions;
   @Input() showFirstIndicator: boolean = false;
   @Input() set isExpanded(value: boolean) {
     if (value !== this._isExpanded) {
       this._isExpanded = value;
-      // Check scroll buttons on next tick if expanded
       if (value) {
         setTimeout(() => this.checkScrollButtons(), 0);
       }
@@ -612,6 +643,10 @@ export class SongItemComponent{
   
   get isExpanded(): boolean {
     return this._isExpanded;
+  }
+
+  get submissionPending(): boolean {
+    return !this.hasSubmissions && this.song.subPending;
   }
 
   canScrollLeft = false;

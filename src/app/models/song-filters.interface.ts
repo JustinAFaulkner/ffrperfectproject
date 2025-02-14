@@ -1,7 +1,7 @@
 export interface SongFilters {
   searchTerm: string;
   genre: string;
-  videoFilter: 'all' | 'with' | 'without';
+  videoFilter: 'all' | 'with' | 'without' | 'pending';
   minDifficulty: number;
   maxDifficulty: number;
   minNoteCount: number;

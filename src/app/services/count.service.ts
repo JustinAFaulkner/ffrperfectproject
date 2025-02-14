@@ -8,7 +8,8 @@ export class CountService {
   getVideoCounts(songs: SongWithSubmissions[]) {
     return {
       withVideo: songs.filter(song => song.submissions.length > 0).length,
-      withoutVideo: songs.filter(song => song.submissions.length === 0).length
+      withoutVideo: songs.filter(song => song.submissions.length === 0).length,
+      pendingVideo: songs.filter(song => song.subPending).length
     };
   }
 }

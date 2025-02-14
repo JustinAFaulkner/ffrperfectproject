@@ -79,6 +79,13 @@ import { StatsPanelComponent } from '../stats/stats-panel.component';
                 Missing
                 <span class="count-badge">{{videoCounts.withoutVideo}}</span>
               </button>
+              <button
+                [class.active]="filters.videoFilter === 'pending'"
+                (click)="setVideoFilter('pending')"
+                class="video-toggle-btn">
+                Pending
+                <span class="count-badge">{{videoCounts.pendingVideo}}</span>
+              </button>
             </div>
           </div>
 
@@ -344,7 +351,7 @@ import { StatsPanelComponent } from '../stats/stats-panel.component';
       background: #141414;
     }
 
-    @media (max-width: 768px) {
+    @media (max-width: 820px) {
       .desktop-only {
         display: none;
       }
@@ -368,6 +375,12 @@ import { StatsPanelComponent } from '../stats/stats-panel.component';
         gap: 10px;
       }
     }
+
+    @media (max-width: 420px) {
+      .video-toggle-group {
+        flex-wrap: wrap;
+      }
+    }
   `]
 })
 export class SongListComponent {
@@ -375,7 +388,7 @@ export class SongListComponent {
   filteredSongs: SongWithSubmissions[] = [];
   genres: string[] = [];
   expandedSong: string | null = null;
-  videoCounts = { withVideo: 0, withoutVideo: 0 };
+  videoCounts = { withVideo: 0, withoutVideo: 0, pendingVideo: 0 };
   showFilterDrawer = false;
   filters: SongFilters = { ...defaultFilters };
 
@@ -415,7 +428,7 @@ export class SongListComponent {
     this.filterSongs();
   }
 
-  setVideoFilter(filter: 'all' | 'with' | 'without') {
+  setVideoFilter(filter: 'all' | 'with' | 'without' | 'pending') {
     this.filters.videoFilter = filter;
     this.filterSongs();
   }

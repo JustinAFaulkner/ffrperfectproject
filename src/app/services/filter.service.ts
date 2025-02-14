@@ -27,32 +27,33 @@ export class FilterService {
           song.submissions.some((submission) =>
             submission.contributor?.toLowerCase().includes(searchLower)
           );
-  
+
         const matchesGenre = !filters.genre || song.genre === filters.genre;
-  
+
         const matchesVideo =
           filters.videoFilter === 'all' ||
           (filters.videoFilter === 'with' && song.submissions.length > 0) ||
-          (filters.videoFilter === 'without' && song.submissions.length === 0);
-  
+          (filters.videoFilter === 'without' && song.submissions.length === 0 && !song.subPending) ||
+          (filters.videoFilter === 'pending' && song.subPending);
+
         const matchesDifficulty =
           song.difficulty >= filters.minDifficulty && 
           song.difficulty <= filters.maxDifficulty;
-  
+
         const matchesNoteCount =
           song.arrows >= filters.minNoteCount &&
           song.arrows <= filters.maxNoteCount;
-  
+
         const matchesLength =
           song.seconds >= filters.minLength &&
           song.seconds <= filters.maxLength;
-  
+
         const matchesReleaseDate = !filters.releaseDate ||
           (song.release && song.release >= new Date(filters.releaseDate));
-  
+
         return matchesSearch && matchesGenre && matchesVideo && 
-               matchesDifficulty && matchesNoteCount && 
-               matchesLength && matchesReleaseDate;
+              matchesDifficulty && matchesNoteCount && 
+              matchesLength && matchesReleaseDate;
       }
     });
 
