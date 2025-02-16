@@ -200,7 +200,7 @@ Difficulty: ${this.song.difficulty}
 Step Artist: ${this.song.stepArtist}
 Length: ${formattedLength}
 
-${this.song.artist}: 
+${this.song.artist}: ${this.song.author_url}
 ${this.contributor}: http://www.flashflashrevolution.com/profile/${this.contributor}`;
   }
 

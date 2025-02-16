@@ -2,6 +2,7 @@ export interface Song {
   id: string;
   title: string;
   artist: string;
+  author_url: string;
   seconds: number;
   genre: string;
   difficulty: number;

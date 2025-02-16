@@ -12,37 +12,68 @@ body {
   transition: background-color 0.3s, color 0.3s;
 }
 
-/* Make scrollbar background transparent */
+/* WebKit browsers (Chrome, Safari, Edge) */
 .cdk-virtual-scroll-viewport::-webkit-scrollbar {
-  width: 10px; /* Adjust the width */
-  height: 10px;
+  width: 14px;
+  background-color: #f5f5f5;
 }
 
-/* Scrollbar track (background) */
+body.dark-mode .cdk-virtual-scroll-viewport::-webkit-scrollbar {
+  width: 14px;
+  background-color: #141414;
+}
+
 .cdk-virtual-scroll-viewport::-webkit-scrollbar-track {
-  background: #141414;
+  background-color: #f5f5f5;
+  border: 4px solid #f5f5f5;
 }
 
-/* Scrollbar handle */
+body.dark-mode .cdk-virtual-scroll-viewport::-webkit-scrollbar-track {
+  background-color: #141414;
+  border: 4px solid #141414;
+}
+
 .cdk-virtual-scroll-viewport::-webkit-scrollbar-thumb {
-  background-color: #28aad1; /* Orange with transparency */
-  border-radius: 4px;
+  background-color: #28aad1;
+  background-clip: padding-box;
+  border: 4px solid #f5f5f5;
+  border-radius: 8px;
+  min-height: 50px;
 }
 
-/* Scrollbar handle on hover */
+body.dark-mode .cdk-virtual-scroll-viewport::-webkit-scrollbar-thumb {
+  border: 4px solid #141414;
+}
+
 .cdk-virtual-scroll-viewport::-webkit-scrollbar-thumb:hover {
   background-color: #28aad1;
 }
 
-/* Firefox scrollbar */
+/* Edge scrollbar */
 .cdk-virtual-scroll-viewport {
   scrollbar-color: #28aad1 #f5f5f5;
-  scrollbar-width: 10px;
+  scrollbar-width: auto;
 }
 
 body.dark-mode .cdk-virtual-scroll-viewport {
   scrollbar-color: #28aad1 #141414;
-  scrollbar-width: 10px;
+  scrollbar-width: auto;
+}
+
+/* Touch Device Styles */
+@media (hover: none) and (pointer: coarse) {
+  .cdk-virtual-scroll-viewport::-webkit-scrollbar {
+    width: 20px;
+  }
+
+  .cdk-virtual-scroll-viewport::-webkit-scrollbar-thumb {
+    border: 6px solid #f5f5f5;
+    min-height: 80px;
+  }
+
+  body.dark-mode .cdk-virtual-scroll-viewport::-webkit-scrollbar-thumb {
+    border: 6px solid #141414;
+  }
 }
 
 .cdk-virtual-scroll-content-wrapper {
