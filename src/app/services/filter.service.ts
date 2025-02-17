@@ -34,7 +34,7 @@ export class FilterService {
           filters.videoFilter === 'all' ||
           (filters.videoFilter === 'with' && song.submissions.length > 0) ||
           (filters.videoFilter === 'without' && song.submissions.length === 0 && !song.subPending) ||
-          (filters.videoFilter === 'pending' && song.subPending);
+          (filters.videoFilter === 'pending' && song.subPending && song.submissions.length === 0);
 
         const matchesDifficulty =
           song.difficulty >= filters.minDifficulty && 
