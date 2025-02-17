@@ -52,17 +52,18 @@ import { ConfirmModalComponent } from '../shared/confirm-modal.component';
             class="nav-link">
             Leaderboard
           </a>
+          <a 
+            routerLink="/achievements" 
+            routerLinkActive="active"
+            class="nav-link">
+            Achievements
+          </a>
         </div>
 
         <!-- Desktop Auth -->
         <div class="nav-auth desktop-nav">
-          <ng-container *ngIf="isLoggedIn$ | async">
-            <app-admin-menu></app-admin-menu>
-          </ng-container>
           <ng-container *ngIf="isLoggedIn$ | async; else loginButton">
-            <button class="nav-btn logout-btn" (click)="logout()">
-              Logout
-            </button>
+            <app-admin-menu></app-admin-menu>
           </ng-container>
           <ng-template #loginButton>
             <button class="nav-btn login-btn" (click)="showLoginModal()">
@@ -142,6 +143,14 @@ import { ConfirmModalComponent } from '../shared/confirm-modal.component';
             (click)="showMobileMenu = false">
             <i class="fas fa-trophy"></i>
             Leaderboard
+          </a>
+          <a 
+            routerLink="/achievements" 
+            routerLinkActive="active"
+            class="nav-link"
+            (click)="showMobileMenu = false">
+            <i class="fas fa-award"></i>
+            Achievements
           </a>
 
           <ng-container *ngIf="isLoggedIn$ | async">
@@ -344,11 +353,11 @@ import { ConfirmModalComponent } from '../shared/confirm-modal.component';
     .mobile-nav {
       display: none;
       position: fixed;
-      top: 57px;
+      top: 75px;
       right: -400px;
       width: 85%;
       max-width: 400px;
-      height: calc(100vh - 57px);
+      height: calc(100vh - 75px);
       background: linear-gradient(135deg, #28aad1 0%, #1a7a9c 100%);
       box-shadow: -2px 0 8px rgba(0,0,0,0.2);
       transition: right 0.3s;
@@ -470,7 +479,7 @@ import { ConfirmModalComponent } from '../shared/confirm-modal.component';
       cursor: not-allowed;
     }
 
-    @media (max-width: 1024px) {
+    @media (max-width: 1060px) {
       .desktop-nav {
         display: none;
       }

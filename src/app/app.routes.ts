@@ -7,12 +7,14 @@ import { WikiUpdatesComponent } from './components/wiki-updates/wiki-updates.com
 import { BadgeManagementComponent } from './components/badge-management/badge-management.component';
 import { SyncLogsComponent } from './components/sync-logs/sync-logs.component';
 import { SyncLogDetailsComponent } from './components/sync-logs/sync-log-details.component';
+import { AchievementsComponent } from './components/achievements/achievements.component';
 import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'songs', component: SongListComponent },
   { path: 'leaderboard', component: LeaderboardComponent },
+  { path: 'achievements', component: AchievementsComponent },
   { path: 'user/:username', component: UserProfileComponent },
   { 
     path: 'user-wiki-updates', 

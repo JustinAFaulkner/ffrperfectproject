@@ -10,7 +10,7 @@ import { ConfirmModalComponent } from '../shared/confirm-modal.component';
   standalone: true,
   imports: [CommonModule, ConfirmModalComponent],
   template: `
-    <div class="admin-dropdown" *ngIf="isLoggedIn$ | async">
+    <div class="admin-dropdown">
       <button class="admin-btn">
         Admin
         <i class="fas fa-chevron-down"></i>
@@ -39,6 +39,11 @@ import { ConfirmModalComponent } from '../shared/confirm-modal.component';
           (click)="showResyncConfirm = true"
           [disabled]="isSyncing">
           {{ isSyncing ? 'Syncing...' : 'Re-Sync All Songs' }}
+        </button>
+        <div class="menu-divider"></div>
+        <button class="dropdown-item logout" (click)="onLogout()">
+          <i class="fas fa-sign-out-alt"></i>
+          Sign Out
         </button>
       </div>
     </div>
@@ -89,7 +94,7 @@ import { ConfirmModalComponent } from '../shared/confirm-modal.component';
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
       min-width: 200px;
       z-index: 1000;
-      margin-top: 0;
+      padding: 0.5rem 0;
     }
 
     :host-context(body.dark-mode) .dropdown-menu {
@@ -107,6 +112,7 @@ import { ConfirmModalComponent } from '../shared/confirm-modal.component';
       cursor: pointer;
       font-size: 0.9rem;
       color: #333;
+      transition: all 0.2s;
     }
 
     :host-context(body.dark-mode) .dropdown-item {
@@ -126,12 +132,33 @@ import { ConfirmModalComponent } from '../shared/confirm-modal.component';
       cursor: not-allowed;
     }
 
-    .dropdown-item:not(:last-child) {
-      border-bottom: 1px solid #eee;
+    .menu-divider {
+      height: 1px;
+      background: #eee;
+      margin: 0.5rem 0;
     }
 
-    :host-context(body.dark-mode) .dropdown-item:not(:last-child) {
-      border-bottom-color: #404040;
+    :host-context(body.dark-mode) .menu-divider {
+      background: #404040;
+    }
+
+    .dropdown-item.logout {
+      color: #dc3545;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    :host-context(body.dark-mode) .dropdown-item.logout {
+      color: #e57373;
+    }
+
+    .dropdown-item.logout:hover {
+      background: #ffeaea;
+    }
+
+    :host-context(body.dark-mode) .dropdown-item.logout:hover {
+      background: #4a2c2c;
     }
   `]
 })
@@ -143,8 +170,8 @@ export class AdminMenuComponent {
 
   constructor(
     private router: Router,
-    private songSyncService: SongSyncService,
-    private authService: AuthService
+    private authService: AuthService,
+    private songSyncService: SongSyncService
   ) {}
 
   onUserWikiList() {
@@ -164,6 +191,8 @@ export class AdminMenuComponent {
   }
 
   async onSyncSongs() {
+    if (this.isSyncing) return;
+    
     try {
       this.isSyncing = true;
       const result = await this.songSyncService.syncNewSongs();
@@ -191,6 +220,14 @@ export class AdminMenuComponent {
       alert('Error resyncing songs. Please try again.');
     } finally {
       this.isSyncing = false;
+    }
+  }
+
+  async onLogout() {
+    try {
+      await this.authService.logout();
+    } catch (error) {
+      console.error('Logout error:', error);
     }
   }
 }

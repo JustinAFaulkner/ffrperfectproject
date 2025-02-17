@@ -314,8 +314,14 @@ export class AchievementService {
       case 'genres':
         return countUniqueGenres(submittedSongs.map(song => song.genre)) >= 5;
 
-      case 'notecount':
+      case 'notes_five':
+        return getTotalNoteCount(submittedSongs.map(song => song.arrows)) >= 5000;
+
+      case 'notes_fifteen':
         return getTotalNoteCount(submittedSongs.map(song => song.arrows)) >= 15000;
+
+      case 'notes_twentyfive':
+        return getTotalNoteCount(submittedSongs.map(song => song.arrows)) >= 25000;
 
       case 'hour_one':
         return getTotalSeconds(submittedSongs.map(song => song.seconds)) >= 3600;
