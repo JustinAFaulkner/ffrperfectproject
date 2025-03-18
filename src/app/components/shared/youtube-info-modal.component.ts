@@ -12,6 +12,7 @@ import { SongWithSubmissions } from '../../models/song-with-submissions.interfac
       <div class="modal-content" (click)="$event.stopPropagation()">
         <div class="modal-header">
           <h3>YouTube Video Information</h3>
+          <span>{{song.genre}}</span>
           <button class="close-btn" (click)="onClose()">×</button>
         </div>
         

@@ -301,10 +301,18 @@ export class SubmissionModalComponent {
     isMulti: false
   };
 
+  ngOnInit() {
+    // Set firstSub to true if this is the first submission for the song
+    this.submission.firstSub = this.song.submissions.length === 0;
+    console.log(this.song);
+    console.log(this.submission.firstSub);
+  }
+
   get isValid(): boolean {
     return (
       (this.submission.url.includes('/watch?v=') ||
-        this.submission.url.includes('/embed/')) &&
+        this.submission.url.includes('/embed/') ||
+        this.submission.url.includes('youtu.be/')) &&
       this.submission.contributor.trim() !== ''
     );
   }
