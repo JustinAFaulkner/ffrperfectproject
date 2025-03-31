@@ -8,4 +8,7 @@ export interface Submission {
   firstSub: boolean;
   isPublic: boolean;
   isMulti: boolean;
+  isFeatured: boolean;
+  isDownscroll: boolean;
+  isAAAA: boolean;
 }

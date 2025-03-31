@@ -51,9 +51,12 @@ export class FilterService {
         const matchesReleaseDate = !filters.releaseDate ||
           (song.release && song.release >= new Date(filters.releaseDate));
 
+        const matchesAAAA = !filters.aaaaOnly || 
+          (song.submissions.some(sub => sub.isAAAA))
+
         return matchesSearch && matchesGenre && matchesVideo && 
               matchesDifficulty && matchesNoteCount && 
-              matchesLength && matchesReleaseDate;
+              matchesLength && matchesReleaseDate && matchesAAAA;
       }
     });
 

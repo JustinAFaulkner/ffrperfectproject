@@ -12,6 +12,8 @@ export interface SongFilters {
   sortBy: string;
   sortDirection: 'asc' | 'desc';
   ids: string[] | undefined;
+  scrollPreference: 'upscroll' | 'downscroll';
+  aaaaOnly: boolean;
 }
 
 export const defaultFilters: SongFilters = {
@@ -23,9 +25,11 @@ export const defaultFilters: SongFilters = {
   minNoteCount: 0,
   maxNoteCount: 99999,
   minLength: 0,
-  maxLength: 999,
+  maxLength: 9999,
   releaseDate: null,
   sortBy: 'id',
   sortDirection: 'asc',
-  ids: undefined
+  ids: undefined,
+  scrollPreference: 'upscroll',
+  aaaaOnly: false
 };

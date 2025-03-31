@@ -69,6 +69,14 @@ import { UrlTransformerService } from '../../services/url-transformer.service';
               />
               First Submission
             </label>
+
+            <label>
+              <input
+                type="checkbox"
+                [(ngModel)]="submission.isDownscroll"
+              />
+              Downscroll
+            </label>
           </div>
           <div class="checkbox-group-right">
             <label>
@@ -86,6 +94,22 @@ import { UrlTransformerService } from '../../services/url-transformer.service';
                 [(ngModel)]="submission.isMulti"
               />
               Multi
+            </label>
+
+            <label>
+              <input
+                type="checkbox"
+                [(ngModel)]="submission.isAAAA"
+              />
+              AAAA
+            </label>
+
+            <label>
+              <input
+                type="checkbox"
+                [(ngModel)]="submission.isFeatured"
+              />
+              Featured
             </label>
           </div>
         </div>
@@ -357,7 +381,10 @@ export class SubmissionEditModalComponent {
     userWikiUpdated: false,
     firstSub: false,
     isPublic: false,
-    isMulti: false
+    isMulti: false,
+    isFeatured: false,
+    isDownscroll: false,
+    isAAAA: false
   };
 
   ngOnInit(): void {
@@ -373,7 +400,10 @@ export class SubmissionEditModalComponent {
           userWikiUpdated: currentSubmission.userWikiUpdated,
           firstSub: currentSubmission.firstSub,
           isPublic: currentSubmission.isPublic,
-          isMulti: currentSubmission.isMulti
+          isMulti: currentSubmission.isMulti,
+          isFeatured: currentSubmission.isFeatured,
+          isDownscroll: currentSubmission.isDownscroll,
+          isAAAA: currentSubmission.isAAAA
         };
       }
     }

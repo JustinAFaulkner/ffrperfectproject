@@ -53,6 +53,17 @@ import { StatsPanelComponent } from '../stats/stats-panel.component';
               <i class="fas fa-times"></i>
             </button>
           </button>
+
+          <div class="filter-section mobile-only">
+            <div><h3>Scroll Preference</h3></div>
+            <div class="scroll-toggle-container" (click)="toggleScrollPreference()">
+              <div class="scroll-toggle-track">
+                <div class="scroll-toggle-slider" [class.downscroll]="filters.scrollPreference === 'downscroll'">
+                  <img src="assets/icons/4u.png" alt="Arrows" class="arrow-icon" [class.rotate-down]="filters.scrollPreference === 'downscroll'"/>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         
         <div class="filter-group">
@@ -89,29 +100,15 @@ import { StatsPanelComponent } from '../stats/stats-panel.component';
             </div>
           </div>
 
-          <div class="difficulty-range desktop-only">
-            <label>
-              Difficulty Min:
-              <input
-                type="number"
-                [(ngModel)]="filters.minDifficulty"
-                (ngModelChange)="filterSongs()"
-                min="0"
-                [max]="filters.maxDifficulty"
-                class="difficulty-input"
-              />
-            </label>
-            <label>
-              Max:
-              <input
-                type="number"
-                [(ngModel)]="filters.maxDifficulty"
-                (ngModelChange)="filterSongs()"
-                [min]="filters.minDifficulty"
-                max="150"
-                class="difficulty-input"
-              />
-            </label>
+          <div class="filter-section desktop-only">
+            <div><h3>Scroll Preference</h3></div>
+            <div class="scroll-toggle-container" (click)="toggleScrollPreference()">
+              <div class="scroll-toggle-track">
+                <div class="scroll-toggle-slider" [class.downscroll]="filters.scrollPreference === 'downscroll'">
+                  <img src="assets/icons/4u.png" alt="Arrows" class="arrow-icon" [class.rotate-down]="filters.scrollPreference === 'downscroll'"/>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -176,6 +173,20 @@ import { StatsPanelComponent } from '../stats/stats-panel.component';
       background: #333;
       border-color: #444;
       color: #e0e0e0;
+    }
+
+    .filter-section {
+      align-items: center;
+      gap: 10px
+    }
+
+    .filter-section h3 {
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    :host-context(body.dark-mode) .filter-section h3 {
+      color: #999;
     }
 
     .filter-btn {
@@ -351,11 +362,64 @@ import { StatsPanelComponent } from '../stats/stats-panel.component';
       background: #141414;
     }
 
-    @media (max-width: 820px) {
-      .desktop-only {
-        display: none;
-      }
+    .desktop-only {
+      display: flex;
+    }
 
+    .mobile-only {
+      display: none;
+    }
+
+    .scroll-toggle-container {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .scroll-toggle-track {
+      width: 60px;
+      height: 30px;
+      background: #e0e0e0;
+      border-radius: 15px;
+      position: relative;
+      transition: background-color 0.3s;
+    }
+
+    :host-context(body.dark-mode) .scroll-toggle-track {
+      background: #444;
+    }
+
+    .scroll-toggle-slider {
+      width: 26px;
+      height: 26px;
+      background: #28aad1;
+      border-radius: 13px;
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+    }
+
+    .scroll-toggle-slider.downscroll {
+      transform: translateX(30px);
+    }
+
+    .scroll-toggle-slider img {
+      max-width: 20px;
+      transition: transform 0.2s ease-in-out;
+    }
+
+    .rotate-down {
+      transform: rotate(180deg);
+    }
+
+    @media (max-width: 820px) {
       .filters {
         gap: 10px;
       }
@@ -373,6 +437,16 @@ import { StatsPanelComponent } from '../stats/stats-panel.component';
         flex-direction: column;
         align-items: stretch;
         gap: 10px;
+      }
+    }
+
+    @media (max-width: 820px) {
+      .mobile-only {
+        display: flex;
+      }
+
+      .desktop-only {
+        display: none;
       }
     }
 
@@ -396,10 +470,16 @@ export class SongListComponent {
     let count = 0;
     if (this.filters.genre) count++;
     if (this.filters.minNoteCount > 0 || this.filters.maxNoteCount < 99999) count++;
-    if (this.filters.minLength > 0 || this.filters.maxLength < 999) count++;
+    if (this.filters.minLength > 0 || this.filters.maxLength < 9999) count++;
     if (this.filters.releaseDate) count++;
     if (this.filters.minDifficulty > 0 || this.filters.maxDifficulty < 150) count++;
     return count;
+  }
+
+  toggleScrollPreference() {
+    this.filters.scrollPreference = 
+      this.filters.scrollPreference === 'upscroll' ? 'downscroll' : 'upscroll';
+    this.filterSongs();
   }
 
   constructor(

@@ -202,7 +202,8 @@ Step Artist: ${this.song.stepArtist}
 Length: ${formattedLength}
 
 ${this.song.artist}: ${this.song.author_url}
-${this.contributor}: http://www.flashflashrevolution.com/profile/${(this.contributor).replaceAll(' ', '%20')}`;
+${this.contributor}: https://www.flashflashrevolution.com/profile/${(this.contributor).replaceAll(' ', '%20')}
+FFR Perfect Project: https://www.ffrperfectproject.com/`;
   }
 
   copyText(element: HTMLInputElement | HTMLTextAreaElement) {

@@ -43,7 +43,10 @@ export class SubmissionService {
           userWikiUpdated: Boolean(sub.userWikiUpdated),
           firstSub: Boolean(sub.firstSub),
           isPublic: Boolean(sub.isPublic),
-          isMulti: Boolean(sub.isMulti)
+          isMulti: Boolean(sub.isMulti),
+          isFeatured: Boolean(sub.isFeatured),
+          isDownscroll: Boolean(sub.isDownscroll),
+          isAAAA: Boolean(sub.isAAAA)
         }));
 
         this.logger.info('Submissions processed', {
@@ -88,7 +91,10 @@ export class SubmissionService {
           songWikiUpdated: type === 'song' ? true : submission.songWikiUpdated,
           userWikiUpdated: type === 'user' ? true : submission.userWikiUpdated,
           isPublic: submission.isPublic,
-          isMulti: submission.isMulti
+          isMulti: submission.isMulti,
+          isFeatured: submission.isFeatured,
+          isDownscroll: submission.isDownscroll,
+          isAAAA: submission.isAAAA
         }));
   
         this.loadSubmissions();
@@ -114,7 +120,10 @@ export class SubmissionService {
         songWikiUpdated: submission.songWikiUpdated,
         userWikiUpdated: submission.userWikiUpdated,
         isPublic: submission.isPublic,
-        isMulti: submission.isMulti
+        isMulti: submission.isMulti,
+        isFeatured: submission.isFeatured,
+        isDownscroll: submission.isDownscroll,
+        isAAAA: submission.isAAAA
       }).toPromise();
 
       this.loadSubmissions();
@@ -137,7 +146,10 @@ export class SubmissionService {
         songWikiUpdated: submission.songWikiUpdated,
         userWikiUpdated: submission.userWikiUpdated,
         isPublic: submission.isPublic,
-        isMulti: submission.isMulti
+        isMulti: submission.isMulti,
+        isFeatured: submission.isFeatured,
+        isDownscroll: submission.isDownscroll,
+        isAAAA: submission.isAAAA
       }).toPromise();
 
       this.loadSubmissions();

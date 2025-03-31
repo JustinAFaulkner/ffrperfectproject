@@ -19,6 +19,29 @@ import { SongFilters } from '../../models/song-filters.interface';
 
         <div class="drawer-content">
           <div class="filter-section">
+            <h3>Difficulty</h3>
+            <div class="range-inputs">
+              <input
+                type="number"
+                [(ngModel)]="filters.minDifficulty"
+                (ngModelChange)="filtersChanged()"
+                placeholder="Min"
+                min="0"
+                [max]="filters.maxDifficulty"
+              />
+              <span>to</span>
+              <input
+                type="number"
+                [(ngModel)]="filters.maxDifficulty"
+                (ngModelChange)="filtersChanged()"
+                placeholder="Max"
+                [min]="filters.minDifficulty"
+                max="150"
+              />
+            </div>
+          </div>
+
+          <div class="filter-section">
             <h3>Genre</h3>
             <select [(ngModel)]="filters.genre" (ngModelChange)="filtersChanged()">
               <option value="">All Genres</option>
@@ -71,29 +94,6 @@ import { SongFilters } from '../../models/song-filters.interface';
               [(ngModel)]="filters.releaseDate"
               (ngModelChange)="filtersChanged()"
             />
-          </div>
-
-          <div class="filter-section mobile-only">
-            <h3>Difficulty</h3>
-            <div class="range-inputs">
-              <input
-                type="number"
-                [(ngModel)]="filters.minDifficulty"
-                (ngModelChange)="filtersChanged()"
-                placeholder="Min"
-                min="0"
-                [max]="filters.maxDifficulty"
-              />
-              <span>to</span>
-              <input
-                type="number"
-                [(ngModel)]="filters.maxDifficulty"
-                (ngModelChange)="filtersChanged()"
-                placeholder="Max"
-                [min]="filters.minDifficulty"
-                max="150"
-              />
-            </div>
           </div>
         </div>
 
@@ -259,16 +259,6 @@ import { SongFilters } from '../../models/song-filters.interface';
     :host-context(body.dark-mode) .reset-btn:hover {
       background: #444;
     }
-
-    .mobile-only {
-      display: none;
-    }
-
-    @media (max-width: 768px) {
-      .mobile-only {
-        display: block;
-      }
-    }
   `]
 })
 export class FilterDrawerComponent {
@@ -291,7 +281,9 @@ export class FilterDrawerComponent {
       maxLength: 9999,
       releaseDate: null,
       minDifficulty: 0,
-      maxDifficulty: 150
+      maxDifficulty: 150,
+      scrollPreference: 'upscroll',
+      aaaaOnly: false
     });
     this.filtersChanged();
   }
