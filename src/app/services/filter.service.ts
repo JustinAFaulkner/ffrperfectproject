@@ -48,15 +48,18 @@ export class FilterService {
           song.seconds >= filters.minLength &&
           song.seconds <= filters.maxLength;
 
-        const matchesReleaseDate = !filters.releaseDate ||
-          (song.release && song.release >= new Date(filters.releaseDate));
+          const releaseDateWithin = (!filters.releaseDateStart && !filters.releaseDateEnd) || 
+          (song.release && (
+            (!filters.releaseDateStart || song.release >= new Date(filters.releaseDateStart)) &&
+            (!filters.releaseDateEnd || song.release <= new Date(filters.releaseDateEnd))
+          ));
 
         const matchesAAAA = !filters.aaaaOnly || 
-          (song.submissions.some(sub => sub.isAAAA))
+          (song.submissions.some(sub => sub.isAAAA));
 
         return matchesSearch && matchesGenre && matchesVideo && 
               matchesDifficulty && matchesNoteCount && 
-              matchesLength && matchesReleaseDate && matchesAAAA;
+              matchesLength && releaseDateWithin && matchesAAAA;
       }
     });
 
@@ -80,6 +83,31 @@ export class FilterService {
       return filters.sortDirection === 'asc' ? comparison : -comparison;
     });
 
-    return filteredSongs;
+    // Order submissions within each song based on scroll preference and priority
+    return filteredSongs.map(song => ({
+      ...song,
+      submissions: [...song.submissions].sort((a, b) => {
+        // First, check if scroll preferences match
+        const aMatchesPreference = filters.scrollPreference === 'upscroll' ? !a.isDownscroll : a.isDownscroll;
+        const bMatchesPreference = filters.scrollPreference === 'upscroll' ? !b.isDownscroll : b.isDownscroll;
+
+        if (aMatchesPreference !== bMatchesPreference) {
+          return aMatchesPreference ? -1 : 1;
+        }
+
+        // If scroll preferences are the same, check featured status
+        if (a.isFeatured !== b.isFeatured) {
+          return a.isFeatured ? -1 : 1;
+        }
+
+        // If featured status is the same, check first submission status
+        if (a.firstSub !== b.firstSub) {
+          return a.firstSub ? -1 : 1;
+        }
+
+        // If all priorities are the same, maintain original order
+        return 0;
+      })
+    }));
   }
 }

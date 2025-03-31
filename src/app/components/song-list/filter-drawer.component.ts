@@ -89,11 +89,28 @@ import { SongFilters } from '../../models/song-filters.interface';
 
           <div class="filter-section">
             <h3>Release Date</h3>
-            <input
-              type="date"
-              [(ngModel)]="filters.releaseDate"
-              (ngModelChange)="filtersChanged()"
-            />
+            <div class="date-filters">
+              <input
+                type="date"
+                [(ngModel)]="filters.releaseDateStart"
+                (ngModelChange)="filtersChanged()"
+              />
+              <input
+                type="date"
+                [(ngModel)]="filters.releaseDateEnd"
+                (ngModelChange)="filtersChanged()"
+              />
+            </div>
+          </div>
+
+          <div class="filter-section">
+            <h3>AAAA's Only</h3>
+            <div class="scroll-toggle-container" (click)="toggleAAAA()">
+              <div class="scroll-toggle-track">
+                <div class="scroll-toggle-slider" [class.isActive]="filters.aaaaOnly">
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -226,6 +243,11 @@ import { SongFilters } from '../../models/song-filters.interface';
       width: 100%;
     }
 
+    .date-filters {
+      display: flex;
+      gap: 15px;
+    }
+
     .drawer-footer {
       padding: 1.5rem;
       border-top: 1px solid #eee;
@@ -259,6 +281,47 @@ import { SongFilters } from '../../models/song-filters.interface';
     :host-context(body.dark-mode) .reset-btn:hover {
       background: #444;
     }
+
+    .scroll-toggle-container {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .scroll-toggle-track {
+      width: 60px;
+      height: 30px;
+      background: #e0e0e0;
+      border-radius: 15px;
+      position: relative;
+      transition: background-color 0.3s;
+    }
+
+    :host-context(body.dark-mode) .scroll-toggle-track {
+      background: #444;
+    }
+
+    .scroll-toggle-slider {
+      width: 26px;
+      height: 26px;
+      background: #1a1a1a;
+      border-radius: 13px;
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), background 0.3s;
+    }
+
+    .scroll-toggle-slider.isActive {
+      transform: translateX(30px);
+      background: #28aad1;
+    }
   `]
 })
 export class FilterDrawerComponent {
@@ -270,6 +333,11 @@ export class FilterDrawerComponent {
 
   filtersChanged() {
     this.filterChange.emit(this.filters);
+  }
+
+  toggleAAAA() {
+    this.filters.aaaaOnly = !this.filters.aaaaOnly;
+    this.filtersChanged();
   }
 
   resetFilters() {

@@ -8,10 +8,16 @@ import { CommonModule } from '@angular/common';
   template: `
     <div class="sidebar-container">
       <section class="sidebar-section">
-        <a href="mailto:ffrperfectproject@gmail.com" class="submit-button">
-          <i class="fas fa-envelope"></i>
-          Email Submission
-        </a>
+        <div class="support-links">
+          <a href="mailto:ffrperfectproject@gmail.com" class="submit-button">
+            <i class="fas fa-envelope"></i>
+            Email Submission
+          </a>
+          <a href="https://www.youtube.com/channel/UCmZCtn-NXCDll00Chmvo_bQ/" class="submit-button red">
+            <i class="fa-brands fa-youtube"></i>
+            FFRPP on YouTube
+          </a>
+        </div>
       </section>
 
       <section class="sidebar-section">
@@ -92,8 +98,16 @@ import { CommonModule } from '@angular/common';
       transition: background-color 0.2s;
     }
 
+    .red {
+      background: #FF0000;
+    }
+
     .submit-button:hover {
       background: #2391b2;
+    }
+
+    .red:hover {
+      background: #DD0000;
     }
 
     .coordinator-links {

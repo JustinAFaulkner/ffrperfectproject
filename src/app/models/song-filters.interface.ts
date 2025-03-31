@@ -8,7 +8,8 @@ export interface SongFilters {
   maxNoteCount: number;
   minLength: number;
   maxLength: number;
-  releaseDate: Date | null;
+  releaseDateStart: Date | null;
+  releaseDateEnd: Date | null;
   sortBy: string;
   sortDirection: 'asc' | 'desc';
   ids: string[] | undefined;
@@ -26,7 +27,8 @@ export const defaultFilters: SongFilters = {
   maxNoteCount: 99999,
   minLength: 0,
   maxLength: 9999,
-  releaseDate: null,
+  releaseDateStart: null,
+  releaseDateEnd: null,
   sortBy: 'id',
   sortDirection: 'asc',
   ids: undefined,

@@ -32,7 +32,7 @@ import { StatsPanelComponent } from '../stats/stats-panel.component';
           <input
             type="text"
             [(ngModel)]="filters.searchTerm"
-            (ngModelChange)="filterSongs()"
+            (input)="filterSongs()"
             placeholder="Search songs..."
             class="search-input"
           />
@@ -471,7 +471,7 @@ export class SongListComponent {
     if (this.filters.genre) count++;
     if (this.filters.minNoteCount > 0 || this.filters.maxNoteCount < 99999) count++;
     if (this.filters.minLength > 0 || this.filters.maxLength < 9999) count++;
-    if (this.filters.releaseDate) count++;
+    if (this.filters.releaseDateStart || this.filters.releaseDateEnd) count++;
     if (this.filters.minDifficulty > 0 || this.filters.maxDifficulty < 150) count++;
     return count;
   }
