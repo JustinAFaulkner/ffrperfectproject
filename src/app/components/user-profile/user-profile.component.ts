@@ -42,7 +42,9 @@ import { SongWithSubmissions } from '../../models/song-with-submissions.interfac
         [secretAchievements]="stats.achievements.secret.completed"
         [highestDifficulty]="stats.highestDifficulty"
         [avgDifficulty]="stats.avgDifficulty"
-        [lowestDifficulty]="stats.lowestDifficulty">
+        [lowestDifficulty]="stats.lowestDifficulty"
+        [aaaaSubmissionCount]="stats.aaaaSubmissionCount"
+        [downscrollSubmissionCount]="stats.downscrollSubmissionCount">
       </app-stats-cards>
 
       <app-content-tabs

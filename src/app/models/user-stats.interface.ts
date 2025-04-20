@@ -8,6 +8,8 @@ export interface UserStats {
   achievementRank: number;
   submissionCount: number;
   firstSubmissionCount: number;
+  aaaaSubmissionCount: number;
+  downscrollSubmissionCount: number;
   highestDifficulty: number;
   lowestDifficulty: number;
   avgDifficulty: number;

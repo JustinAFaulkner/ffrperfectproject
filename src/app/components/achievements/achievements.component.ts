@@ -296,6 +296,8 @@ export class AchievementsComponent implements OnInit {
       achievementRank: 0,
       submissionCount: 0,
       firstSubmissionCount: 0,
+      aaaaSubmissionCount: 0,
+      downscrollSubmissionCount: 0,
       highestDifficulty: 0,
       lowestDifficulty: 0,
       avgDifficulty: 0,
@@ -321,6 +323,19 @@ export class AchievementsComponent implements OnInit {
           ? difficulties.reduce((a, b) => a + b, 0) / difficulties.length 
           : 0;
 
+        // Calculate AAAA and downscroll counts
+        const aaaaSubmissionCount = userSongs.reduce((count, song) => 
+          count + song.submissions.filter(sub => 
+            sub.contributor === contributor.name && sub.isAAAA
+          ).length, 0
+        );
+
+        const downscrollSubmissionCount = userSongs.reduce((count, song) => 
+          count + song.submissions.filter(sub => 
+            sub.contributor === contributor.name && sub.isDownscroll
+          ).length, 0
+        );
+
         // Check if the contributor has completed this achievement
         const userStats = {
           username: contributor.name,
@@ -329,6 +344,8 @@ export class AchievementsComponent implements OnInit {
           achievementRank: contributor.achievementRank,
           submissionCount: contributor.count,
           firstSubmissionCount: contributor.firstCount,
+          aaaaSubmissionCount,
+          downscrollSubmissionCount,
           highestDifficulty,
           lowestDifficulty,
           avgDifficulty,

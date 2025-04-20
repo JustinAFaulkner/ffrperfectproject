@@ -31,6 +31,36 @@ import { CommonModule } from '@angular/common';
         </div>
       </div>
 
+      <div class="stat-card aaaa">
+        <i class="fas fa-crosshairs"></i>
+        <div class="stat-info">
+          <span class="stat-value">{{aaaaSubmissionCount}}</span>
+          <span class="stat-label">AAAAs</span>
+        </div>
+      </div>
+
+      <div class="stat-card scroll-direction">
+        <i class="fas fa-arrow-right-arrow-left fa-rotate-90"></i>
+        <div class="stat-info">
+          <div class="progress-bar-blue">
+            <div 
+              class="progress-red" 
+              [style.width.%]="((submissionCount - downscrollSubmissionCount) / submissionCount) * 100">
+            </div>
+          </div>
+          <div class="scroll-stats">
+            <div class="color-key">
+              <div class="dot-red"></div>
+              Upscroll ({{ submissionCount - downscrollSubmissionCount }})
+            </div>
+            <div class="color-key">
+              <div class="dot-blue"></div>
+              Downscroll ({{ downscrollSubmissionCount }})
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="stat-card difficulty">
         <i class="fas fa-align-left fa-rotate-90"></i>
         <div class="stat-info">
@@ -108,6 +138,16 @@ import { CommonModule } from '@angular/common';
       color: #22c55e;
     }
 
+    .aaaa i {
+      background: #fef9c3;
+      color: #ca8a04;
+    }
+
+    .scroll-direction i {
+      background: #f3e8ff;
+      color: #9333ea;
+    }
+
     .difficulty i {
       background: #fae8ff;
       color: #c026d3;
@@ -138,44 +178,51 @@ import { CommonModule } from '@angular/common';
       color: #999;
     }
 
-    .secret-count {
-      font-size: 0.8rem;
-      color: #666;
-      margin-left: 0.25rem;
+    .progress-bar-blue {
+      width: 100%;
+      height: 10px;
+      background: #28aad1;
+      border-radius: 5px;
+      overflow: hidden;
+      margin-bottom: 0.5rem;
     }
 
-    :host-context(body.dark-mode) .secret-count {
-      color: #999;
+    .progress-red {
+      height: 100%;
+      background: #ff0040;
+      transition: width 0.3s ease;
     }
 
-    .difficulty-stats {
+    .scroll-stats {
       display: flex;
-      gap: 1rem;
-      margin-bottom: 0.25rem;
-    }
-
-    .diff-item {
-      text-align: center;
-    }
-
-    .diff-value {
-      display: block;
-      font-size: 1.1rem;
-      font-weight: 500;
-      color: #333;
-    }
-
-    :host-context(body.dark-mode) .diff-value {
-      color: #e0e0e0;
-    }
-
-    .diff-label {
+      flex-direction: column;
+      gap: 0.25rem;
       font-size: 0.8rem;
       color: #666;
     }
 
-    :host-context(body.dark-mode) .diff-label {
+    :host-context(body.dark-mode) .scroll-stats {
       color: #999;
+    }
+
+    .color-key {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .dot-red {
+      height: 8px;
+      width: 8px;
+      border-radius: 8px;
+      background: #ff0040;
+    }
+
+    .dot-blue {
+      height: 8px;
+      width: 8px;
+      border-radius: 8px;
+      background: #28aad1;
     }
 
     @media (max-width: 768px) {
@@ -194,4 +241,6 @@ export class StatsCardsComponent {
   @Input() highestDifficulty!: number;
   @Input() avgDifficulty!: number;
   @Input() lowestDifficulty!: number;
+  @Input() aaaaSubmissionCount!: number;
+  @Input() downscrollSubmissionCount!: number;
 }

@@ -60,6 +60,19 @@ export class LeaderboardService {
               ? difficulties.reduce((a, b) => a + b, 0) / difficulties.length 
               : 0;
 
+            // Calculate AAAA and downscroll counts
+            const aaaaSubmissionCount = userSongs.reduce((count, song) => 
+              count + song.submissions.filter(sub => 
+                sub.contributor === name && sub.isAAAA
+              ).length, 0
+            );
+
+            const downscrollSubmissionCount = userSongs.reduce((count, song) => 
+              count + song.submissions.filter(sub => 
+                sub.contributor === name && sub.isDownscroll
+              ).length, 0
+            );
+
             // Calculate achievements using complete user stats
             const achievementCount = this.achievementService.calculateAchievements({
               username: name,
@@ -68,6 +81,8 @@ export class LeaderboardService {
               achievementRank: 0,
               submissionCount: counts.total,
               firstSubmissionCount: counts.firsts,
+              aaaaSubmissionCount,
+              downscrollSubmissionCount,
               highestDifficulty,
               lowestDifficulty,
               avgDifficulty,

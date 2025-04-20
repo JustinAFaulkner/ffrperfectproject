@@ -116,6 +116,19 @@ export class StatsService {
         song.submissions.some(sub => sub.contributor === contributor)
       );
 
+      // Calculate AAAA and downscroll counts
+      const aaaaSubmissionCount = userSongs.reduce((count, song) => 
+        count + song.submissions.filter(sub => 
+          sub.contributor === contributor && sub.isAAAA
+        ).length, 0
+      );
+
+      const downscrollSubmissionCount = userSongs.reduce((count, song) => 
+        count + song.submissions.filter(sub => 
+          sub.contributor === contributor && sub.isDownscroll
+        ).length, 0
+      );
+
       const achievements = this.achievementService.calculateAchievements({
         username: contributor,
         rank: 0,
@@ -123,6 +136,8 @@ export class StatsService {
         achievementRank: 0,
         submissionCount: userSongs.length,
         firstSubmissionCount: 0,
+        aaaaSubmissionCount,
+        downscrollSubmissionCount,
         highestDifficulty: 0,
         lowestDifficulty: 0,
         avgDifficulty: 0,

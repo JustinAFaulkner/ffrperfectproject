@@ -124,6 +124,30 @@ export class AchievementService {
       givesBadge: false
     },
     {
+      id: 'scroll_five',
+      name: 'Scrollin\' With the Homies',
+      description: 'AAA 5+ songs each on upscroll & downscroll',
+      givesBadge: false
+    },
+    {
+      id: 'scroll_twenty',
+      name: 'Dualscroll Discipline',
+      description: 'AAA 20+ songs each on upscroll & downscroll',
+      givesBadge: false
+    },
+    {
+      id: 'scroll_diff_30',
+      name: 'Scroll Hard or Go Home',
+      description: 'Submit AAAs on 30+ difficulty songs using both upscroll & downscroll',
+      givesBadge: false
+    },
+    {
+      id: 'scroll_diff_60',
+      name: 'Bidirectional Beast',
+      description: 'Submit AAAs on 60+ difficulty songs using both upscroll & downscroll',
+      givesBadge: false
+    },
+    {
       id: 'alphabet',
       name: 'Alphabet Soup',
       description: 'Submit AAAs for songs with titles that cover the entire alphabet',
@@ -204,6 +228,20 @@ export class AchievementService {
       id: 'stepartist_ztar',
       name: 'Shooting Ztar',
       description: 'Submit 2 AAAs on files from DarkZtar',
+      givesBadge: false,
+      isSecret: true
+    },
+    {
+      id: 'scroll_double',
+      name: 'Double Trouble',
+      description: 'Be the first to submit AAAs on a song for both upscroll & downscroll',
+      givesBadge: false,
+      isSecret: true
+    },
+    {
+      id: 'scroll_odd',
+      name: 'Directionally Challenged',
+      description: 'Submit 1 AAA using a scroll direction other than up or down',
       givesBadge: false,
       isSecret: true
     }
@@ -297,6 +335,41 @@ export class AchievementService {
           song.seconds >= 300 &&
           song.submissions.length > 0
       ).length >= 3;
+
+      case 'scroll_five':
+        return stats.submissionCount - stats.downscrollSubmissionCount >= 5 && 
+               stats.downscrollSubmissionCount >= 5;
+
+      case 'scroll_twenty':
+        return stats.submissionCount - stats.downscrollSubmissionCount >= 20 && 
+               stats.downscrollSubmissionCount >= 20;
+
+      case 'scroll_diff_30':
+        return stats.songs.some(song => 
+          song.difficulty >= 30 && 
+          song.submissions.some(sub => !sub.isDownscroll)
+        ) && stats.songs.some(song => 
+          song.difficulty >= 30 && 
+          song.submissions.some(sub => sub.isDownscroll)
+        );
+
+      case 'scroll_diff_60':
+        return stats.songs.some(song => 
+          song.difficulty >= 60 && 
+          song.submissions.some(sub => !sub.isDownscroll)
+        ) && stats.songs.some(song => 
+          song.difficulty >= 60 && 
+          song.submissions.some(sub => sub.isDownscroll)
+        );
+
+      case 'scroll_double':
+        return stats.songs.some(song => 
+          song.submissions.some(sub => sub.firstSub && !sub.isDownscroll) &&
+          song.submissions.some(sub => sub.firstSub && sub.isDownscroll)
+        );
+
+      case 'scroll_odd':
+        return stats.aaaaSubmissionCount > 0;
 
       case 'alphabet':
         return hasCompletedAlphabet(
