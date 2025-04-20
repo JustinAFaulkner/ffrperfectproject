@@ -15,9 +15,9 @@ import { NavComponent } from './components/nav/nav.component';
   styles: [
     `
     .app-container {
-      padding: 20px;
+      padding: 0px 20px;
       background-color: #f5f5f5;
-      min-height: calc(100vh - 57px);
+      min-height: calc(100vh - 95px);
       max-width: 1200px;
       margin: 0 auto;
       transition: background-color 0.3s;

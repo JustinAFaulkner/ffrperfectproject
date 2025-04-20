@@ -34,7 +34,9 @@ import { PopupService } from '../../services/popup.service';
       class="song-item"
       [class.has-video]="hasSubmissions"
       [class.no-video]="!hasSubmissions && !submissionPending"
-      [class.pending-video]="submissionPending">
+      [class.pending-video]="submissionPending"
+      [class.has-aaaa]="hasAAAASubmission && !isExpanded">
+      <div class="shimmer-overlay"></div>
       <div class="corner-mark" 
         [class.completed]="hasSubmissions"
         [class.pending]="submissionPending">
@@ -42,6 +44,14 @@ import { PopupService } from '../../services/popup.service';
       </div>
       <div class="first-mark" *ngIf="showFirstIndicator && isFirstSubmission">
         <span>1st</span>
+      </div>
+      <div class="aaaa-mark" 
+        *ngIf="hasAAAASubmission"
+        (click)="showTooltip = !showTooltip"
+        (mouseleave)="showTooltip = false"
+        title="AAAA">
+        <i class="fas fa-star"></i>
+        <span class="tooltip-text" *ngIf="showTooltip">AAAA</span>
       </div>
       <div class="song-header" (click)="toggleExpand()">
         <div class="song-diff">
@@ -188,6 +198,71 @@ import { PopupService } from '../../services/popup.service';
       position: relative;
     }
 
+    .tooltip-wrapper {
+      position: relative;
+      display: inline-block;
+      cursor: pointer;
+    }
+    
+    .tooltip-text {
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #333;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      white-space: nowrap;
+      font-size: 0.75rem;
+      z-index: 10;
+    }
+
+    .shimmer-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 200%;
+      height: 100%;
+      background: linear-gradient(
+        120deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 215, 0, 0.2) 50%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      filter: blur(1.5px);
+      transform: translateX(-100%) skewX(-20deg);
+      pointer-events: none;
+      z-index: 1;
+      mix-blend-mode: screen;
+      opacity: 0;
+    }
+    
+    .has-aaaa .shimmer-overlay {
+      animation: shimmer 5s infinite cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    @keyframes shimmer {
+      0% {
+        transform: translateX(-100%) skewX(-20deg);
+        opacity: 0;
+      }
+      5% {
+        opacity: 1;
+      }
+      50% {
+        transform: translateX(100%) skewX(-20deg);
+        opacity: 1;
+      }
+      51% {
+        opacity: 0;
+      }
+      100% {
+        transform: translateX(100%) skewX(-20deg);
+        opacity: 0;
+      }
+    }
+
     .song-item.has-video {
       background: linear-gradient(135deg, 
         white 0%, 
@@ -234,7 +309,7 @@ import { PopupService } from '../../services/popup.service';
       border-width: 2rem 2rem 0 0;
       border-color: #e2e8f0 transparent transparent transparent;
       transition: border-color 0.3s ease;
-      z-index: 1;
+      z-index: 2;
     }
 
     .corner-mark.completed {
@@ -287,7 +362,7 @@ import { PopupService } from '../../services/popup.service';
       border-style: solid;
       border-width: 0 2rem 2rem 0;
       border-color: transparent #28aad1 transparent transparent;
-      z-index: 1;
+      z-index: 2;
     }
 
     .first-mark span {
@@ -297,6 +372,27 @@ import { PopupService } from '../../services/popup.service';
       color: white;
       font-size: 0.7rem;
       font-weight: bold;
+    }
+
+    .aaaa-mark {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-width: 0 2rem 2rem 0;
+      border-color: transparent #ffd700 transparent transparent;
+      z-index: 2;
+      opacity: 0.9;
+    }
+
+    .aaaa-mark i {
+      position: absolute;
+      top: 0.2rem;
+      right: -1.9rem;
+      color: #856404;
+      font-size: 0.9rem;
     }
 
     .song-status {
@@ -702,6 +798,7 @@ export class SongItemComponent {
   @ViewChild('submissionsContainer') submissionsContainer!: ElementRef;
   
   private _isExpanded: boolean = false;
+  showTooltip: boolean = false;
   
   get isExpanded(): boolean {
     return this._isExpanded;
@@ -709,6 +806,10 @@ export class SongItemComponent {
 
   get submissionPending(): boolean {
     return !this.hasSubmissions && this.song.subPending;
+  }
+
+  get hasAAAASubmission(): boolean {
+    return this.song.submissions.some(sub => sub.isAAAA);
   }
 
   canScrollLeft = false;

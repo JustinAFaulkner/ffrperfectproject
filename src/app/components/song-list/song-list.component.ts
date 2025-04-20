@@ -25,128 +25,157 @@ import { StatsPanelComponent } from '../stats/stats-panel.component';
     StatsPanelComponent
   ],
   template: `
-    <app-stats-panel></app-stats-panel>
-    <div class="container">
-      <div class="filters">
-        <div class="search-filters">
-          <input
-            type="text"
-            [(ngModel)]="filters.searchTerm"
-            (input)="filterSongs()"
-            placeholder="Search songs..."
-            class="search-input"
-          />
-          
-          <app-sort-select
-            [sortBy]="filters.sortBy"
-            [sortDirection]="filters.sortDirection"
-            (sortChange)="onSortChange($event)">
-          </app-sort-select>
+    <div class="page-container">
+      <div class="main-layout">
+        <div class="song-list-section">
+          <div class="filters">
+            <div class="search-filters">
+              <input
+                type="text"
+                [(ngModel)]="filters.searchTerm"
+                (input)="filterSongs()"
+                placeholder="Search songs..."
+                class="search-input"
+              />
+              
+              <app-sort-select
+                [sortBy]="filters.sortBy"
+                [sortDirection]="filters.sortDirection"
+                (sortChange)="onSortChange($event)">
+              </app-sort-select>
 
-          <button class="filter-btn" (click)="toggleFilterDrawer()">
-            <i class="fas fa-filter"></i>
-            Filters
-            <span class="filter-count" *ngIf="activeFilterCount > 0">
-              {{activeFilterCount}}
-            </span>
-            <button class="clear-filters" *ngIf="activeFilterCount > 0" (click)="clearAllFilters($event)">
-              <i class="fas fa-times"></i>
-            </button>
-          </button>
+              <button class="filter-btn" (click)="toggleFilterDrawer()">
+                <i class="fas fa-filter"></i>
+                Filters
+                <span class="filter-count" *ngIf="activeFilterCount > 0">
+                  {{activeFilterCount}}
+                </span>
+                <button class="clear-filters" *ngIf="activeFilterCount > 0" (click)="clearAllFilters($event)">
+                  <i class="fas fa-times"></i>
+                </button>
+              </button>
 
-          <div class="filter-section mobile-only">
-            <div><h3>Scroll Preference</h3></div>
-            <div class="scroll-toggle-container" (click)="toggleScrollPreference()">
-              <div class="scroll-toggle-track">
-                <div class="scroll-toggle-slider" [class.downscroll]="filters.scrollPreference === 'downscroll'">
-                  <img src="assets/icons/4u.png" alt="Arrows" class="arrow-icon" [class.rotate-down]="filters.scrollPreference === 'downscroll'"/>
+              <div class="filter-section mobile-only">
+                <div><h3>Scroll Preference</h3></div>
+                <div class="scroll-toggle-container" (click)="toggleScrollPreference()">
+                  <div class="scroll-toggle-track">
+                    <div class="scroll-toggle-slider" [class.downscroll]="filters.scrollPreference === 'downscroll'">
+                      <img src="assets/icons/4u.png" alt="Arrows" class="arrow-icon" [class.rotate-down]="filters.scrollPreference === 'downscroll'"/>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="filter-group">
+              <div class="video-filter">
+                <div class="video-toggle-group">
+                  <button
+                    [class.active]="filters.videoFilter === 'all'"
+                    (click)="setVideoFilter('all')"
+                    class="video-toggle-btn">
+                    All
+                    <span class="count-badge">{{songs.length}}</span>
+                  </button>
+                  <button
+                    [class.active]="filters.videoFilter === 'with'"
+                    (click)="setVideoFilter('with')"
+                    class="video-toggle-btn">
+                    Completed
+                    <span class="count-badge">{{videoCounts.withVideo}}</span>
+                  </button>
+                  <button
+                    [class.active]="filters.videoFilter === 'without'"
+                    (click)="setVideoFilter('without')"
+                    class="video-toggle-btn">
+                    Missing
+                    <span class="count-badge">{{videoCounts.withoutVideo}}</span>
+                  </button>
+                  <button
+                    [class.active]="filters.videoFilter === 'pending'"
+                    (click)="setVideoFilter('pending')"
+                    class="video-toggle-btn">
+                    Pending
+                    <span class="count-badge">{{videoCounts.pendingVideo}}</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="filter-section desktop-only">
+                <div><h3>Scroll Preference</h3></div>
+                <div class="scroll-toggle-container" (click)="toggleScrollPreference()">
+                  <div class="scroll-toggle-track">
+                    <div class="scroll-toggle-slider" [class.downscroll]="filters.scrollPreference === 'downscroll'">
+                      <img src="assets/icons/4u.png" alt="Arrows" class="arrow-icon" [class.rotate-down]="filters.scrollPreference === 'downscroll'"/>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-        
-        <div class="filter-group">
-          <div class="video-filter">
-            <div class="video-toggle-group">
-              <button
-                [class.active]="filters.videoFilter === 'all'"
-                (click)="setVideoFilter('all')"
-                class="video-toggle-btn">
-                All
-                <span class="count-badge">{{songs.length}}</span>
-              </button>
-              <button
-                [class.active]="filters.videoFilter === 'with'"
-                (click)="setVideoFilter('with')"
-                class="video-toggle-btn">
-                Completed
-                <span class="count-badge">{{videoCounts.withVideo}}</span>
-              </button>
-              <button
-                [class.active]="filters.videoFilter === 'without'"
-                (click)="setVideoFilter('without')"
-                class="video-toggle-btn">
-                Missing
-                <span class="count-badge">{{videoCounts.withoutVideo}}</span>
-              </button>
-              <button
-                [class.active]="filters.videoFilter === 'pending'"
-                (click)="setVideoFilter('pending')"
-                class="video-toggle-btn">
-                Pending
-                <span class="count-badge">{{videoCounts.pendingVideo}}</span>
-              </button>
-            </div>
-          </div>
 
-          <div class="filter-section desktop-only">
-            <div><h3>Scroll Preference</h3></div>
-            <div class="scroll-toggle-container" (click)="toggleScrollPreference()">
-              <div class="scroll-toggle-track">
-                <div class="scroll-toggle-slider" [class.downscroll]="filters.scrollPreference === 'downscroll'">
-                  <img src="assets/icons/4u.png" alt="Arrows" class="arrow-icon" [class.rotate-down]="filters.scrollPreference === 'downscroll'"/>
-                </div>
+          <div class="song-list-container">
+            <cdk-virtual-scroll-viewport 
+              class="song-list-viewport"
+              [itemSize]="80"
+              [minBufferPx]="400"
+              [maxBufferPx]="800">
+              <div class="song-list">
+                <app-song-item
+                  *cdkVirtualFor="let song of filteredSongs; trackBy: trackBySong"
+                  [song]="song"
+                  [isExpanded]="expandedSong === song.id"
+                  (expandToggle)="toggleSong(song)">
+                </app-song-item>
               </div>
-            </div>
+            </cdk-virtual-scroll-viewport>
           </div>
+        </div>
+
+        <div class="stats-section desktop-stats">
+          <app-stats-panel></app-stats-panel>
         </div>
       </div>
 
-      <div class="song-list-container">
-        <cdk-virtual-scroll-viewport 
-          class="song-list-viewport"
-          [itemSize]="80"
-          [minBufferPx]="400"
-          [maxBufferPx]="800">
-          <div class="song-list">
-            <app-song-item
-              *cdkVirtualFor="let song of filteredSongs; trackBy: trackBySong"
-              [song]="song"
-              [isExpanded]="expandedSong === song.id"
-              (expandToggle)="toggleSong(song)">
-            </app-song-item>
-          </div>
-        </cdk-virtual-scroll-viewport>
-      </div>
+      <app-filter-drawer
+        [isOpen]="showFilterDrawer"
+        [filters]="filters"
+        [genres]="genres"
+        (close)="showFilterDrawer = false"
+        (filterChange)="onFilterChange($event)">
+      </app-filter-drawer>
     </div>
-
-    <app-filter-drawer
-      [isOpen]="showFilterDrawer"
-      [filters]="filters"
-      [genres]="genres"
-      (close)="showFilterDrawer = false"
-      (filterChange)="onFilterChange($event)">
-    </app-filter-drawer>
   `,
   styles: [`
-    .container {
+    .page-container {
       padding: 20px;
-      max-width: 800px;
-      margin: 0 auto;
-      height: calc(100vh - 120px);
+      height: calc(100vh - 100px);
       display: flex;
       flex-direction: column;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .main-layout {
+      display: flex;
+      gap: 20px;
+      flex: 1;
+      min-height: 0;
+      width: 100%;
+    }
+
+    .song-list-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      max-width: calc(100% - 320px);
+    }
+
+    .stats-section {
+      width: 300px;
+      flex-shrink: 0;
+      overflow-y: auto;
     }
 
     .filters {
@@ -419,7 +448,35 @@ import { StatsPanelComponent } from '../stats/stats-panel.component';
       transform: rotate(180deg);
     }
 
-    @media (max-width: 820px) {
+    @media (max-width: 1030px) {
+      .mobile-only {
+        display: flex;
+      }
+
+      .desktop-only {
+        display: none;
+      }
+      
+      .desktop-stats {
+        display: none;
+      }
+
+      .song-list-section {
+        max-width: 100%;
+      }
+      
+      .main-layout {
+        flex-direction: column;
+      }
+
+      .stats-section {
+        width: 100%;
+      }
+
+      .content-toggle {
+        display: flex;
+      }
+
       .filters {
         gap: 10px;
       }
@@ -437,16 +494,6 @@ import { StatsPanelComponent } from '../stats/stats-panel.component';
         flex-direction: column;
         align-items: stretch;
         gap: 10px;
-      }
-    }
-
-    @media (max-width: 820px) {
-      .mobile-only {
-        display: flex;
-      }
-
-      .desktop-only {
-        display: none;
       }
     }
 

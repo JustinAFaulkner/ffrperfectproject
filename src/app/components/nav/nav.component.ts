@@ -53,6 +53,12 @@ import { ConfirmModalComponent } from '../shared/confirm-modal.component';
             Leaderboard
           </a>
           <a 
+            routerLink="/stats" 
+            routerLinkActive="active"
+            class="nav-link">
+            Stats
+          </a>
+          <a 
             routerLink="/achievements" 
             routerLinkActive="active"
             class="nav-link">
@@ -143,6 +149,14 @@ import { ConfirmModalComponent } from '../shared/confirm-modal.component';
             (click)="showMobileMenu = false">
             <i class="fas fa-trophy"></i>
             Leaderboard
+          </a>
+          <a 
+            routerLink="/stats" 
+            routerLinkActive="active"
+            class="nav-link"
+            (click)="showMobileMenu = false">
+            <i class="fas fa-chart-bar"></i>
+            Stats
           </a>
           <a 
             routerLink="/achievements" 

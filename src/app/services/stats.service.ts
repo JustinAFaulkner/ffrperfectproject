@@ -10,9 +10,15 @@ import { SongWithSubmissions } from '../models/song-with-submissions.interface';
 export interface ProjectStats {
   totalSongs: number;
   totalArtists: number;
+  representedArtists: number;
   totalSubmissions: number;
+  songsWithSubmissions: number;
   totalArrows: number;
   totalAchievements: number;
+  totalContributors: number;
+  downscrollCount: number;
+  aaaaCount: number;
+  songsWithAAAA: number;
   level: number;
   subscribers: number;
   views: number;
@@ -38,18 +44,54 @@ export class StatsService {
     ]).pipe(
       map(([songs, youtubeStats]) => {
         const artists = new Set(songs.map(song => song.artist));
+        
+        // Get songs with submissions
+        const songsWithSubmissions = songs.filter(song => song.submissions.length > 0);
+        
+        // Get unique artists from songs with submissions
+        const representedArtists = new Set(songsWithSubmissions.map(song => song.artist));
+        
         const totalSubmissions = songs.reduce((sum, song) => 
           sum + song.submissions.length, 0
         );
         const totalAchievements = this.calculateTotalAchievements(songs);
         const scores = this.scoringService.calculateScores(songs);
 
+        // Calculate unique contributors (case insensitive)
+        const contributors = new Set(
+          songs.flatMap(song => 
+            song.submissions.map(sub => 
+              sub.contributor.toLowerCase()
+            )
+          )
+        );
+
+        // Calculate downscroll count
+        const downscrollCount = songs.reduce((sum, song) => 
+          sum + song.submissions.filter(sub => sub.isDownscroll).length, 0
+        );
+
+        // Calculate AAAA stats
+        const aaaaCount = songs.reduce((sum, song) => 
+          sum + song.submissions.filter(sub => sub.isAAAA).length, 0
+        );
+
+        const songsWithAAAA = songs.filter(song => 
+          song.submissions.some(sub => sub.isAAAA)
+        ).length;
+
         return {
           totalSongs: songs.length,
           totalArtists: artists.size,
+          representedArtists: representedArtists.size,
           totalSubmissions,
+          songsWithSubmissions: songsWithSubmissions.length,
           totalArrows: scores.totalArrows,
           totalAchievements,
+          totalContributors: contributors.size,
+          downscrollCount,
+          aaaaCount,
+          songsWithAAAA,
           level: scores.level,
           subscribers: youtubeStats.subscriberCount,
           views: youtubeStats.viewCount,
