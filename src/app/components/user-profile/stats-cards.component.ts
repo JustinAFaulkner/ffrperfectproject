@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -23,7 +23,9 @@ import { CommonModule } from '@angular/common';
         </div>
       </div>
 
-      <div class="stat-card achievements">
+      <div 
+        class="stat-card achievements clickable"
+        (click)="onAchievementsClick()">
         <i class="fas fa-award"></i>
         <div class="stat-info">
           <span class="stat-value">{{completedAchievements}} / {{totalAchievements}}</span>
@@ -111,6 +113,28 @@ import { CommonModule } from '@angular/common';
 
     .stat-card:hover {
       transform: translateY(-2px);
+    }
+
+    .stat-card.clickable {
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card.clickable::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(40, 170, 209, 0.05);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .stat-card.clickable:hover::after {
+      opacity: 1;
     }
 
     .stat-card i {
@@ -230,6 +254,12 @@ import { CommonModule } from '@angular/common';
         grid-template-columns: 1fr;
       }
     }
+
+    @media (max-width: 480px) {
+      .stat-card {
+        min-height: 50px;
+      }
+    }
   `]
 })
 export class StatsCardsComponent {
@@ -237,10 +267,14 @@ export class StatsCardsComponent {
   @Input() firstSubmissionCount!: number;
   @Input() completedAchievements!: number;
   @Input() totalAchievements!: number;
-  @Input() secretAchievements!: number;
   @Input() highestDifficulty!: number;
   @Input() avgDifficulty!: number;
   @Input() lowestDifficulty!: number;
   @Input() aaaaSubmissionCount!: number;
   @Input() downscrollSubmissionCount!: number;
+  @Output() achievementsClick = new EventEmitter<void>();
+
+  onAchievementsClick() {
+    this.achievementsClick.emit();
+  }
 }

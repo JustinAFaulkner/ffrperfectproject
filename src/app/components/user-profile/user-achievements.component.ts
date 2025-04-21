@@ -213,6 +213,7 @@ export class UserAchievementsComponent {
     if (achievement.description.toLowerCase().includes('first aaa video')) return 'fa-file-arrow-up';
     if (achievement.description.toLowerCase().includes('aaa videos')) return 'fa-file-arrow-up';
     if (achievement.description.toLowerCase().includes('first')) return 'fa-map-location-dot';
+    if (achievement.description.toLowerCase().includes('scroll')) return 'fa-arrow-right-arrow-left fa-rotate-90';
     if (achievement.description.toLowerCase().includes('difficulty')) return 'fa-utensils';
     if (achievement.description.toLowerCase().includes('month')) return 'fa-calendar';
     if (achievement.description.toLowerCase().includes('repeating')) return 'fa-cubes';
@@ -224,7 +225,7 @@ export class UserAchievementsComponent {
     if (achievement.description.toLowerCase().includes('public')) return 'fa-users';
     if (achievement.description.toLowerCase().includes('multi')) return 'fa-gamepad';
     if (achievement.description.toLowerCase().includes('on files from')) return 'fa-id-badge';
-    
+
     // Default icon
     return 'fa-trophy';
   }

@@ -14,6 +14,7 @@ import { CommonModule } from '@angular/common';
           (click)="setTab('submissions')">
           <i class="fas fa-file-arrow-up"></i>
           Submissions
+          <span class="tab-count">{{submissionCount}}</span>
         </button>
         <button 
           class="tab-btn" 
@@ -21,6 +22,7 @@ import { CommonModule } from '@angular/common';
           (click)="setTab('achievements')">
           <i class="fas fa-award"></i>
           Achievements
+          <span class="tab-count">{{achievementCount}}/{{totalAchievements}}</span>
         </button>
       </div>
     </div>
@@ -42,7 +44,7 @@ import { CommonModule } from '@angular/common';
     }
 
     .tab-btn {
-      padding: 0.75rem 1.5rem;
+      padding: 1rem 1.5rem;
       background: none;
       border: none;
       color: #666;
@@ -50,7 +52,7 @@ import { CommonModule } from '@angular/common';
       font-size: 1rem;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.75rem;
       position: relative;
       transition: all 0.2s;
     }
@@ -73,6 +75,7 @@ import { CommonModule } from '@angular/common';
 
     .tab-btn.active {
       color: #28aad1;
+      font-weight: 500;
     }
 
     .tab-btn.active::after {
@@ -83,16 +86,33 @@ import { CommonModule } from '@angular/common';
       color: #28aad1;
     }
 
+    .tab-count {
+      background: rgba(40, 170, 209, 0.1);
+      padding: 0.25rem 0.5rem;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      color: #28aad1;
+    }
+
+    .active .tab-count {
+      background: #28aad1;
+      color: white;
+    }
+
     @media (max-width: 480px) {
       .tab-btn {
         flex: 1;
         justify-content: center;
+        padding: 1rem 0.5rem;
       }
     }
   `]
 })
 export class ContentTabsComponent {
   @Input() activeTab: 'submissions' | 'achievements' = 'submissions';
+  @Input() submissionCount: number = 0;
+  @Input() achievementCount: number = 0;
+  @Input() totalAchievements: number = 0;
   @Output() tabChange = new EventEmitter<'submissions' | 'achievements'>();
 
   setTab(tab: 'submissions' | 'achievements') {

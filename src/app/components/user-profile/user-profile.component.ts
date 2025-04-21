@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Observable, map, switchMap, tap } from 'rxjs';
@@ -31,7 +31,8 @@ import { SongWithSubmissions } from '../../models/song-with-submissions.interfac
         [rank]="stats.rank"
         [firstRank]="stats.firstRank"
         [achievementRank]="stats.achievementRank"
-        [completedAchievements]="stats.achievements.total == stats.achievements.completed">
+        [completedAchievements]="stats.achievements.total == stats.achievements.completed"
+        (achievementsClick)="activeTab = 'achievements'">
       </app-profile-header>
 
       <app-stats-cards
@@ -39,16 +40,19 @@ import { SongWithSubmissions } from '../../models/song-with-submissions.interfac
         [firstSubmissionCount]="stats.firstSubmissionCount"
         [completedAchievements]="stats.achievements.completed"
         [totalAchievements]="stats.achievements.total"
-        [secretAchievements]="stats.achievements.secret.completed"
         [highestDifficulty]="stats.highestDifficulty"
         [avgDifficulty]="stats.avgDifficulty"
         [lowestDifficulty]="stats.lowestDifficulty"
         [aaaaSubmissionCount]="stats.aaaaSubmissionCount"
-        [downscrollSubmissionCount]="stats.downscrollSubmissionCount">
+        [downscrollSubmissionCount]="stats.downscrollSubmissionCount"
+        (achievementsClick)="activeTab = 'achievements'">
       </app-stats-cards>
 
       <app-content-tabs
         [activeTab]="activeTab"
+        [submissionCount]="stats.submissionCount"
+        [achievementCount]="stats.achievements.completed"
+        [totalAchievements]="stats.achievements.total"
         (tabChange)="activeTab = $event">
       </app-content-tabs>
 
@@ -100,7 +104,7 @@ import { SongWithSubmissions } from '../../models/song-with-submissions.interfac
     }
   `]
 })
-export class UserProfileComponent implements OnInit {
+export class UserProfileComponent {
   userStats$!: Observable<UserStats>;
   expandedSong: string | null = null;
   achievements: UserAchievement[] = [];

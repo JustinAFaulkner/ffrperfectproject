@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
@@ -29,7 +29,10 @@ import { RouterModule } from '@angular/router';
               <span class="rank-label">Firsts</span>
               <span class="rank-value">#{{firstRank}}</span>
             </div>
-            <div class="rank-badge" [class]="getRankClass(achievementRank)">
+            <div 
+              class="rank-badge clickable" 
+              [class]="getRankClass(achievementRank)"
+              (click)="onAchievementsClick()">
               <i class="fas fa-award"></i>
               <span class="rank-label">Achievements</span>
               <span class="rank-value">#{{achievementRank}}</span>
@@ -112,8 +115,30 @@ import { RouterModule } from '@angular/router';
       transition: transform 0.2s;
     }
 
-    .rank-badge:hover {
+    .rank-badge.clickable {
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .rank-badge.clickable::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255,255,255,0.1);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .rank-badge.clickable:hover {
       transform: translateY(-2px);
+    }
+
+    .rank-badge.clickable:hover::after {
+      opacity: 1;
     }
 
     .rank-badge i {
@@ -122,8 +147,8 @@ import { RouterModule } from '@angular/router';
     }
 
     .achievements-complete {
-        background: linear-gradient(135deg,rgb(50, 216, 0) 0%,rgb(5, 131, 22) 100%);
-        color: #333;
+      background: linear-gradient(135deg,rgb(50, 216, 0) 0%,rgb(5, 131, 22) 100%);
+      color: #333;
     }
 
     .rank-label {
@@ -202,11 +227,16 @@ export class ProfileHeaderComponent {
   @Input() firstRank!: number;
   @Input() achievementRank!: number;
   @Input() completedAchievements!: boolean;
+  @Output() achievementsClick = new EventEmitter<void>();
 
   getRankClass(rank: number): string {
     if (rank === 1) return 'gold';
     if (rank === 2) return 'silver';
     if (rank === 3) return 'bronze';
     return '';
+  }
+
+  onAchievementsClick() {
+    this.achievementsClick.emit();
   }
 }
