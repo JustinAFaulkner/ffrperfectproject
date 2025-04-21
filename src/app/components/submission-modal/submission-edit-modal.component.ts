@@ -111,6 +111,14 @@ import { UrlTransformerService } from '../../services/url-transformer.service';
               />
               Featured
             </label>
+
+            <label>
+              <input
+                type="checkbox"
+                [(ngModel)]="submission.isOddScroll"
+              />
+              Atypical Scroll
+            </label>
           </div>
         </div>
 
@@ -384,7 +392,8 @@ export class SubmissionEditModalComponent {
     isMulti: false,
     isFeatured: false,
     isDownscroll: false,
-    isAAAA: false
+    isAAAA: false,
+    isOddScroll: false
   };
 
   ngOnInit(): void {
@@ -403,7 +412,8 @@ export class SubmissionEditModalComponent {
           isMulti: currentSubmission.isMulti,
           isFeatured: currentSubmission.isFeatured,
           isDownscroll: currentSubmission.isDownscroll,
-          isAAAA: currentSubmission.isAAAA
+          isAAAA: currentSubmission.isAAAA,
+          isOddScroll: currentSubmission.isOddScroll
         };
       }
     }

@@ -10,6 +10,7 @@ export interface UserStats {
   firstSubmissionCount: number;
   aaaaSubmissionCount: number;
   downscrollSubmissionCount: number;
+  oddScrollSubmissionCount: number;
   highestDifficulty: number;
   lowestDifficulty: number;
   avgDifficulty: number;

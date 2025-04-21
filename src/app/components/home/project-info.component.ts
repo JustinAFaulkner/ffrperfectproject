@@ -32,7 +32,7 @@ import { CommonModule } from '@angular/common';
         
         <h3>Submission Rules</h3>
         <ol>
-          <li>All speedmods are fine, but try to keep modifications limited to Mirror at most.</li>
+          <li>Speedmods and scroll direction are flexible, but try to keep other gameplay modifications limited to Mirror at most.</li>
           <li>Videos must be live recordings of keytaps, screen, and/or hands. Screen recordings only will not be accepted.</li>
           <li>Make sure quality is decent & that we can actually see the gameplay.</li>
           <li>Videos are uploaded on a first come first serve basis. In the interest of fairness we may upload multiple videos of one song.</li>

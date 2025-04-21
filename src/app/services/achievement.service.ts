@@ -369,7 +369,7 @@ export class AchievementService {
         );
 
       case 'scroll_odd':
-        return stats.aaaaSubmissionCount > 0;
+        return stats.oddScrollSubmissionCount > 0;
 
       case 'alphabet':
         return hasCompletedAlphabet(

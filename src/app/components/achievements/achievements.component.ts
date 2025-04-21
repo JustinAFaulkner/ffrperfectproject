@@ -298,6 +298,7 @@ export class AchievementsComponent implements OnInit {
       firstSubmissionCount: 0,
       aaaaSubmissionCount: 0,
       downscrollSubmissionCount: 0,
+      oddScrollSubmissionCount: 0,
       highestDifficulty: 0,
       lowestDifficulty: 0,
       avgDifficulty: 0,
@@ -336,6 +337,12 @@ export class AchievementsComponent implements OnInit {
           ).length, 0
         );
 
+        const oddScrollSubmissionCount = userSongs.reduce((count, song) => 
+          count + song.submissions.filter(sub => 
+            sub.contributor === contributor.name && sub.isDownscroll
+          ).length, 0
+        );
+
         // Check if the contributor has completed this achievement
         const userStats = {
           username: contributor.name,
@@ -346,6 +353,7 @@ export class AchievementsComponent implements OnInit {
           firstSubmissionCount: contributor.firstCount,
           aaaaSubmissionCount,
           downscrollSubmissionCount,
+          oddScrollSubmissionCount,
           highestDifficulty,
           lowestDifficulty,
           avgDifficulty,

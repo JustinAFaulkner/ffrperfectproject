@@ -11,4 +11,5 @@ export interface Submission {
   isFeatured: boolean;
   isDownscroll: boolean;
   isAAAA: boolean;
+  isOddScroll: boolean;
 }

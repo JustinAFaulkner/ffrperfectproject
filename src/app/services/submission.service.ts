@@ -46,7 +46,8 @@ export class SubmissionService {
           isMulti: Boolean(sub.isMulti),
           isFeatured: Boolean(sub.isFeatured),
           isDownscroll: Boolean(sub.isDownscroll),
-          isAAAA: Boolean(sub.isAAAA)
+          isAAAA: Boolean(sub.isAAAA),
+          isOddScroll: Boolean(sub.isOddScroll)
         }));
 
         this.logger.info('Submissions processed', {
@@ -94,7 +95,8 @@ export class SubmissionService {
           isMulti: submission.isMulti,
           isFeatured: submission.isFeatured,
           isDownscroll: submission.isDownscroll,
-          isAAAA: submission.isAAAA
+          isAAAA: submission.isAAAA,
+          isOddScroll: submission.isOddScroll
         }));
   
         this.loadSubmissions();
@@ -123,7 +125,8 @@ export class SubmissionService {
         isMulti: submission.isMulti,
         isFeatured: submission.isFeatured,
         isDownscroll: submission.isDownscroll,
-        isAAAA: submission.isAAAA
+        isAAAA: submission.isAAAA,
+        isOddScroll: submission.isOddScroll
       }).toPromise();
 
       this.loadSubmissions();
@@ -149,7 +152,8 @@ export class SubmissionService {
         isMulti: submission.isMulti,
         isFeatured: submission.isFeatured,
         isDownscroll: submission.isDownscroll,
-        isAAAA: submission.isAAAA
+        isAAAA: submission.isAAAA,
+        isOddScroll: submission.isOddScroll
       }).toPromise();
 
       this.loadSubmissions();

@@ -62,6 +62,14 @@ import { UrlTransformerService } from '../../services/url-transformer.service';
               />
               Downscroll
             </label>
+
+            <label>
+              <input
+                type="checkbox"
+                [(ngModel)]="submission.isOddScroll"
+              />
+              Atypical Scroll
+            </label>
           </div>
           <div class="checkbox-group-right">
             <label>
@@ -324,7 +332,8 @@ export class SubmissionModalComponent {
     isMulti: false,
     isFeatured: false,
     isDownscroll: false,
-    isAAAA: false
+    isAAAA: false,
+    isOddScroll: false
   };
 
   ngOnInit() {

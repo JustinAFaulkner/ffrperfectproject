@@ -73,6 +73,12 @@ export class LeaderboardService {
               ).length, 0
             );
 
+            const oddScrollSubmissionCount = userSongs.reduce((count, song) => 
+              count + song.submissions.filter(sub => 
+                sub.contributor === name && sub.isOddScroll
+              ).length, 0
+            );
+
             // Calculate achievements using complete user stats
             const achievementCount = this.achievementService.calculateAchievements({
               username: name,
@@ -83,6 +89,7 @@ export class LeaderboardService {
               firstSubmissionCount: counts.firsts,
               aaaaSubmissionCount,
               downscrollSubmissionCount,
+              oddScrollSubmissionCount,
               highestDifficulty,
               lowestDifficulty,
               avgDifficulty,

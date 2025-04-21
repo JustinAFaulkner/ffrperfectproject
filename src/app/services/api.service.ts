@@ -74,6 +74,7 @@ export class ApiService {
     isFeatured?: boolean;
     isDownscroll?: boolean;
     isAAAA?: boolean;
+    isOddScroll?: boolean;
   }): Observable<Submission> {
     return this.http.post<ApiResponse<Submission>>(`${this.baseUrl}/submissions`, submission)
       .pipe(map(response => response.data));
